@@ -3,6 +3,7 @@ import logging
 import os
 import sys
 import time
+import traceback
 
 from huawei_solar import HuaweiSolarBridge
 from dotenv import load_dotenv
@@ -34,7 +35,7 @@ def init():
     logger.addHandler(handler)
 
 
-async def main_once():
+async def main_once(bridge):
     """
     Ein einzelner Read-Publish-Zyklus.
     Setzt Status nur bei Erfolg auf online.
@@ -45,21 +46,10 @@ async def main_once():
     if not topic:
         raise RuntimeError("HUAWEI_MODBUS_MQTT_TOPIC not set")
 
-    modbus_host = os.environ.get("HUAWEI_MODBUS_HOST")
-    modbus_port = int(os.environ.get("HUAWEI_MODBUS_PORT", "502"))
-    slave_id = int(os.environ.get("HUAWEI_MODBUS_DEVICE_ID", "1"))
-
-    logging.debug(
-        "Connecting to inverter %s:%d (slave_id=%d)", modbus_host, modbus_port, slave_id
-    )
-
-    bridge = await HuaweiSolarBridge.create(
-        modbus_host,
-        modbus_port,
-        slave_id=slave_id,
-    )
-
+    logging.debug("Calling bridge.update()")
     data = await bridge.update()
+    logging.debug("bridge.update() returned keys: %s", list(data.keys()))
+
     mqtt_data = transform_result(data)
 
     # Daten publishen
@@ -103,12 +93,14 @@ if __name__ == "__main__":
         logging.error("HUAWEI_MODBUS_MQTT_TOPIC not set – exiting")
         sys.exit(1)
 
-    logging.info("Huawei Solar Modbus to MQTT starting")
+    modbus_host = os.environ.get("HUAWEI_MODBUS_HOST")
+    modbus_port = int(os.environ.get("HUAWEI_MODBUS_PORT", "502"))
+    slave_id = int(os.environ.get("HUAWEI_MODBUS_DEVICE_ID", "1"))
 
-    # Konservativ: Beim Start erst mal offline
+    logging.info("Huawei Solar Modbus to MQTT starting")
     publish_status("offline", topic)
 
-    # Einmalig MQTT Discovery Configs publizieren
+    # Discovery nur einmal
     try:
         publish_discovery_configs(topic)
         logging.info("MQTT Discovery configs published")
@@ -117,17 +109,28 @@ if __name__ == "__main__":
 
     wait = int(os.environ.get("HUAWEI_POLL_INTERVAL", "60"))
 
+    # Bridge einmalig erstellen
+    try:
+        bridge = asyncio.run(HuaweiSolarBridge.create(
+            modbus_host,
+            modbus_port,
+            slave_id=slave_id,
+        ))
+    except Exception as e:
+        logging.error("Failed to create HuaweiSolarBridge: %s", e)
+        publish_status("offline", topic)
+        sys.exit(1)
+
     try:
         while True:
             try:
-                asyncio.run(main_once())
+                asyncio.run(main_once(bridge))
             except Exception as e:
-                logging.error("Read/publish failed: %s", e)
-                # Sofort offline melden
+                logging.error("Read/publish failed (%s): %s",
+                              type(e).__name__, e)
                 publish_status("offline", topic)
-                time.sleep(10)  # kurzer Backoff
+                time.sleep(10)
             finally:
-                # Heartbeat/Timeout überwachen
                 heartbeat(topic)
                 time.sleep(wait)
     except KeyboardInterrupt:
