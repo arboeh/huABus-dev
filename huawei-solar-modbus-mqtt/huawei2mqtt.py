@@ -126,10 +126,10 @@ async def main():
             try:
                 await main_once(bridge)
             except Exception as e:
-                logging.error("Read/publish failed (%s): %s",
-                              type(e).__name__, e)
+                logging.error("Read/publish failed (%s): %s", type(e).__name__, e)
+                logging.debug("Traceback:\n%s", traceback.format_exc())
                 publish_status("offline", topic)
-                await asyncio.sleep(10)  # kurzer Backoff
+                await asyncio.sleep(10)
             finally:
                 heartbeat(topic)
                 await asyncio.sleep(wait)
