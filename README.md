@@ -24,7 +24,8 @@ Home Assistant Add-on: Huawei SUN2000 Inverter via Modbus TCP → MQTT with Auto
 - Automatic reconnection
 
 ## Installation
-1. **[Add Repository](https://github.com/arboeh/homeassistant-huawei-solar-addon)**
+1. [![Add Repository](https://my.home-assistant.io/badges/supervisor_add_addon_repository.svg)](https://my.home-assistant.io/redirect/supervisor_add_addon_repository/?repository_url=https%3A%2F%2Fgithub.com%2Farboeh%2Fhomeassistant-huawei-solar-addon)
+
 2. Install "Huawei Solar Modbus to MQTT" from Add-on Store
 3. Configure and start
 4. Entities auto-appear in HA
