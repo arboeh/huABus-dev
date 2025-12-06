@@ -123,9 +123,9 @@ async def main():
     # Bridge einmalig im selben Event Loop erstellen
     try:
         bridge = await HuaweiSolarBridge.create(
-            host=modbus_host,
-            port=modbus_port,
-            slave_id=slave_id,
+            modbus_host,
+            modbus_port,
+            slave_id,
         )
         logging.info("HuaweiSolarBridge created successfully")
     except Exception as e:
