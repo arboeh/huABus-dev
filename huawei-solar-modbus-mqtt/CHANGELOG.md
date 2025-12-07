@@ -10,6 +10,16 @@
 ### Changed
 - [ ] Änderungen hier dokumentieren
 
+## [1.0.3] - 2025-12-07
+### Fixed
+- Wechsel von `HuaweiSolarBridge` auf `AsyncHuaweiSolar`, um die neue API der huawei-solar Library korrekt zu nutzen
+- Fehler beim Instanziieren der Bridge behoben (abstrakte Klasse, fehlende Implementierung von `_populate_additional_fields` und `supports_device`)
+- Bessere Behandlung von nicht unterstützten Registern (Illegal Data Address / ExceptionResponse Code 2), ohne den gesamten Lesezyklus zu unterbrechen
+
+### Changed
+- Lese-Logik auf registerbasiertes Auslesen mit `AsyncHuaweiSolar.get()` umgestellt
+- Debug-Logging für fehlgeschlagene Registerlesungen erweitert, um Inverter-spezifische Unterschiede besser nachvollziehen zu können
+
 ## [1.0.2] - 2025-12-06
 ### Fixed
 - HuaweiSolarBridge.create() Parameter-Fehler behoben (explizite Keyword-Argumente)
@@ -50,4 +60,11 @@
 - Batterie-Monitoring (SOC, Lade-/Entladeleistung)
 - PV-String-Monitoring (PV1/PV2, optional PV3/PV4)
 - Netz-Monitoring (Import/Export, 3-phasig)
-- Energie-Statistiken (T
+- Energie-Statistiken (Tages-/Gesamtenergie)
+- Temperatur- und Wirkungsgrad-Monitoring
+- Automatisches Reconnect bei Fehlern
+- Konfigurierbar über Home Assistant UI
+
+### Known Issues
+- Icon benötigt noch Verfeinerung
+- Erweiterte Tests laufen noch
