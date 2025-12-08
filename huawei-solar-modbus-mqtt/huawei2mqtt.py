@@ -46,16 +46,19 @@ def init():
     root_logger = logging.getLogger()
     root_logger.setLevel(loglevel)
 
-    handler = logging.StreamHandler(sys.stdout)
+    # Pymodbus-Logging konfigurieren
+    pymodbus_logger = logging.getLogger("pymodbus")
+    if loglevel == logging.DEBUG:
+        # Bei DEBUG: Zeige alle pymodbus-Logs
+        pymodbus_logger.setLevel(logging.DEBUG)
+        logger.debug("Pymodbus debug logging enabled")
+    else:
+        # Sonst: Nur Warnungen und Fehler
+        pymodbus_logger.setLevel(logging.WARNING)
 
-    # Erweitertes Format mit Logger-Namen (für separate Module)
-    formatter = logging.Formatter(
-        "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
-    )
-    formatter.datefmt = "%Y-%m-%dT%H:%M:%S%z"
-
-    handler.setFormatter(formatter)
-    root_logger.addHandler(handler)
+    # Huawei-Solar Library (nutzt auch logging)
+    huawei_solar_logger = logging.getLogger("huawei_solar")
+    huawei_solar_logger.setLevel(loglevel)
 
     # Initialisierungs-Log
     logger.info(
@@ -64,6 +67,8 @@ def init():
         f"Environment: HUAWEI_LOG_LEVEL={log_level_str}, "
         f"HUAWEI_MODBUS_DEBUG={os.environ.get('HUAWEI_MODBUS_DEBUG', 'no')}"
     )
+    logger.debug(
+        f"Pymodbus log level: {logging.getLevelName(pymodbus_logger.level)}")
 
 
 def heartbeat(topic: str):

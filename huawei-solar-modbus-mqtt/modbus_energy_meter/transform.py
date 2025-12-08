@@ -1,6 +1,7 @@
 import logging
 import time
 
+
 # Logger für dieses Modul
 logger = logging.getLogger("huawei.transform")
 
@@ -65,7 +66,7 @@ def transform_result(data):
         'voltage_PV1': get_value(data.get('pv_01_voltage')),
         'current_PV1': get_value(data.get('pv_01_current')),
 
-        # Optional: PV"/PV3/PV4
+        # Optional: PV2/PV3/PV4
         'power_PV2': get_value(data.get('pv_02_power')),
         'voltage_PV2': get_value(data.get('pv_02_voltage')),
         'current_PV2': get_value(data.get('pv_02_current')),
@@ -143,7 +144,25 @@ def transform_result(data):
         'power_factor': get_value(data.get('power_factor')),
     }
 
-    # Entferne None-Werte für sauberere MQTT-Daten
+    # === NULL-WERTE-BEHANDLUNG FÜR KRITISCHE KEYS (v1.0.5) ===
+    # Diese Werte sind essentiell für EVCC und andere Integrationen
+    # und dürfen NIEMALS null/None sein
+    critical_keys = {
+        'power_active': 0,        # Solar-Leistung
+        'power_input': 0,         # PV-Eingangsleistung
+        'meter_power_active': 0,  # Netzleistung (Grid)
+        'battery_power': 0,       # Batterieleistung
+        'battery_soc': 0          # Batterie-Ladezustand
+    }
+
+    # Setze kritische Werte auf Default (0), falls sie fehlen oder None sind
+    for key, default_value in critical_keys.items():
+        if key not in result or result[key] is None:
+            logger.warning(
+                f"Critical key '{key}' is missing or None, setting to {default_value}")
+            result[key] = default_value
+
+    # Entferne restliche None-Werte für sauberere MQTT-Daten
     original_count = len(result)
     result = {k: v for k, v in result.items() if v is not None}
     removed_count = original_count - len(result)
@@ -177,6 +196,14 @@ def transform_result(data):
         logger.debug(
             f"Data categories - Power: {len(power_values)}, "
             f"Energy: {len(energy_values)}, Voltage: {len(voltage_values)}"
+        )
+
+        # Zeige kritische Werte für schnelle Diagnose
+        logger.debug(
+            f"Critical values - "
+            f"Solar: {result.get('power_active', 'N/A')}W, "
+            f"Grid: {result.get('meter_power_active', 'N/A')}W, "
+            f"Battery: {result.get('battery_power', 'N/A')}W ({result.get('battery_soc', 'N/A')}%)"
         )
 
         # Zeige fehlende erwartete Werte

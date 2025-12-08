@@ -14,6 +14,31 @@
 
 - [ ] Änderungen hier dokumentieren
 
+## [1.0.5] - 2025-12-08
+
+### Added
+
+- Separate Log-Level-Kontrolle für pymodbus Library (reduziert Logging-Overhead)
+- Null-Werte-Behandlung in transform.py für kritische Datenpunkte
+- Fallback auf 0 für fehlende oder null-Werte bei power_active, power_input, meter_power_active, battery_power, battery_soc
+- Pymodbus-Logger wird bei INFO/WARNING/ERROR automatisch auf WARNING-Level gesetzt
+- Huawei-Solar Library Logger wird entsprechend dem globalen Log-Level konfiguriert
+- Debug-Logging für Pymodbus und Huawei-Solar Logger-Konfiguration
+
+### Changed
+
+- Pymodbus-Logs erscheinen nur noch bei DEBUG-Level oder als WARNING/ERROR
+- Kritische Sensor-Werte (Power, SOC) werden nicht mehr als null publiziert, sondern standardmäßig als 0
+- Verbesserte Fehlerbehandlung für fehlende Register-Werte in transform.py
+- Log-Output bei DEBUG zeigt jetzt auch Pymodbus Log-Level-Konfiguration
+
+### Fixed
+
+- EVCC "outdated" Fehler durch fehlende retain-Flag in MQTT-Nachrichten behoben
+- EVCC `strconv.ParseFloat: parsing "<nil>"` Fehler durch Null-Werte-Behandlung behoben
+- Übermäßige pymodbus ERROR-Logs bei normalem Betrieb (INFO-Level) reduziert
+- Fehlende Datenpunkte führen nicht mehr zu null-Werten in MQTT-Nachrichten
+
 ## [1.0.4] - 2025-12-08
 
 ### Added
@@ -61,4 +86,57 @@
 ### Fixed
 
 - HuaweiSolarBridge.create() Parameter-Fehler behoben (explizite Keyword-Argumente)
-- DecodeError-
+- DecodeError-Handling für unbekannte Register-Werte (z.B. Unit-Code 780) verbessert
+- Robustere Fehlerbehandlung bei Modbus-Kommunikationsproblemen
+- Verhindert Absturz des Add-ons bei einzelnen fehlerhaften Registern
+- `heartbeat`-Funktion korrekt platziert (behebt "name 'heartbeat' is not defined" Fehler)
+
+### Changed
+
+- Aktualisierte `huawei-solar` Library auf Version >=2.3.0
+- Aktualisierte `pymodbus` auf Version >=3.8.6 zur Verbesserung der Protokoll-Kompatibilität
+- Erweiterte Logging-Ausgaben für besseres Debugging
+- Separate Exception-Behandlung für `DecodeError` und `ReadException`
+
+## [1.0.1] - 2025-12-05
+
+### Fixed
+
+- DecodeError handling für unbekannte Register-Werte
+- Verbesserte Fehlerbehandlung bei Modbus-Kommunikation
+
+### Changed
+
+- Aktualisierte huawei-solar Library auf neueste Version
+- Erweiterte Logging-Ausgaben für besseres Debugging
+
+## [1.0.0] - 2025-12-04
+
+### Added
+
+- Erste stabile Version des Add-ons
+- Versionierung und Release-Workflow mit GitHub Actions
+- Badge für aktuelle Release-Version in der README
+
+### Changed
+
+- Wechsel von 0.9.0-beta auf 1.0.0 ohne Breaking Changes
+
+## [0.9.0-beta] - 2025-12-03
+
+### Added
+
+- Initial beta release
+- Modbus TCP Verbindung zu Huawei Solar Inverter
+- Automatische MQTT Discovery für Home Assistant
+- Batterie-Monitoring (SOC, Lade-/Entladeleistung)
+- PV-String-Monitoring (PV1/PV2, optional PV3/PV4)
+- Netz-Monitoring (Import/Export, 3-phasig)
+- Energie-Statistiken (Tages-/Gesamtenergie)
+- Temperatur- und Wirkungsgrad-Monitoring
+- Automatisches Reconnect bei Fehlern
+- Konfigurierbar über Home Assistant UI
+
+### Known Issues
+
+- Erweiterte Tests laufen noch
