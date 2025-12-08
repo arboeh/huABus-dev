@@ -1,15 +1,21 @@
 # Changelog
 
-## [Unreleased]
-
-### Added
-- [ ] Neue Features hier dokumentieren
-
-### Fixed
-- [ ] Bugfixes hier dokumentieren
+## [1.1.1] - 2025-12-08
+### 🚀 **ULTIMATIVE PERFORMANCE-OPTIMIERUNG**
 
 ### Changed
-- [ ] Änderungen hier dokumentieren
+- `read_registers_batched()` → `read_registers_filtered()` (sequentielle Reads)
+- **Nur 21 Essential Registers** statt 500+ (94% Reduktion)
+- `ESSENTIAL_REGISTERS` Liste für kritische Werte (Leistung, Batterie, Grid, PV1)
+- Logging für Essential-Reads optimiert
+
+### Fixed
+- `meter_power_active` Critical Key Warnings (HV-Meter)
+- Cycle-Überlappung bei kurzen poll_intervals
+
+**`.env` Empfehlung:** `HUAWEI_POLL_INTERVAL=30`
+
+---
 
 ## [1.1.0] - 2025-12-08
 
@@ -40,7 +46,6 @@
     Vorher: Alle 4-5 Minuten Daten
     Nachher: Alle 1-1.5 Minuten Daten
     Effektive Rate: 4x häufiger!
-
 
 ## [1.0.7] - 2025-12-08
 
