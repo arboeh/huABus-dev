@@ -1,49 +1,59 @@
-#!/usr/bin/env bashio
-set -e
+#!/usr/bin/with-contenv bashio
 
-bashio::log.info "Starting Huawei Solar Modbus to MQTT Add On v1.0.6"
+bashio::log.info "🚀 Huawei Solar Modbus to MQTT Addon..."
 
-# === ULTRA-ROBUSTE KONFIG-EXTRAKTION ===
-get_config_safe() {
-    local key="$1"
-    local default="$2"
-    # bashio::config ohne Fehler, mit Fallback
-    bashio::config "${key}" 2>/dev/null || echo "${default}"
-}
+# Read config from Home Assistant
+export HUAWEI_MODBUS_HOST=$(bashio::config 'modbus_host')
+export HUAWEI_MODBUS_PORT=$(bashio::config 'modbus_port')
+export HUAWEI_MODBUS_DEVICE_ID=$(bashio::config 'modbus_device_id')
+export HUAWEI_MODBUS_MQTT_TOPIC=$(bashio::config 'mqtt_topic')
+export HUAWEI_STATUS_TIMEOUT=$(bashio::config 'status_timeout')
+export HUAWEI_POLL_INTERVAL=$(bashio::config 'poll_interval')
+export HUAWEI_LOG_LEVEL=$(bashio::config 'log_level')
 
-# Basis-Konfiguration
-export HUAWEI_MODBUS_HOST=$(get_config_safe "modbus_host" "192.168.1.100")
-export HUAWEI_MODBUS_PORT=$(get_config_safe "modbus_port" "502")
-export HUAWEI_MODBUS_DEVICE_ID=$(get_config_safe "modbus_device_id" "1")
-export HUAWEI_MODBUS_MQTT_TOPIC=$(get_config_safe "mqtt_topic" "huawei-solar")
-export HUAWEI_STATUS_TIMEOUT=$(get_config_safe "status_timeout" "180")
-export HUAWEI_POLL_INTERVAL=$(get_config_safe "poll_interval" "60")
-export HUAWEI_LOG_LEVEL=$(get_config_safe "log_level" "INFO" | tr '[:lower:]' '[:upper:]')
+bashio::log.info "Log level set to: ${HUAWEI_LOG_LEVEL}"
 
-# Legacy debug
-if bashio::config.true "debug" 2>/dev/null; then
+# MQTT Config from Home Assistant Supervisor
+if bashio::config.has_value 'mqtt_host'; then
+    export HUAWEI_MODBUS_MQTT_BROKER=$(bashio::config 'mqtt_host')
+    bashio::log.info "Using custom MQTT broker: ${HUAWEI_MODBUS_MQTT_BROKER}"
+else
+    export HUAWEI_MODBUS_MQTT_BROKER=$(bashio::services mqtt "host")
+    bashio::log.info "Using Home Assistant MQTT broker: ${HUAWEI_MODBUS_MQTT_BROKER}"
+fi
+
+if bashio::config.has_value 'mqtt_port'; then
+    export HUAWEI_MODBUS_MQTT_PORT=$(bashio::config 'mqtt_port')
+else
+    export HUAWEI_MODBUS_MQTT_PORT=$(bashio::services mqtt "port")
+fi
+
+if bashio::config.has_value 'mqtt_user'; then
+    export HUAWEI_MODBUS_MQTT_USER=$(bashio::config 'mqtt_user')
+else
+    export HUAWEI_MODBUS_MQTT_USER=$(bashio::services mqtt "username")
+fi
+
+if bashio::config.has_value 'mqtt_password'; then
+    export HUAWEI_MODBUS_MQTT_PASSWORD=$(bashio::config 'mqtt_password')
+else
+    export HUAWEI_MODBUS_MQTT_PASSWORD=$(bashio::services mqtt "password")
+fi
+
+# Debug Mode + Log-Level Kompatibilität
+if bashio::config.true 'debug'; then
     export HUAWEI_MODBUS_DEBUG="yes"
-    export HUAWEI_LOG_LEVEL="DEBUG"
+    export HUAWEI_LOG_LEVEL="DEBUG"  # ← v1.0.6: Überschreibt log_level
+    bashio::log.level "debug"
+    bashio::log.debug "Debug mode enabled (legacy flag)"
+else
+    export HUAWEI_MODBUS_DEBUG="no"
 fi
 
-# MQTT - immer core-mosquitto (da bashio::services fehlschlägt)
-export HUAWEI_MODBUS_MQTT_BROKER="core-mosquitto"
-export HUAWEI_MODBUS_MQTT_PORT="1883"
-export HUAWEI_MODBUS_MQTT_USER=""
-export HUAWEI_MODBUS_MQTT_PASSWORD=""
+bashio::log.info "Connecting to inverter at ${HUAWEI_MODBUS_HOST}:${HUAWEI_MODBUS_PORT}"
+bashio::log.info "Modbus Slave ID: ${HUAWEI_MODBUS_DEVICE_ID}"
+bashio::log.info "MQTT Topic: ${HUAWEI_MODBUS_MQTT_TOPIC}"
+bashio::log.info "Poll interval: ${HUAWEI_POLL_INTERVAL}s"
 
-bashio::log.info "=== FINAL CONFIGURATION ==="
-bashio::log.info "Log: ${HUAWEI_LOG_LEVEL} | Inverter: ${HUAWEI_MODBUS_HOST}:${HUAWEI_MODBUS_PORT}"
-bashio::log.info "MQTT: ${HUAWEI_MODBUS_MQTT_TOPIC} @ ${HUAWEI_MODBUS_MQTT_BROKER}:${HUAWEI_MODBUS_MQTT_PORT}"
-bashio::log.info "=========================="
-
-# KRITISCHE PRÜFUNG
-if [ -z "$HUAWEI_MODBUS_HOST" ] || [ -z "$HUAWEI_MODBUS_MQTT_TOPIC" ]; then
-    bashio::log.fatal "❌ CRITICAL: Missing config! HOST='${HUAWEI_MODBUS_HOST}' TOPIC='${HUAWEI_MODBUS_MQTT_TOPIC}'"
-    exit 1
-fi
-
-bashio::log.info "✅ CONFIG OK - Starting Python..."
-
-# 🚀 PYTHON MIT 100% LOG-ÜBERTRAGUNG
-exec python3 -u /app/huawei2mqtt.py 2>&1
+# 🚀 Start application - GENAU WIE ES FRÜHER FUNKTIONIERT HAT!
+python3 -u /app/huawei2mqtt.py
