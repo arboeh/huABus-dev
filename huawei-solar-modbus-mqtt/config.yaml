@@ -21,7 +21,7 @@ options:
   modbus_port: 502
   modbus_device_id: 1
   mqtt_topic: 'huawei-solar'
-  debug: false
+  log_level: 'INFO'
   status_timeout: 180
   poll_interval: 60
 schema:
@@ -33,6 +33,6 @@ schema:
   mqtt_user: str?
   mqtt_password: password?
   mqtt_topic: str
-  debug: bool
+  log_level: list(DEBUG|INFO|WARNING|ERROR)?
   status_timeout: int
   poll_interval: int

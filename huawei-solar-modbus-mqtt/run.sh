@@ -9,6 +9,9 @@ export HUAWEI_MODBUS_DEVICE_ID=$(bashio::config 'modbus_device_id')
 export HUAWEI_MODBUS_MQTT_TOPIC=$(bashio::config 'mqtt_topic')
 export HUAWEI_STATUS_TIMEOUT=$(bashio::config 'status_timeout')
 export HUAWEI_POLL_INTERVAL=$(bashio::config 'poll_interval')
+export HUAWEI_LOG_LEVEL=$(bashio::config 'log_level')
+
+bashio::log.info "Log level set to: ${HUAWEI_LOG_LEVEL}"
 
 # MQTT Config from Home Assistant Supervisor
 if bashio::config.has_value 'mqtt_host'; then

@@ -5,12 +5,15 @@ import time
 import paho.mqtt.client as mqtt
 
 
-def logger():
-    return logging.getLogger()
+# Logger für dieses Modul
+logger = logging.getLogger("huawei.mqtt")
 
 
 def get_mqtt_client():
     """Create and configure MQTT client with LWT."""
+
+    logger.debug("Creating MQTT client")
+
     client = mqtt.Client()
 
     mqtt_user = os.environ.get("HUAWEI_MODBUS_MQTT_USER")
@@ -18,6 +21,11 @@ def get_mqtt_client():
 
     if mqtt_user and mqtt_password:
         client.username_pw_set(mqtt_user, mqtt_password)
+        logger.debug(f"MQTT authentication configured for user: {mqtt_user}")
+    else:
+        logger.debug("MQTT authentication not configured (no credentials)")
+        logger.debug(
+            f"MQTT Last Will Testament set for topic: {base_topic}/status")
 
     base_topic = os.environ.get("HUAWEI_MODBUS_MQTT_TOPIC")
     if base_topic:
@@ -30,12 +38,15 @@ def get_mqtt_client():
 def publish_discovery_configs(base_topic):
     """Publish Home Assistant MQTT Discovery configs for all sensors"""
 
+    logger.info("Starting MQTT Discovery config publication")
+
     client = get_mqtt_client()
 
     try:
         mqtt_broker = os.environ.get('HUAWEI_MODBUS_MQTT_BROKER')
         mqtt_port = int(os.environ.get('HUAWEI_MODBUS_MQTT_PORT', '1883'))
 
+        logger.debug(f"Connecting to MQTT broker: {mqtt_broker}:{mqtt_port}")
         client.connect(mqtt_broker, mqtt_port, 60)
 
         device_config = {
@@ -166,26 +177,8 @@ def publish_discovery_configs(base_topic):
                 "enabled": True
             },
             {
-                "name": "PV2 Power",
-                "key": "power_PV2",
-                "unit": "W",
-                "device_class": "power",
-                "state_class": "measurement",
-                "icon": "mdi:solar-panel",
-                "enabled": True
-            },
-            {
                 "name": "PV1 Voltage",
                 "key": "voltage_PV1",
-                "unit": "V",
-                "device_class": "voltage",
-                "state_class": "measurement",
-                "enabled": True,
-                "entity_category": "diagnostic"
-            },
-            {
-                "name": "PV2 Voltage",
-                "key": "voltage_PV2",
                 "unit": "V",
                 "device_class": "voltage",
                 "state_class": "measurement",
@@ -198,20 +191,20 @@ def publish_discovery_configs(base_topic):
                 "unit": "A",
                 "device_class": "current",
                 "state_class": "measurement",
-                "enabled": False,
-                "entity_category": "diagnostic"
-            },
-            {
-                "name": "PV2 Current",
-                "key": "current_PV2",
-                "unit": "A",
-                "device_class": "current",
-                "state_class": "measurement",
-                "enabled": False,
+                "enabled": True,
                 "entity_category": "diagnostic"
             },
 
-            # === PV STRINGS 3-4 (Optional, Disabled by default) ===
+            # === PV STRINGS 2-4 (Optional, Disabled by default) ===
+            {
+                "name": "PV2 Power",
+                "key": "power_PV2",
+                "unit": "W",
+                "device_class": "power",
+                "state_class": "measurement",
+                "icon": "mdi:solar-panel",
+                "enabled": False
+            },
             {
                 "name": "PV3 Power",
                 "key": "power_PV3",
@@ -231,6 +224,15 @@ def publish_discovery_configs(base_topic):
                 "enabled": False
             },
             {
+                "name": "PV2 Voltage",
+                "key": "voltage_PV2",
+                "unit": "V",
+                "device_class": "voltage",
+                "state_class": "measurement",
+                "enabled": False,
+                "entity_category": "diagnostic"
+            },
+            {
                 "name": "PV3 Voltage",
                 "key": "voltage_PV3",
                 "unit": "V",
@@ -244,6 +246,15 @@ def publish_discovery_configs(base_topic):
                 "key": "voltage_PV4",
                 "unit": "V",
                 "device_class": "voltage",
+                "state_class": "measurement",
+                "enabled": False,
+                "entity_category": "diagnostic"
+            },
+            {
+                "name": "PV2 Current",
+                "key": "current_PV2",
+                "unit": "A",
+                "device_class": "current",
                 "state_class": "measurement",
                 "enabled": False,
                 "entity_category": "diagnostic"
@@ -555,7 +566,11 @@ def publish_discovery_configs(base_topic):
             },
         ]
 
+        logger.debug(
+            f"Publishing discovery configs for {len(sensors)} sensors")
+
         # Publish sensor configs
+        published_count = 0
         for sensor in sensors:
             config_topic = f"homeassistant/sensor/huawei_solar/{sensor['key']}/config"
 
@@ -585,7 +600,9 @@ def publish_discovery_configs(base_topic):
                 config["enabled_by_default"] = False
 
             client.publish(config_topic, json.dumps(config), retain=True)
-            logger().debug(f"Published discovery config for {sensor['name']}")
+            published_count += 1
+
+        logger.debug(f"Published {published_count} sensor discovery configs")
 
         # === TEXT SENSORS (Status) ===
         text_sensors = [
@@ -635,6 +652,10 @@ def publish_discovery_configs(base_topic):
             },
         ]
 
+        logger.debug(
+            f"Publishing discovery configs for {len(text_sensors)} text sensors")
+
+        text_published_count = 0
         for sensor in text_sensors:
             config_topic = f"homeassistant/sensor/huawei_solar/{sensor['key']}/config"
 
@@ -659,6 +680,10 @@ def publish_discovery_configs(base_topic):
                 config["enabled_by_default"] = False
 
             client.publish(config_topic, json.dumps(config), retain=True)
+            text_published_count += 1
+
+        logger.debug(
+            f"Published {text_published_count} text sensor discovery configs")
 
         # Binary sensor for connectivity
         status_config = {
@@ -676,12 +701,17 @@ def publish_discovery_configs(base_topic):
             retain=True
         )
 
+        logger.debug("Published binary sensor discovery config")
+
         client.disconnect()
-        logger().info(
-            f"Successfully published {len(sensors) + len(text_sensors) + 1} MQTT Discovery configs")
+
+        total_entities = published_count + text_published_count + 1
+        logger.info(
+            f"Successfully published {total_entities} MQTT Discovery configs")
 
     except Exception as e:
-        logger().error(f"Error publishing discovery configs: {e}")
+        logger.error(f"Error publishing discovery configs: {e}")
+        logger.debug(f"Exception details: {type(e).__name__}", exc_info=True)
         raise
 
 
@@ -693,24 +723,47 @@ def publish_data(data, topic):
         mqtt_broker = os.environ.get("HUAWEI_MODBUS_MQTT_BROKER")
         mqtt_port = int(os.environ.get("HUAWEI_MODBUS_MQTT_PORT", "1883"))
 
+        logger.debug(f"Connecting to MQTT broker: {mqtt_broker}:{mqtt_port}")
+
+        connect_start = time.time()
         client.connect(mqtt_broker, mqtt_port, 60)
+        connect_duration = time.time() - connect_start
+
+        logger.debug(f"MQTT connection established in {connect_duration:.3f}s")
 
         # Add metadata
         data["last_update"] = int(time.time())
 
+        # Log wichtige Datenpunkte bei DEBUG
+        if logger.isEnabledFor(logging.DEBUG):
+            logger.debug(
+                f"Publishing data: {len(data)} keys - "
+                f"Solar: {data.get('power_active', 'N/A')}W, "
+                f"Grid: {data.get('meter_power_active', 'N/A')}W, "
+                f"Battery: {data.get('battery_power', 'N/A')}W"
+            )
+
         # Publish data
+        publish_start = time.time()
         client.publish(topic, json.dumps(data))
+        publish_duration = time.time() - publish_start
+
+        logger.debug(
+            f"Data published in {publish_duration:.3f}s ({len(json.dumps(data))} bytes)")
 
         client.disconnect()
-        logger().debug(f"Published data to MQTT topic {topic}")
 
     except Exception as e:
-        logger().error(f"Error publishing data to MQTT: {e}")
+        logger.error(f"Error publishing data to MQTT: {e}")
+        logger.debug(f"Exception details: {type(e).__name__}", exc_info=True)
         raise
 
 
 def publish_status(status, topic):
     """Publish status message (online/offline)"""
+
+    logger.debug(f"Publishing status '{status}' to {topic}/status")
+
     client = get_mqtt_client()
 
     try:
@@ -721,7 +774,8 @@ def publish_status(status, topic):
         client.publish(f"{topic}/status", status, retain=True)
         client.disconnect()
 
-        logger().debug(f"Published status '{status}' to MQTT")
+        logger.debug(f"Status '{status}' published successfully")
 
     except Exception as e:
-        logger().error(f"Error publishing status to MQTT: {e}")
+        logger.error(f"Error publishing status to MQTT: {e}")
+        logger.debug(f"Exception details: {type(e).__name__}", exc_info=True)
