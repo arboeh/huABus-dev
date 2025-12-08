@@ -55,5 +55,5 @@ bashio::log.info "Modbus Slave ID: ${HUAWEI_MODBUS_DEVICE_ID}"
 bashio::log.info "MQTT Topic: ${HUAWEI_MODBUS_MQTT_TOPIC}"
 bashio::log.info "Poll interval: ${HUAWEI_POLL_INTERVAL}s"
 
-# 🚀 Start application - GENAU WIE ES FRÜHER FUNKTIONIERT HAT!
+# Start application
 python3 -u /app/huawei2mqtt.py
