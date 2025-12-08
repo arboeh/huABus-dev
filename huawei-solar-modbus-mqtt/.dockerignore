@@ -1,0 +1,10 @@
+.git/
+.github/
+.vscode/
+*.md
+CHANGELOG.md
+LICENSE
+.gitignore
+__pycache__/
+*.pyc
+.pytest_cache/

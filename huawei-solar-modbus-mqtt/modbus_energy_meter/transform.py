@@ -1,215 +1,152 @@
 # transform.py
 import logging
 import time
+from typing import Dict, Any, Optional
 
-# Logger für dieses Modul
 logger = logging.getLogger("huawei.transform")
 
-def get_value(register_value):
-    """Safely extract value from register object"""
+
+def get_value(register_value: Any) -> Optional[Any]:
+    """Extract value from register object safely."""
     if register_value is None:
         return None
 
     try:
-        # Wenn es ein RegisterValue-Objekt ist
         if hasattr(register_value, 'value'):
             value = register_value.value
 
-            # Spezialbehandlung für Enum-Werte (z.B. DeviceStatus.STANDBY)
-            if hasattr(value, 'name'):
-                logger.debug(
-                    f"Extracted enum value: {value.name} from {type(value).__name__}")
+            if hasattr(value, 'name'):  # Enum
                 return value.name
+            if hasattr(value, 'isoformat'):  # Datetime
+                return value.isoformat()
 
-            # Spezialbehandlung für Datetime-Werte (z.B. startup_time)
-            if hasattr(value, 'isoformat'):
-                iso_string = value.isoformat()
-                logger.debug(f"Extracted datetime value: {iso_string}")
-                return iso_string
-
-            logger.debug(
-                f"Extracted value from RegisterValue: {value} (type: {type(value).__name__})")
             return value
 
-        # Wenn es direkt ein Wert ist
-        logger.debug(
-            f"Direct value: {register_value} (type: {type(register_value).__name__})")
-        return register_value
+        return register_value  # Direct value
 
     except Exception as e:
         logger.warning(
-            f"Error extracting value from register (type: {type(register_value).__name__}): {e}")
+            f"Value extract failed: {type(register_value).__name__}: {e}")
         return None
 
 
-def transform_result(data):
-    """Transform all available Huawei Solar inverter data"""
+def transform_result(data: Dict[str, Any]) -> Dict[str, Any]:
+    """Transform Huawei register data to MQTT format."""
+    logger.debug(f"Transforming {len(data)} registers")
+    start = time.time()
 
-    logger.debug(f"Starting transformation of {len(data)} data keys")
+    # Complete register → MQTT key mapping
+    mapping = {
+        # Power
+        'active_power': 'power_active',
+        'input_power': 'power_input',
+        'day_active_power_peak': 'power_active_peak_day',
+        'reactive_power': 'power_reactive',
 
-    transform_start = time.time()
+        # Energy
+        'daily_yield_energy': 'energy_yield_day',
+        'accumulated_yield_energy': 'energy_yield_accumulated',
+        'grid_exported_energy': 'energy_grid_exported',
+        'grid_accumulated_energy': 'energy_grid_accumulated',
+        'grid_accumulated_reactive_power': 'energy_grid_accumulated_reactive',
 
-    result = {
-        # === POWER (Hauptdaten) ===
-        'power_active': get_value(data.get('active_power')),
-        'power_input': get_value(data.get('input_power')),
-        'power_active_peak_day': get_value(data.get('day_active_power_peak')),
-        'power_reactive': get_value(data.get('reactive_power')),
+        # PV Strings
+        'pv_01_power': 'power_PV1',
+        'pv_01_voltage': 'voltage_PV1',
+        'pv_01_current': 'current_PV1',
+        'pv_02_power': 'power_PV2',
+        'pv_02_voltage': 'voltage_PV2',
+        'pv_02_current': 'current_PV2',
+        'pv_03_power': 'power_PV3',
+        'pv_03_voltage': 'voltage_PV3',
+        'pv_03_current': 'current_PV3',
+        'pv_04_power': 'power_PV4',
+        'pv_04_voltage': 'voltage_PV4',
+        'pv_04_current': 'current_PV4',
 
-        # === ENERGY ===
-        'energy_yield_day': get_value(data.get('daily_yield_energy')),
-        'energy_yield_accumulated': get_value(data.get('accumulated_yield_energy')),
+        # Grid (3-phase)
+        'grid_A_voltage': 'voltage_grid_A',
+        'grid_A_current': 'current_grid_A',
+        'phase_A_active_power': 'power_grid_A',
+        'grid_B_voltage': 'voltage_grid_B',
+        'grid_B_current': 'current_grid_B',
+        'phase_B_active_power': 'power_grid_B',
+        'grid_C_voltage': 'voltage_grid_C',
+        'grid_C_current': 'current_grid_C',
+        'phase_C_active_power': 'power_grid_C',
+        'grid_frequency': 'frequency_grid',
+        'line_voltage_A_B': 'voltage_line_AB',
+        'line_voltage_B_C': 'voltage_line_BC',
+        'line_voltage_C_A': 'voltage_line_CA',
 
-        # === PV STRINGS ===
-        'power_PV1': get_value(data.get('pv_01_power')),
-        'voltage_PV1': get_value(data.get('pv_01_voltage')),
-        'current_PV1': get_value(data.get('pv_01_current')),
+        # Power Meter
+        'active_grid_power_peak': 'meter_power_active',
 
-        # Optional: PV2/PV3/PV4
-        'power_PV2': get_value(data.get('pv_02_power')),
-        'voltage_PV2': get_value(data.get('pv_02_voltage')),
-        'current_PV2': get_value(data.get('pv_02_current')),
+        # Battery
+        'storage_state_of_capacity': 'battery_soc',
+        'storage_charge_discharge_power': 'battery_power',
+        'storage_bus_voltage': 'battery_bus_voltage',
+        'storage_bus_current': 'battery_bus_current',
+        'storage_day_charge': 'battery_charge_day',
+        'storage_day_discharge': 'battery_discharge_day',
+        'storage_total_charge': 'battery_charge_total',
+        'storage_total_discharge': 'battery_discharge_total',
 
-        'power_PV3': get_value(data.get('pv_03_power')),
-        'voltage_PV3': get_value(data.get('pv_03_voltage')),
-        'current_PV3': get_value(data.get('pv_03_current')),
+        # Status
+        'device_status': 'inverter_status',
+        'state_1': 'inverter_state_1',
+        'state_2': 'inverter_state_2',
+        'state_3': 'inverter_state_3',
+        'startup_time': 'inverter_startup_time',
+        'storage_status': 'battery_status',
+        'meter_status': 'meter_status',
 
-        'power_PV4': get_value(data.get('pv_04_power')),
-        'voltage_PV4': get_value(data.get('pv_04_voltage')),
-        'current_PV4': get_value(data.get('pv_04_current')),
-
-        # === GRID (3-Phase) ===
-        'voltage_grid_A': get_value(data.get('grid_A_voltage')),
-        'current_grid_A': get_value(data.get('grid_A_current')),
-        'power_grid_A': get_value(data.get('phase_A_active_power')),
-
-        'voltage_grid_B': get_value(data.get('grid_B_voltage')),
-        'current_grid_B': get_value(data.get('grid_B_current')),
-        'power_grid_B': get_value(data.get('phase_B_active_power')),
-
-        'voltage_grid_C': get_value(data.get('grid_C_voltage')),
-        'current_grid_C': get_value(data.get('grid_C_current')),
-        'power_grid_C': get_value(data.get('phase_C_active_power')),
-
-        'frequency_grid': get_value(data.get('grid_frequency')),
-
-        # Line-to-Line Voltages
-        'voltage_line_AB': get_value(data.get('line_voltage_A_B')),
-        'voltage_line_BC': get_value(data.get('line_voltage_B_C')),
-        'voltage_line_CA': get_value(data.get('line_voltage_C_A')),
-
-        # === POWER METER ===
-        'meter_power_active': get_value(data.get('active_grid_power_peak')),
-        'meter_power_reactive': get_value(data.get('grid_accumulated_reactive_power')),
-
-        'meter_voltage_A': get_value(data.get('grid_A_voltage')),
-        'meter_voltage_B': get_value(data.get('grid_B_voltage')),
-        'meter_voltage_C': get_value(data.get('grid_C_voltage')),
-
-        'meter_current_A': get_value(data.get('grid_A_current')),
-        'meter_current_B': get_value(data.get('grid_B_current')),
-        'meter_current_C': get_value(data.get('grid_C_current')),
-
-        'energy_grid_exported': get_value(data.get('grid_exported_energy')),
-        'energy_grid_accumulated': get_value(data.get('grid_accumulated_energy')),
-        'energy_grid_accumulated_reactive': get_value(data.get('grid_accumulated_reactive_power')),
-
-        # === BATTERY ===
-        'battery_soc': get_value(data.get('storage_state_of_capacity')),
-        'battery_power': get_value(data.get('storage_charge_discharge_power')),
-        'battery_bus_voltage': get_value(data.get('storage_bus_voltage')),
-        'battery_bus_current': get_value(data.get('storage_bus_current')),
-
-        'battery_charge_day': get_value(data.get('storage_day_charge')),
-        'battery_discharge_day': get_value(data.get('storage_day_discharge')),
-        'battery_charge_total': get_value(data.get('storage_total_charge')),
-        'battery_discharge_total': get_value(data.get('storage_total_discharge')),
-
-        # === STATUS ===
-        'inverter_status': str(get_value(data.get('device_status'))),
-        'inverter_state_1': str(get_value(data.get('state_1'))),
-        'inverter_state_2': str(get_value(data.get('state_2'))),
-        'inverter_state_3': str(get_value(data.get('state_3'))),
-        'inverter_startup_time': str(get_value(data.get('startup_time'))),
-
-        'battery_status': str(get_value(data.get('storage_status'))),
-        'meter_status': str(get_value(data.get('meter_status'))),
-
-        # === INVERTER METRICS ===
-        'inverter_temperature': get_value(data.get('internal_temperature')),
-        'inverter_efficiency': get_value(data.get('efficiency')),
-        'inverter_insulation_resistance': get_value(data.get('insulation_resistance')),
-
-        'power_factor': get_value(data.get('power_factor')),
+        # Inverter metrics
+        'internal_temperature': 'inverter_temperature',
+        'efficiency': 'inverter_efficiency',
+        'insulation_resistance': 'inverter_insulation_resistance',
+        'power_factor': 'power_factor',
     }
 
-    # === NULL-WERTE-BEHANDLUNG FÜR KRITISCHE KEYS (v1.0.5) ===
-    # Diese Werte sind essentiell für EVCC und andere Integrationen
-    # und dürfen NIEMALS null/None sein
-    critical_keys = {
-        'power_active': 0,        # Solar-Leistung
-        'power_input': 0,         # PV-Eingangsleistung
-        'meter_power_active': 0,  # Netzleistung (Grid)
-        'battery_power': 0,       # Batterieleistung
-        'battery_soc': 0          # Batterie-Ladezustand
+    # Transform with mapping
+    result = {mqtt_key: get_value(data.get(register_key))
+              for register_key, mqtt_key in mapping.items()}
+
+    # Critical keys must never be None (EVCC, etc.)
+    critical_defaults = {
+        'power_active': 0,
+        'power_input': 0,
+        'meter_power_active': 0,
+        'battery_power': 0,
+        'battery_soc': 0
     }
 
-    # Setze kritische Werte auf Default (0), falls sie fehlen oder None sind
-    for key, default_value in critical_keys.items():
-        if key not in result or result[key] is None:
-            logger.warning(
-                f"Critical key '{key}' is missing or None, setting to {default_value}")
-            result[key] = default_value
+    for key, default in critical_defaults.items():
+        if result.get(key) is None:
+            logger.warning(f"Critical '{key}' missing, using {default}")
+            result[key] = default
 
-    # Entferne restliche None-Werte für sauberere MQTT-Daten
-    original_count = len(result)
-    result = {k: v for k, v in result.items() if v is not None}
-    removed_count = original_count - len(result)
+    # Clean up result
+    result = _cleanup_result(result)
 
-    if removed_count > 0:
-        logger.debug(f"Removed {removed_count} None values from result")
-
-    # Konvertiere verbleibende komplexe Objekte zu Strings
-    converted_count = 0
-    for key, value in result.items():
-        if not isinstance(value, (int, float, str, bool, type(None))):
-            logger.debug(
-                f"Converting {key} value to string: {type(value).__name__} -> str")
-            result[key] = str(value)
-            converted_count += 1
-
-    if converted_count > 0:
-        logger.debug(f"Converted {converted_count} complex values to strings")
-
-    transform_duration = time.time() - transform_start
-
-    logger.debug(
-        f"Transformation complete: {len(result)} values extracted in {transform_duration:.3f}s")
-
-    # Bei DEBUG: Zeige Statistiken über die transformierten Daten
-    if logger.isEnabledFor(logging.DEBUG):
-        power_values = [k for k in result.keys() if 'power' in k.lower()]
-        energy_values = [k for k in result.keys() if 'energy' in k.lower()]
-        voltage_values = [k for k in result.keys() if 'voltage' in k.lower()]
-
-        logger.debug(
-            f"Data categories - Power: {len(power_values)}, "
-            f"Energy: {len(energy_values)}, Voltage: {len(voltage_values)}"
-        )
-
-        # Zeige kritische Werte für schnelle Diagnose
-        logger.debug(
-            f"Critical values - "
-            f"Solar: {result.get('power_active', 'N/A')}W, "
-            f"Grid: {result.get('meter_power_active', 'N/A')}W, "
-            f"Battery: {result.get('battery_power', 'N/A')}W ({result.get('battery_soc', 'N/A')}%)"
-        )
-
-        # Zeige fehlende erwartete Werte
-        expected_keys = ['active_power',
-                         'storage_state_of_capacity', 'grid_A_voltage']
-        missing_keys = [k for k in expected_keys if k not in data]
-        if missing_keys:
-            logger.warning(f"Expected keys not found in data: {missing_keys}")
+    duration = time.time() - start
+    logger.debug(f"Transform complete: {len(result)} values ({duration:.3f}s)")
 
     return result
+
+
+def _cleanup_result(data: Dict[str, Any]) -> Dict[str, Any]:
+    """Remove None values and convert complex types to str."""
+    cleaned = {}
+
+    for key, value in data.items():
+        if value is None:
+            continue
+
+        if not isinstance(value, (int, float, str, bool)):
+            logger.debug(f"Converting {key}: {type(value).__name__} → str")
+            value = str(value)
+
+        cleaned[key] = value
+
+    return cleaned
