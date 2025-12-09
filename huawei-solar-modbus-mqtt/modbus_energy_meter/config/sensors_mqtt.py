@@ -3,9 +3,7 @@ from typing import Dict, Any, List
 
 
 NUMERIC_SENSORS: List[Dict[str, Any]] = [
-    # ==========================================
     # POWER (Main - Always Enabled)
-    # ==========================================
     {
         "name": "Solar Power",
         "key": "power_active",
@@ -42,10 +40,7 @@ NUMERIC_SENSORS: List[Dict[str, Any]] = [
         "icon": "mdi:battery-charging",
         "enabled": True,
     },
-
-    # ==========================================
     # ENERGY (Main - Always Enabled)
-    # ==========================================
     {
         "name": "Solar Daily Yield",
         "key": "energy_yield_day",
@@ -82,10 +77,7 @@ NUMERIC_SENSORS: List[Dict[str, Any]] = [
         "icon": "mdi:transmission-tower-import",
         "enabled": True,
     },
-
-    # ==========================================
     # BATTERY (Main - Always Enabled)
-    # ==========================================
     {
         "name": "Battery SOC",
         "key": "battery_soc",
@@ -145,10 +137,7 @@ NUMERIC_SENSORS: List[Dict[str, Any]] = [
         "state_class": "measurement",
         "enabled": True,
     },
-
-    # ==========================================
     # PV STRINGS - String 1 (Main, Enabled)
-    # ==========================================
     {
         "name": "PV1 Power",
         "key": "power_PV1",
@@ -174,10 +163,7 @@ NUMERIC_SENSORS: List[Dict[str, Any]] = [
         "state_class": "measurement",
         "enabled": True,
     },
-
-    # ==========================================
     # PV STRINGS 2-4 (Optional, Disabled)
-    # ==========================================
     {
         "name": "PV2 Power",
         "key": "power_PV2",
@@ -253,10 +239,7 @@ NUMERIC_SENSORS: List[Dict[str, Any]] = [
         "state_class": "measurement",
         "enabled": False,
     },
-
-    # ==========================================
     # INVERTER
-    # ==========================================
     {
         "name": "Inverter Temperature",
         "key": "inverter_temperature",
@@ -307,10 +290,7 @@ NUMERIC_SENSORS: List[Dict[str, Any]] = [
         "enabled": True,
         "entity_category": "diagnostic",
     },
-
-    # ==========================================
     # GRID - 3-Phase
-    # ==========================================
     {
         "name": "Grid Voltage Phase A",
         "key": "voltage_grid_A",
@@ -423,10 +403,7 @@ NUMERIC_SENSORS: List[Dict[str, Any]] = [
         "state_class": "measurement",
         "enabled": True,
     },
-
-    # ==========================================
     # DEVICE INFO (Diagnostic)
-    # ==========================================
     {
         "name": "Rated Power",
         "key": "rated_power",

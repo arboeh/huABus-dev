@@ -1,345 +1,106 @@
 # Changelog
 
+## [1.3.0] - 2025-12-09
+### 🏗️ **CODE-REFACTORING**
+**Configs ausgelagert**
+
+### Added
+- **Config-Modul (`config/`):** Zentrale Verwaltung
+  - `registers.py`: 47 Essential Registers
+  - `mappings.py`: Register-Mapping + Defaults
+  - `sensors_mqtt.py`: 58 Sensor-Definitionen
+- **5 neue Register (42 → 47):**
+  - `active_power_meter` (37113): Grid Power
+  - `storage_charge/discharge_capacity_today`: Battery Today
+  - `meter_status`: Meter Online-Status
+  - `reactive_power_meter`: Grid Reactive Power
+- **13 neue Entities (46 → 59):** Battery Bus, Line Voltages, Grid Details
+
+### Changed
+- **Package-Struktur:** `main.py` + `mqtt_client.py` jetzt in `modbus_energy_meter/`
+- **Code-Reduktion:** `mqtt_client.py` 700 → 180 Zeilen (-74%)
+- **Module-Import:** `python3 -m modbus_energy_meter.main` statt direkter Ausführung
+
+### Performance
+| Metric | v1.2.1 | v1.3.0 |
+|--------|--------|--------|
+| Registers | 42 | **47** (+12%) |
+| Entities | 46 | **59** (+28%) |
+| Cycle Time | 4,6s | **5,2s** (+0,6s) |
+
+---
 
 ## [1.2.1] - 2025-12-09
-### 🐛 **CRITICAL BUGFIX: Status Flackern behoben**
-**Persistente MQTT-Verbindung statt kurzlebige Connects**
-
-
-### Fixed
-- **Status-Flackern behoben:** Status springt nicht mehr alle 30s zwischen "online" und "offline"
-  - Entitäten bleiben dauerhaft "available" (kein Disconnect mehr nach jedem Publish)
-  - LWT (Last Will Testament) überschreibt Status nicht mehr bei jedem Cycle
-- **MQTT Verbindungsstabilität:** Keine Connection-Timeouts mehr bei langsamem Netzwerk
-
-
-### Changed
-- **Persistente MQTT-Verbindung:** Client verbindet nur einmal beim Start
-  - `connect_mqtt()` und `disconnect_mqtt()` für Lifecycle-Management
-  - `publish_data()` und `publish_status()` nutzen persistenten Client
-  - LWT wird nur einmal beim Client-Create gesetzt
-- **Sauberes Shutdown-Handling:** Status "offline" + Disconnect nur beim Beenden
-
-
-### Technical Details
-- MQTT Client als globale Variable `_mqtt_client` (singleton pattern)
-- `loop_start()` für Background-Thread statt blocking `loop()`
-- `wait_for_publish()` mit Timeout für garantierte Message-Zustellung
-- Exception-Handling in `disconnect_mqtt()` für robustes Cleanup
-
-
-### Performance
-| Metric | v1.2.0 | v1.2.1 | Change |
-|--------|--------|--------|--------|
-| MQTT Reconnects/Minute | 2 | 0 | -100% |
-| Entity Unavailability | ~1s/30s | 0 | Fix |
-| Cycle Time | 4.6s | 4.6s | Gleich |
-
+**Bugfix:** Persistente MQTT-Verbindung, Status-Flackern behoben  
+**Entities** bleiben dauerhaft "available", keine Connection-Timeouts mehr
 
 ---
-
 
 ## [1.2.0] - 2025-12-09
-### 🚀 **EXTENDED REGISTER SUPPORT (+8 NEUE REGISTER)**
-**Von 34 auf 42 Register: Device Info, Inverter Details & Battery Status**
-
-
-### Added
-- **Device Information Sensors (4 neue):**
-  - `model_name`: Inverter-Modell (z.B. "SUN2000-6KTL-M1")
-  - `serial_number`: Seriennummer (z.B. "TA2240055462")
-  - `rated_power`: Nennleistung (z.B. 6000W)
-  - `startup_time`: Inverter-Startzeit
-- **Erweiterte Inverter-Metriken (4 neue):**
-  - `efficiency`: Wirkungsgrad (0-100%)
-  - `reactive_power`: Blindleistung (VAr)
-  - `insulation_resistance`: Isolationswiderstand (MΩ)
-  - `alarm_1`: Alarm-Status (Bitfeld)
-- **Battery Extended:**
-  - `storage_running_status`: Battery Running Status (1=Running, 0=Idle)
-- **MQTT Discovery:** 46 Entitäten (vorher 38)
-
-
-### Changed
-- **ESSENTIAL_REGISTERS erweitert:** 34 → 42 Register
-  - Logisch gruppiert: Power/Energy → PV → Battery → Grid → Inverter → Status → Info → Extended
-  - Kommentare mit Anzahl pro Gruppe für bessere Übersicht
-- **Performance:** 4,6s Cycle-Time (statt 3,8s, +0,8s durch +8 Register)
-- **Erfolgsrate:** 97-100% (je nach Tageszeit für `storage_running_status`)
-
-
-### Removed
-- **Dependencies bereinigt:**
-  - `python-dotenv`: Nicht benötigt (bashio verwaltet ENV-Variablen)
-  - `pyserial` + `pyserial-asyncio`: Nicht benötigt (nur Modbus TCP, kein Serial)
-- **`load_dotenv()` Aufruf** aus `init_logging()` entfernt
-
-
-### Fixed
-- **Komma-Fix in ESSENTIAL_REGISTERS:** Fehlende Kommas nach letzten Einträgen korrigiert
-- **Unnötige Imports entfernt:** Code-Cleanup in `huawei2mqtt.py`
-
-
-### Technical Details
-- Register-Mapping erweitert in `transform.py`
-- Neue Sensor-Definitionen in `mqtt.py`
-- Device Information automatisch in MQTT Discovery integriert
-- Requirements reduziert: 7 → 5 Pakete
-
-
-### Performance
-| Metric | v1.1.2 | v1.2.0 | Change |
-|--------|--------|--------|--------|
-| Registers | 34 | 42 | +23% |
-| Entities | 38 | 46 | +21% |
-| Cycle Time | 3,8s | 4,6s | +0,8s |
-| Success Rate | 100% | 97-100% | -0-3% |
-| Dependencies | 7 | 5 | -29% |
-
+**Extended Registers:** +8 neue Register (34 → 42)  
+**Device Info:** Model, Serial, Rated Power, Efficiency, Alarms  
+**Entities:** 38 → 46
 
 ---
-
 
 ## [1.1.2] - 2025-12-08
-### 🧹 **CODE QUALITY & BUG FIXES**
-
-
-### Changed
-- **Code-Refactoring:** Alle Python-Dateien aufgeräumt (-32% Zeilen)
-  - `huawei2mqtt.py`: Entfernung ungenutzter Imports (`traceback`)
-  - `mqtt.py`: Konsistente Formatierung, präzisere Type Hints
-  - `transform.py`: Kompakteres Register-Mapping, bessere Lesbarkeit
-- **Dockerfile:** Dynamische Python-Version für Library-Patching
-  - Funktioniert jetzt mit Python 3.10/3.11/3.12/3.13+
-  - Health Check hinzugefügt (prüft Python-Prozess)
-  - Metadata Labels für Home Assistant
-- **run.sh:** Verbesserte MQTT-Fallback-Logik
-  - Prüft ob Config-Werte nicht-leer sind vor Verwendung
-  - Übersichtlichere Startup-Logs mit Trennlinien
-- **config.yaml:** MQTT-Defaults hinzugefügt (`core-mosquitto:1883`)
-  - Schema-Validierung mit sinnvollen Ranges
-  - `startup: services` und `boot: auto` Optionen
-
-
-### Fixed
-- **Doppelte Mapping-Keys in `transform.py` entfernt**
-  - `grid_A_voltage` hatte 2 verschiedene Ziele (Konflikt)
-  - Python-Dicts können nur 1 Wert pro Key haben
-- **Empty-String-Handling in MQTT-Konfiguration**
-  - Leere Strings (`''`) werden jetzt als "nicht gesetzt" erkannt
-  - Korrekter Fallback zu HA MQTT Service
-
-
-### Technical Debt
-- PEP8-Formatierung durchgehend angewendet
-- Konsistente 4-Space-Einrückung
-- Reduzierte Code-Duplikation
-
+**Code Quality:** Refactoring, Dependencies reduziert (7 → 5 Pakete)  
+**Dockerfile:** Dynamische Python-Version, Health Check
 
 ---
-
 
 ## [1.1.1] - 2025-12-08
-### 🚀 **ULTIMATIVE PERFORMANCE-OPTIMIERUNG**
-
-
-### Changed
-- `read_registers_batched()` → `read_registers_filtered()` (sequentielle Reads)
-- **Nur 21 Essential Registers** statt 500+ (94% Reduktion)
-- `ESSENTIAL_REGISTERS` Liste für kritische Werte (Leistung, Batterie, Grid, PV1)
-- Logging für Essential-Reads optimiert
-
-
-### Fixed
-- `meter_power_active` Critical Key Warnings (HV-Meter)
-- Cycle-Überlappung bei kurzen poll_intervals
-
-
-**`.env` Empfehlung:** `HUAWEI_POLL_INTERVAL=30`
-
+**Performance:** Nur Essential Registers (21), <3s Cycle-Time  
+**Optimierung:** 94% weniger Register-Reads
 
 ---
-
 
 ## [1.1.0] - 2025-12-08
-### ✨ MAJOR PERFORMANCE UPGRADE (240s → 30s)
-**8x schneller durch parallele Modbus-Requests!**
-
-
-### Added
-- **`read_registers_batched()` Funktion:** Parallele Register-Reads in Batches
-  - Performance-Boost: 240s → 30-45s pro Cycle (8x schneller!)
-  - Batch-Verarbeitung: 20 Register parallel pro Batch (konfigurierbar)
-  - Stabile parallele Ausführung: `asyncio.gather()` mit `return_exceptions=True`
-- **Batch-Monitoring:** Detaillierte Logs pro Batch (`Batch 1/8: 20/20 successful in 1.23s`)
-- **Inter-Batch-Pausen:** 100ms zwischen Batches verhindert Inverter-Überlastung
-
-
-### Changed
-- **`main_once()` komplett überarbeitet**
-- Sequenzielle `for register in REGISTERS` → **`read_registers_batched()`**
-- Cycle-Time: 240s → 30-45s
-- Verbesserte Performance-Logs mit Batch-Statistiken
-- `poll_interval: 60s` jetzt realistisch (vorher unmöglich bei 240s Cycles)
-
+**Major Performance:** Parallele Modbus-Reads (240s → 30s, 8x schneller)  
+**Batch-Processing:** 20 Register parallel pro Batch
 
 ---
-
 
 ## [1.0.7] - 2025-12-08
-### Fixed
-- **Kritischer Fix:** `UnboundLocalError` in `mqtt.py::get_mqtt_client()`
-- **bashio-Kompatibilität:** `#!/usr/bin/with-contenv bashio` Shebang
-- **Python Logging:** Vollständige Handler-Initialisierung
-- **ENV-Variablen:** Robuste Validierung/Fallbacks
-
-
-### Changed
-- **`run.sh` stabilisiert:** Original mit `python3 -u` (max. Kompatibilität)
-- **Logging-Format:** `%(asctime)s - %(name)s - %(levelname)s - %(message)s`
-
-
-### Added
-- Automatische StreamHandler für modulare Logger
-- ENV-Variablen-Debug in `init()`
-
+**Bugfixes:** `UnboundLocalError` in mqtt.py, bashio-Kompatibilität
 
 ---
-
 
 ## [1.0.6] - 2025-12-08
-### Added
-- Detailiertes ENV-Variablen-Debug-Logging
-- Performance-Metriken (Modbus/Transform/MQTT Timings)
-
-
-### Changed
-- `run.sh` bashio-optimiert
-- Legacy `debug` Flag Integration
-
-
-### Fixed
-- Fehlende Python-Logs
-- `HUAWEI_LOG_LEVEL` korrekt gesetzt
-- `AsyncHuaweiSolar` API vollständig
-
+**Logging:** ENV-Variablen-Debug, Performance-Metriken
 
 ---
-
 
 ## [1.0.5] - 2025-12-08
-### Added
-- Pymodbus Log-Level-Kontrolle
-- MQTT `retain=True` für Integrationen
-- Null-Werte-Fallback (0 für kritische Keys)
-- Separate Logger-Konfiguration
-
-
-### Changed
-- MQTT-Daten mit `retain=True`
-- Pymodbus-Logs optimiert
-- Kritische Sensor-Werte nie `null`
-
-
-### Fixed
-- Integration "outdated" Fehler
-- `strconv.ParseFloat: "<nil>"` Fehler
-- Übermäßige pymodbus ERROR-Logs
-
+**MQTT:** `retain=True` für Integrationen, Null-Werte-Fallback
 
 ---
-
 
 ## [1.0.4] - 2025-12-08
-### Added
-- Konfigurierbarer `log_level` (DEBUG/INFO/WARNING/ERROR)
-- Modulare Logger (`huawei.main/mqtt/transform`)
-- Performance-Messung pro Zyklus
-- Register-Read-Statistiken
-- Cycle-Time-Warnungen (>80% poll_interval)
-
-
-### Changed
-- Logging-Format standardisiert
-- `get_value()` optimiert
-- Enum/Datetime Auto-Konvertierung
-
-
-### Removed
-- Unnötige `transform.py` Hilfsfunktionen
-
+**Logging:** Konfigurierbarer `log_level`, Performance-Messung
 
 ---
-
 
 ## [1.0.3] - 2025-12-07
-### Fixed
-- `HuaweiSolarBridge` → `AsyncHuaweiSolar` Migration
-- Bridge-Instantiierungsfehler
-- Nicht unterstützte Register ohne Absturz
-
-
-### Changed
-- Registerbasiertes `AsyncHuaweiSolar.get()`
-- Erweiterte fehlgeschlagene Register Logs
-
+**Migration:** `HuaweiSolarBridge` → `AsyncHuaweiSolar`
 
 ---
-
 
 ## [1.0.2] - 2025-12-06
-### Fixed
-- `HuaweiSolarBridge.create()` Parameter
-- DecodeError Unit-Code 780
-- Robustere Modbus-Fehlerbehandlung
-- `heartbeat` Funktionsplatzierung
-
-
-### Changed
-- `huawei-solar` >=2.3.0
-- `pymodbus` >=3.8.6
-- Separate Exception-Behandlung
-
+**Bugfixes:** Modbus DecodeError, robustere Exception-Behandlung
 
 ---
-
 
 ## [1.0.1] - 2025-12-05
-### Fixed
-- DecodeError für unbekannte Register
-- Modbus-Kommunikation verbessert
-
-
-### Changed
-- huawei-solar Library Update
-- Erweiterte Logging-Ausgaben
-
+**Bugfixes:** DecodeError für unbekannte Register
 
 ---
-
 
 ## [1.0.0] - 2025-12-04
-### Added
-- Erste stabile Version
-- GitHub Actions Release-Workflow
-- Version-Badge in README
-
-
-### Changed
-- 0.9.0-beta → 1.0.0 (keine Breaking Changes)
-
+**Erste stabile Version** - GitHub Actions, Version-Badge
 
 ---
 
-
 ## [0.9.0-beta] - 2025-12-03
-### Added
-- Initial beta release
-- Modbus TCP Huawei Solar Inverter
-- MQTT Discovery Home Assistant
-- Batterie/PV/Netz-Monitoring
-- HA UI Konfiguration
-
-
-### Known Issues
-- Erweiterte Tests laufen noch
+**Initial Beta Release**  
+Modbus TCP → MQTT Discovery, Batterie/PV/Netz-Monitoring

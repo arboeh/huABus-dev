@@ -1,3 +1,7 @@
-name: Huawei Solar Add On
+name: Huawei Solar Modbus to MQTT
 url: https://github.com/arboeh/homeassistant-huawei-solar-addon
-maintainer: arboeh
+maintainer: arboeh <https://github.com/arboeh>
+description: >
+  Home Assistant Add-on for Huawei SUN2000 Solar Inverters.
+  Modbus TCP to MQTT with Auto-Discovery for complete monitoring
+  of battery, PV strings, grid, and inverter metrics.
