@@ -11,7 +11,7 @@
 
 Home Assistant Add-on für Huawei SUN2000 Wechselrichter via Modbus TCP → MQTT mit automatischer Discovery.
 
-**Version 1.2.0** - 42 Register, 46 Entitäten, 4,6s Cycle-Time
+**Version 1.2.1** - 42 Register, 46 Entitäten, 4,6s Cycle-Time
 
 ## Features
 
@@ -63,6 +63,7 @@ Home Assistant Add-on für Huawei SUN2000 Wechselrichter via Modbus TCP → MQTT
 
 ## Changelog
 
+**1.2.1** (2025-12-09) - Bugfix: Online Status & Flackern der Sensoren behoben
 **1.2.0** (2025-12-09) - Erweiterte Register: Geräte-Info, Effizienz, Alarme (+8 Register, 46 Entitäten)  
 **1.1.2** (2025-12-08) - Code-Refactoring, Dependencies reduziert (7→5 Pakete)  
 **1.1.1** (2025-12-08) - Nur Essential Registers (21), <3s Cycle-Time

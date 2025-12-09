@@ -11,7 +11,7 @@
 
 Home Assistant Add-on for Huawei SUN2000 inverters via Modbus TCP → MQTT with automatic discovery.
 
-**Version 1.2.0** - 42 registers, 46 entities, 4.6s cycle time
+**Version 1.2.1** - 42 registers, 46 entities, 4.6s cycle time
 
 ## Features
 
@@ -63,6 +63,7 @@ Home Assistant Add-on for Huawei SUN2000 inverters via Modbus TCP → MQTT with 
 
 ## Changelog
 
+**1.2.1** (2025-12-09) - Bugfix: Online status & sensor flickering
 **1.2.0** (2025-12-09) - Extended registers: Device info, efficiency, alarms (+8 registers, 46 entities)  
 **1.1.2** (2025-12-08) - Code refactoring, dependencies reduced (7→5 packages)  
 **1.1.1** (2025-12-08) - Essential registers only (21), <3s cycle time

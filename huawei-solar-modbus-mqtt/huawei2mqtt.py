@@ -11,6 +11,8 @@ from modbus_energy_meter.mqtt import (
     publish_data as mqtt_publish_data,
     publish_status,
     publish_discovery_configs,
+    connect_mqtt,
+    disconnect_mqtt,
 )
 from modbus_energy_meter.transform import transform_result
 
@@ -198,7 +200,6 @@ async def main_once(client: AsyncHuaweiSolar) -> None:
 
     mqtt_start = time.time()
     mqtt_publish_data(mqtt_data, topic)
-    publish_status("online", topic)
     mqtt_duration = time.time() - mqtt_start
 
     LAST_SUCCESS = time.time()
@@ -227,6 +228,7 @@ async def main() -> None:
     init_logging()
 
     topic = os.environ.get("HUAWEI_MODBUS_MQTT_TOPIC")
+
     if not topic:
         logger.error("HUAWEI_MODBUS_MQTT_TOPIC missing")
         sys.exit(1)
@@ -238,6 +240,13 @@ async def main() -> None:
 
     logger.info("Huawei Solar → MQTT starting")
     logger.debug(f"Host={host}:{port}, Slave={slave_id}, Topic={topic}")
+
+    # MQTT einmal verbinden (persistent)
+    try:
+        connect_mqtt()
+    except Exception as e:
+        logger.error(f"MQTT connect failed: {e}")
+        sys.exit(1)
 
     publish_status("offline", topic)
 
@@ -252,8 +261,10 @@ async def main() -> None:
     try:
         client = await AsyncHuaweiSolar.create(host, port, slave_id)
         logger.info(f"Connected (Slave ID: {slave_id})")
+        publish_status("online", topic)
     except Exception as e:
         logger.error(f"Connection failed: {e}")
+        disconnect_mqtt()
         return
 
     # Main Loop
@@ -287,8 +298,11 @@ async def main() -> None:
     except asyncio.CancelledError:
         logger.info("Shutdown")
         publish_status("offline", topic)
+        disconnect_mqtt()
     except Exception as e:
         logger.error(f"Fatal: {e}")
+        publish_status("offline", topic)
+        disconnect_mqtt()
         sys.exit(1)
 
 

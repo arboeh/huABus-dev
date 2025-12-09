@@ -1,6 +1,44 @@
 # Changelog
 
 
+## [1.2.1] - 2025-12-09
+### 🐛 **CRITICAL BUGFIX: Status Flackern behoben**
+**Persistente MQTT-Verbindung statt kurzlebige Connects**
+
+
+### Fixed
+- **Status-Flackern behoben:** Status springt nicht mehr alle 30s zwischen "online" und "offline"
+  - Entitäten bleiben dauerhaft "available" (kein Disconnect mehr nach jedem Publish)
+  - LWT (Last Will Testament) überschreibt Status nicht mehr bei jedem Cycle
+- **MQTT Verbindungsstabilität:** Keine Connection-Timeouts mehr bei langsamem Netzwerk
+
+
+### Changed
+- **Persistente MQTT-Verbindung:** Client verbindet nur einmal beim Start
+  - `connect_mqtt()` und `disconnect_mqtt()` für Lifecycle-Management
+  - `publish_data()` und `publish_status()` nutzen persistenten Client
+  - LWT wird nur einmal beim Client-Create gesetzt
+- **Sauberes Shutdown-Handling:** Status "offline" + Disconnect nur beim Beenden
+
+
+### Technical Details
+- MQTT Client als globale Variable `_mqtt_client` (singleton pattern)
+- `loop_start()` für Background-Thread statt blocking `loop()`
+- `wait_for_publish()` mit Timeout für garantierte Message-Zustellung
+- Exception-Handling in `disconnect_mqtt()` für robustes Cleanup
+
+
+### Performance
+| Metric | v1.2.0 | v1.2.1 | Change |
+|--------|--------|--------|--------|
+| MQTT Reconnects/Minute | 2 | 0 | -100% |
+| Entity Unavailability | ~1s/30s | 0 | Fix |
+| Cycle Time | 4.6s | 4.6s | Gleich |
+
+
+---
+
+
 ## [1.2.0] - 2025-12-09
 ### 🚀 **EXTENDED REGISTER SUPPORT (+8 NEUE REGISTER)**
 **Von 34 auf 42 Register: Device Info, Inverter Details & Battery Status**
