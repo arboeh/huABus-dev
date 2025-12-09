@@ -66,4 +66,4 @@ bashio::log.info "━━━━━━━━━━━━━━━━━━━━�
 
 # Start Python application
 bashio::log.info "Starting Python application..."
-python3 -u /app/huawei2mqtt.py
+python3 -u /app/main.py
