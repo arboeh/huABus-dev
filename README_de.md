@@ -17,7 +17,6 @@ Home Assistant Add-on für Huawei SUN2000 Wechselrichter via Modbus TCP → MQTT
 
 - **Modbus TCP → MQTT:** 59 Entitäten mit Auto-Discovery
 - **Vollständiges Monitoring:** Batterie, PV (1-4), Netz (3-Phasen), Ertrag, Grid Power
-- **EVCC-kompatibel:** Grid Power für intelligentes EV-Laden ⚡
 - **Performance:** ~5s Cycle, konfigurierbar (30-60s empfohlen)
 
 ## Installation
@@ -40,7 +39,7 @@ Home Assistant Add-on für Huawei SUN2000 Wechselrichter via Modbus TCP → MQTT
 
 | Kategorie | Sensoren |
 |-----------|----------|
-| **Power** | `solar_power`, `grid_power` ⚡, `battery_power`, `pv1-4_power` |
+| **Power** | `solar_power`, `grid_power`, `battery_power`, `pv1-4_power` |
 | **Energy** | `daily_yield`, `total_yield`, `grid_exported/imported` |
 | **Battery** | `battery_soc`, `charge/discharge_today`, `bus_voltage/current` |
 | **Grid** | `voltage_phase_a/b/c`, `line_voltage_ab/bc/ca`, `frequency` |
@@ -56,5 +55,5 @@ Home Assistant Add-on für Huawei SUN2000 Wechselrichter via Modbus TCP → MQTT
 
 ## Credits
 
-**Fork von:** [mjaschen/huawei-solar-modbus-to-mqtt](https://github.com/mjaschen/huawei-solar-modbus-to-mqtt)  
+**Basiert auf der Idee von:** [mjaschen/huawei-solar-modbus-to-mqtt](https://github.com/mjaschen/huawei-solar-modbus-to-mqtt)  
 **Entwickelt von:** [arboeh](https://github.com/arboeh) | **Lizenz:** MIT

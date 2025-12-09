@@ -17,7 +17,6 @@ Home Assistant Add-on for Huawei SUN2000 inverters via Modbus TCP → MQTT with 
 
 - **Modbus TCP → MQTT:** 59 entities with Auto-Discovery
 - **Complete Monitoring:** Battery, PV (1-4), Grid (3-phase), Yield, Grid Power
-- **EVCC-compatible:** Grid Power for smart EV charging ⚡
 - **Performance:** ~5s cycle, configurable (30-60s recommended)
 
 ## Installation
@@ -40,7 +39,7 @@ Home Assistant Add-on for Huawei SUN2000 inverters via Modbus TCP → MQTT with 
 
 | Category | Sensors |
 |----------|---------|
-| **Power** | `solar_power`, `grid_power` ⚡, `battery_power`, `pv1-4_power` |
+| **Power** | `solar_power`, `grid_power`, `battery_power`, `pv1-4_power` |
 | **Energy** | `daily_yield`, `total_yield`, `grid_exported/imported` |
 | **Battery** | `battery_soc`, `charge/discharge_today`, `bus_voltage/current` |
 | **Grid** | `voltage_phase_a/b/c`, `line_voltage_ab/bc/ca`, `frequency` |
@@ -56,5 +55,5 @@ Home Assistant Add-on for Huawei SUN2000 inverters via Modbus TCP → MQTT with 
 
 ## Credits
 
-**Forked from:** [mjaschen/huawei-solar-modbus-to-mqtt](https://github.com/mjaschen/huawei-solar-modbus-to-mqtt)  
+**Based on the idea of:** [mjaschen/huawei-solar-modbus-to-mqtt](https://github.com/mjaschen/huawei-solar-modbus-to-mqtt)  
 **Developed by:** [arboeh](https://github.com/arboeh) | **License:** MIT
