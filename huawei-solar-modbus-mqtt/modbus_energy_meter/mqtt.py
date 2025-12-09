@@ -221,7 +221,6 @@ def _load_numeric_sensors() -> List[Dict[str, Any]]:
             "device_class": "energy",
             "state_class": "total_increasing",
             "enabled": True,
-            "entity_category": "diagnostic",
         },
         {
             "name": "Battery Total Discharge",
@@ -230,7 +229,22 @@ def _load_numeric_sensors() -> List[Dict[str, Any]]:
             "device_class": "energy",
             "state_class": "total_increasing",
             "enabled": True,
-            "entity_category": "diagnostic",
+        },
+        {
+            "name": "Battery Bus Voltage",
+            "key": "battery_bus_voltage",
+            "unit": "V",
+            "device_class": "voltage",
+            "state_class": "measurement",
+            "enabled": True,
+        },
+        {
+            "name": "Battery Bus Current",
+            "key": "battery_bus_current",
+            "unit": "A",
+            "device_class": "current",
+            "state_class": "measurement",
+            "enabled": True,
         },
 
         # ==========================================
@@ -252,7 +266,6 @@ def _load_numeric_sensors() -> List[Dict[str, Any]]:
             "device_class": "voltage",
             "state_class": "measurement",
             "enabled": True,
-            "entity_category": "diagnostic",
         },
         {
             "name": "PV1 Current",
@@ -261,7 +274,6 @@ def _load_numeric_sensors() -> List[Dict[str, Any]]:
             "device_class": "current",
             "state_class": "measurement",
             "enabled": True,
-            "entity_category": "diagnostic",
         },
 
         # ==========================================
@@ -283,7 +295,6 @@ def _load_numeric_sensors() -> List[Dict[str, Any]]:
             "device_class": "voltage",
             "state_class": "measurement",
             "enabled": False,
-            "entity_category": "diagnostic",
         },
         {
             "name": "PV2 Current",
@@ -292,7 +303,6 @@ def _load_numeric_sensors() -> List[Dict[str, Any]]:
             "device_class": "current",
             "state_class": "measurement",
             "enabled": False,
-            "entity_category": "diagnostic",
         },
         {
             "name": "PV3 Power",
@@ -310,7 +320,6 @@ def _load_numeric_sensors() -> List[Dict[str, Any]]:
             "device_class": "voltage",
             "state_class": "measurement",
             "enabled": False,
-            "entity_category": "diagnostic",
         },
         {
             "name": "PV3 Current",
@@ -319,7 +328,6 @@ def _load_numeric_sensors() -> List[Dict[str, Any]]:
             "device_class": "current",
             "state_class": "measurement",
             "enabled": False,
-            "entity_category": "diagnostic",
         },
         {
             "name": "PV4 Power",
@@ -337,7 +345,6 @@ def _load_numeric_sensors() -> List[Dict[str, Any]]:
             "device_class": "voltage",
             "state_class": "measurement",
             "enabled": False,
-            "entity_category": "diagnostic",
         },
         {
             "name": "PV4 Current",
@@ -346,11 +353,10 @@ def _load_numeric_sensors() -> List[Dict[str, Any]]:
             "device_class": "current",
             "state_class": "measurement",
             "enabled": False,
-            "entity_category": "diagnostic",
         },
 
         # ==========================================
-        # INVERTER
+        # INVERTER (Main Metrics)
         # ==========================================
         {
             "name": "Inverter Temperature",
@@ -359,6 +365,7 @@ def _load_numeric_sensors() -> List[Dict[str, Any]]:
             "device_class": "temperature",
             "state_class": "measurement",
             "enabled": True,
+            "entity_category": "diagnostic",
         },
         {
             "name": "Inverter Efficiency",
@@ -367,7 +374,6 @@ def _load_numeric_sensors() -> List[Dict[str, Any]]:
             "state_class": "measurement",
             "icon": "mdi:gauge",
             "enabled": True,
-            "entity_category": "diagnostic",
         },
         {
             "name": "Day Peak Power",
@@ -376,14 +382,36 @@ def _load_numeric_sensors() -> List[Dict[str, Any]]:
             "device_class": "power",
             "state_class": "measurement",
             "enabled": True,
+        },
+        {
+            "name": "Reactive Power",
+            "key": "power_reactive",
+            "unit": "VAr",
+            "device_class": "reactive_power",
+            "state_class": "measurement",
+            "enabled": True,
+        },
+        {
+            "name": "Power Factor",
+            "key": "power_factor",
+            "unit": "",
+            "state_class": "measurement",
+            "icon": "mdi:sine-wave",
+            "enabled": True,
+        },
+        {
+            "name": "Insulation Resistance",
+            "key": "inverter_insulation_resistance",
+            "unit": "MΩ",
+            "state_class": "measurement",
+            "icon": "mdi:lightning-bolt-circle",
+            "enabled": True,
             "entity_category": "diagnostic",
         },
 
         # ==========================================
-        # GRID - 3-Phase (Voltage, Current, Power, Frequency)
+        # GRID - 3-Phase
         # ==========================================
-
-        # Voltage Phase A/B/C (Main, Enabled)
         {
             "name": "Grid Voltage Phase A",
             "key": "voltage_grid_A",
@@ -408,8 +436,30 @@ def _load_numeric_sensors() -> List[Dict[str, Any]]:
             "state_class": "measurement",
             "enabled": True,
         },
-
-        # Current Phase A/B/C (Enabled, Diagnostic)
+        {
+            "name": "Line Voltage A-B",
+            "key": "voltage_line_AB",
+            "unit": "V",
+            "device_class": "voltage",
+            "state_class": "measurement",
+            "enabled": True,
+        },
+        {
+            "name": "Line Voltage B-C",
+            "key": "voltage_line_BC",
+            "unit": "V",
+            "device_class": "voltage",
+            "state_class": "measurement",
+            "enabled": True,
+        },
+        {
+            "name": "Line Voltage C-A",
+            "key": "voltage_line_CA",
+            "unit": "V",
+            "device_class": "voltage",
+            "state_class": "measurement",
+            "enabled": True,
+        },
         {
             "name": "Grid Current Phase A",
             "key": "current_grid_A",
@@ -417,7 +467,6 @@ def _load_numeric_sensors() -> List[Dict[str, Any]]:
             "device_class": "current",
             "state_class": "measurement",
             "enabled": True,
-            "entity_category": "diagnostic",
         },
         {
             "name": "Grid Current Phase B",
@@ -426,7 +475,6 @@ def _load_numeric_sensors() -> List[Dict[str, Any]]:
             "device_class": "current",
             "state_class": "measurement",
             "enabled": True,
-            "entity_category": "diagnostic",
         },
         {
             "name": "Grid Current Phase C",
@@ -435,10 +483,7 @@ def _load_numeric_sensors() -> List[Dict[str, Any]]:
             "device_class": "current",
             "state_class": "measurement",
             "enabled": True,
-            "entity_category": "diagnostic",
         },
-
-        # Power Phase A/B/C (Enabled, Diagnostic)
         {
             "name": "Grid Power Phase A",
             "key": "power_grid_A",
@@ -446,7 +491,6 @@ def _load_numeric_sensors() -> List[Dict[str, Any]]:
             "device_class": "power",
             "state_class": "measurement",
             "enabled": True,
-            "entity_category": "diagnostic",
         },
         {
             "name": "Grid Power Phase B",
@@ -455,7 +499,6 @@ def _load_numeric_sensors() -> List[Dict[str, Any]]:
             "device_class": "power",
             "state_class": "measurement",
             "enabled": True,
-            "entity_category": "diagnostic",
         },
         {
             "name": "Grid Power Phase C",
@@ -464,16 +507,43 @@ def _load_numeric_sensors() -> List[Dict[str, Any]]:
             "device_class": "power",
             "state_class": "measurement",
             "enabled": True,
-            "entity_category": "diagnostic",
         },
-
-        # Frequency (Enabled, Diagnostic)
         {
             "name": "Grid Frequency",
             "key": "frequency_grid",
             "unit": "Hz",
             "device_class": "frequency",
             "state_class": "measurement",
+            "enabled": True,
+        },
+        {
+            "name": "Grid Reactive Power",
+            "key": "meter_reactive_power",
+            "unit": "VAr",
+            "device_class": "reactive_power",
+            "state_class": "measurement",
+            "enabled": True,
+        },
+
+        # ==========================================
+        # DEVICE INFO (Diagnostic)
+        # ==========================================
+        {
+            "name": "Rated Power",
+            "key": "rated_power",
+            "unit": "W",
+            "device_class": "power",
+            "state_class": "measurement",
+            "icon": "mdi:gauge",
+            "enabled": True,
+            "entity_category": "diagnostic",
+        },
+        {
+            "name": "Alarm Code",
+            "key": "alarm_1",
+            "unit": "",
+            "state_class": "measurement",
+            "icon": "mdi:alert-circle",
             "enabled": True,
             "entity_category": "diagnostic",
         },
@@ -488,18 +558,34 @@ def _load_text_sensors() -> List[Dict[str, Any]]:
             "key": "inverter_status",
             "icon": "mdi:information",
             "enabled": True,
+            "entity_category": "diagnostic",
         },
         {
             "name": "Battery Status",
             "key": "battery_status",
             "icon": "mdi:battery-heart",
             "enabled": True,
+            "entity_category": "diagnostic",
         },
         {
             "name": "Meter Status",
             "key": "meter_status",
             "icon": "mdi:meter-electric",
-            "enabled": False,
+            "enabled": True,
+            "entity_category": "diagnostic",
+        },
+        {
+            "name": "Model Name",
+            "key": "model_name",
+            "icon": "mdi:information",
+            "enabled": True,
+            "entity_category": "diagnostic",
+        },
+        {
+            "name": "Serial Number",
+            "key": "serial_number",
+            "icon": "mdi:barcode",
+            "enabled": True,
             "entity_category": "diagnostic",
         },
         {

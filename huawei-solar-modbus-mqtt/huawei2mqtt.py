@@ -20,15 +20,18 @@ from modbus_energy_meter.transform import transform_result
 logger = logging.getLogger("huawei.main")
 
 ESSENTIAL_REGISTERS = [
-    # Power & Energy (8)
+    # Power & Energy (11)
     "active_power",
     "input_power",
+    "active_power_meter",
     "storage_charge_discharge_power",
     "storage_state_of_capacity",
     "daily_yield_energy",
     "accumulated_yield_energy",
     "grid_exported_energy",
     "grid_accumulated_energy",
+    "storage_charge_capacity_today",
+    "storage_discharge_capacity_today",
 
     # PV Strings 1-4 (8)
     "pv_01_voltage", "pv_01_current",
@@ -42,7 +45,7 @@ ESSENTIAL_REGISTERS = [
     "storage_bus_voltage",
     "storage_bus_current",
 
-    # Grid 3-Phase (7)
+    # Grid 3-Phase (9)
     "grid_A_voltage",
     "grid_B_voltage",
     "grid_C_voltage",
@@ -50,6 +53,8 @@ ESSENTIAL_REGISTERS = [
     "line_voltage_B_C",
     "line_voltage_C_A",
     "grid_frequency",
+    "meter_status",
+    "reactive_power_meter",
 
     # Inverter Performance (6)
     "internal_temperature",

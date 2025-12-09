@@ -87,15 +87,17 @@ def transform_result(data: Dict[str, Any]) -> Dict[str, Any]:
         'line_voltage_C_A': 'voltage_line_CA',
 
         # Power Meter
-        'active_grid_power_peak': 'meter_power_active',
+        'active_power_meter': 'meter_power_active',
+        'meter_status': 'meter_status',
+        'reactive_power_meter': 'meter_reactive_power',
 
         # Battery
         'storage_state_of_capacity': 'battery_soc',
         'storage_charge_discharge_power': 'battery_power',
         'storage_bus_voltage': 'battery_bus_voltage',
         'storage_bus_current': 'battery_bus_current',
-        'storage_day_charge': 'battery_charge_day',
-        'storage_day_discharge': 'battery_discharge_day',
+        'storage_charge_capacity_today': 'battery_charge_day',
+        'storage_discharge_capacity_today': 'battery_discharge_day',
         'storage_total_charge': 'battery_charge_total',
         'storage_total_discharge': 'battery_discharge_total',
 
@@ -105,7 +107,7 @@ def transform_result(data: Dict[str, Any]) -> Dict[str, Any]:
         'state_2': 'inverter_state_2',
         'state_3': 'inverter_state_3',
         'startup_time': 'inverter_startup_time',
-        'storage_status': 'battery_status',
+        'storage_running_status': 'battery_status',
         'meter_status': 'meter_status',
 
         # Inverter metrics
@@ -113,6 +115,12 @@ def transform_result(data: Dict[str, Any]) -> Dict[str, Any]:
         'efficiency': 'inverter_efficiency',
         'insulation_resistance': 'inverter_insulation_resistance',
         'power_factor': 'power_factor',
+
+        # Device Info
+        'model_name': 'model_name',
+        'serial_number': 'serial_number',
+        'rated_power': 'rated_power',
+        'alarm_1': 'alarm_1',
     }
 
     # Transform with mapping
