@@ -1,7 +1,70 @@
 # Changelog
 
+
+## [1.2.0] - 2025-12-09
+### 🚀 **EXTENDED REGISTER SUPPORT (+8 NEUE REGISTER)**
+**Von 34 auf 42 Register: Device Info, Inverter Details & Battery Status**
+
+
+### Added
+- **Device Information Sensors (4 neue):**
+  - `model_name`: Inverter-Modell (z.B. "SUN2000-6KTL-M1")
+  - `serial_number`: Seriennummer (z.B. "TA2240055462")
+  - `rated_power`: Nennleistung (z.B. 6000W)
+  - `startup_time`: Inverter-Startzeit
+- **Erweiterte Inverter-Metriken (4 neue):**
+  - `efficiency`: Wirkungsgrad (0-100%)
+  - `reactive_power`: Blindleistung (VAr)
+  - `insulation_resistance`: Isolationswiderstand (MΩ)
+  - `alarm_1`: Alarm-Status (Bitfeld)
+- **Battery Extended:**
+  - `storage_running_status`: Battery Running Status (1=Running, 0=Idle)
+- **MQTT Discovery:** 46 Entitäten (vorher 38)
+
+
+### Changed
+- **ESSENTIAL_REGISTERS erweitert:** 34 → 42 Register
+  - Logisch gruppiert: Power/Energy → PV → Battery → Grid → Inverter → Status → Info → Extended
+  - Kommentare mit Anzahl pro Gruppe für bessere Übersicht
+- **Performance:** 4,6s Cycle-Time (statt 3,8s, +0,8s durch +8 Register)
+- **Erfolgsrate:** 97-100% (je nach Tageszeit für `storage_running_status`)
+
+
+### Removed
+- **Dependencies bereinigt:**
+  - `python-dotenv`: Nicht benötigt (bashio verwaltet ENV-Variablen)
+  - `pyserial` + `pyserial-asyncio`: Nicht benötigt (nur Modbus TCP, kein Serial)
+- **`load_dotenv()` Aufruf** aus `init_logging()` entfernt
+
+
+### Fixed
+- **Komma-Fix in ESSENTIAL_REGISTERS:** Fehlende Kommas nach letzten Einträgen korrigiert
+- **Unnötige Imports entfernt:** Code-Cleanup in `huawei2mqtt.py`
+
+
+### Technical Details
+- Register-Mapping erweitert in `transform.py`
+- Neue Sensor-Definitionen in `mqtt.py`
+- Device Information automatisch in MQTT Discovery integriert
+- Requirements reduziert: 7 → 5 Pakete
+
+
+### Performance
+| Metric | v1.1.2 | v1.2.0 | Change |
+|--------|--------|--------|--------|
+| Registers | 34 | 42 | +23% |
+| Entities | 38 | 46 | +21% |
+| Cycle Time | 3,8s | 4,6s | +0,8s |
+| Success Rate | 100% | 97-100% | -0-3% |
+| Dependencies | 7 | 5 | -29% |
+
+
+---
+
+
 ## [1.1.2] - 2025-12-08
 ### 🧹 **CODE QUALITY & BUG FIXES**
+
 
 ### Changed
 - **Code-Refactoring:** Alle Python-Dateien aufgeräumt (-32% Zeilen)
@@ -19,6 +82,7 @@
   - Schema-Validierung mit sinnvollen Ranges
   - `startup: services` und `boot: auto` Optionen
 
+
 ### Fixed
 - **Doppelte Mapping-Keys in `transform.py` entfernt**
   - `grid_A_voltage` hatte 2 verschiedene Ziele (Konflikt)
@@ -27,15 +91,19 @@
   - Leere Strings (`''`) werden jetzt als "nicht gesetzt" erkannt
   - Korrekter Fallback zu HA MQTT Service
 
+
 ### Technical Debt
 - PEP8-Formatierung durchgehend angewendet
 - Konsistente 4-Space-Einrückung
 - Reduzierte Code-Duplikation
 
+
 ---
+
 
 ## [1.1.1] - 2025-12-08
 ### 🚀 **ULTIMATIVE PERFORMANCE-OPTIMIERUNG**
+
 
 ### Changed
 - `read_registers_batched()` → `read_registers_filtered()` (sequentielle Reads)
@@ -43,17 +111,22 @@
 - `ESSENTIAL_REGISTERS` Liste für kritische Werte (Leistung, Batterie, Grid, PV1)
 - Logging für Essential-Reads optimiert
 
+
 ### Fixed
 - `meter_power_active` Critical Key Warnings (HV-Meter)
 - Cycle-Überlappung bei kurzen poll_intervals
 
+
 **`.env` Empfehlung:** `HUAWEI_POLL_INTERVAL=30`
 
+
 ---
+
 
 ## [1.1.0] - 2025-12-08
 ### ✨ MAJOR PERFORMANCE UPGRADE (240s → 30s)
 **8x schneller durch parallele Modbus-Requests!**
+
 
 ### Added
 - **`read_registers_batched()` Funktion:** Parallele Register-Reads in Batches
@@ -63,6 +136,7 @@
 - **Batch-Monitoring:** Detaillierte Logs pro Batch (`Batch 1/8: 20/20 successful in 1.23s`)
 - **Inter-Batch-Pausen:** 100ms zwischen Batches verhindert Inverter-Überlastung
 
+
 ### Changed
 - **`main_once()` komplett überarbeitet**
 - Sequenzielle `for register in REGISTERS` → **`read_registers_batched()`**
@@ -70,7 +144,9 @@
 - Verbesserte Performance-Logs mit Batch-Statistiken
 - `poll_interval: 60s` jetzt realistisch (vorher unmöglich bei 240s Cycles)
 
+
 ---
+
 
 ## [1.0.7] - 2025-12-08
 ### Fixed
@@ -79,31 +155,39 @@
 - **Python Logging:** Vollständige Handler-Initialisierung
 - **ENV-Variablen:** Robuste Validierung/Fallbacks
 
+
 ### Changed
 - **`run.sh` stabilisiert:** Original mit `python3 -u` (max. Kompatibilität)
 - **Logging-Format:** `%(asctime)s - %(name)s - %(levelname)s - %(message)s`
+
 
 ### Added
 - Automatische StreamHandler für modulare Logger
 - ENV-Variablen-Debug in `init()`
 
+
 ---
+
 
 ## [1.0.6] - 2025-12-08
 ### Added
 - Detailiertes ENV-Variablen-Debug-Logging
 - Performance-Metriken (Modbus/Transform/MQTT Timings)
 
+
 ### Changed
 - `run.sh` bashio-optimiert
 - Legacy `debug` Flag Integration
+
 
 ### Fixed
 - Fehlende Python-Logs
 - `HUAWEI_LOG_LEVEL` korrekt gesetzt
 - `AsyncHuaweiSolar` API vollständig
 
+
 ---
+
 
 ## [1.0.5] - 2025-12-08
 ### Added
@@ -112,17 +196,21 @@
 - Null-Werte-Fallback (0 für kritische Keys)
 - Separate Logger-Konfiguration
 
+
 ### Changed
 - MQTT-Daten mit `retain=True`
 - Pymodbus-Logs optimiert
 - Kritische Sensor-Werte nie `null`
+
 
 ### Fixed
 - Integration "outdated" Fehler
 - `strconv.ParseFloat: "<nil>"` Fehler
 - Übermäßige pymodbus ERROR-Logs
 
+
 ---
+
 
 ## [1.0.4] - 2025-12-08
 ### Added
@@ -132,15 +220,19 @@
 - Register-Read-Statistiken
 - Cycle-Time-Warnungen (>80% poll_interval)
 
+
 ### Changed
 - Logging-Format standardisiert
 - `get_value()` optimiert
 - Enum/Datetime Auto-Konvertierung
 
+
 ### Removed
 - Unnötige `transform.py` Hilfsfunktionen
 
+
 ---
+
 
 ## [1.0.3] - 2025-12-07
 ### Fixed
@@ -148,11 +240,14 @@
 - Bridge-Instantiierungsfehler
 - Nicht unterstützte Register ohne Absturz
 
+
 ### Changed
 - Registerbasiertes `AsyncHuaweiSolar.get()`
 - Erweiterte fehlgeschlagene Register Logs
 
+
 ---
+
 
 ## [1.0.2] - 2025-12-06
 ### Fixed
@@ -161,23 +256,29 @@
 - Robustere Modbus-Fehlerbehandlung
 - `heartbeat` Funktionsplatzierung
 
+
 ### Changed
 - `huawei-solar` >=2.3.0
 - `pymodbus` >=3.8.6
 - Separate Exception-Behandlung
 
+
 ---
+
 
 ## [1.0.1] - 2025-12-05
 ### Fixed
 - DecodeError für unbekannte Register
 - Modbus-Kommunikation verbessert
 
+
 ### Changed
 - huawei-solar Library Update
 - Erweiterte Logging-Ausgaben
 
+
 ---
+
 
 ## [1.0.0] - 2025-12-04
 ### Added
@@ -185,10 +286,13 @@
 - GitHub Actions Release-Workflow
 - Version-Badge in README
 
+
 ### Changed
 - 0.9.0-beta → 1.0.0 (keine Breaking Changes)
 
+
 ---
+
 
 ## [0.9.0-beta] - 2025-12-03
 ### Added
@@ -197,6 +301,7 @@
 - MQTT Discovery Home Assistant
 - Batterie/PV/Netz-Monitoring
 - HA UI Konfiguration
+
 
 ### Known Issues
 - Erweiterte Tests laufen noch

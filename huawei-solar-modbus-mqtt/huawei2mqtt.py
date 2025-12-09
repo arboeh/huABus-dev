@@ -1,10 +1,10 @@
+# huwai2mqtt.py
 import asyncio
 import logging
 import os
 import sys
 import time
 from typing import Dict, Any
-
 from huawei_solar import AsyncHuaweiSolar
 from huawei_solar.exceptions import DecodeError, ReadException
 from dotenv import load_dotenv
@@ -18,50 +18,60 @@ from modbus_energy_meter.transform import transform_result
 # Logger
 logger = logging.getLogger("huawei.main")
 
-# KONFIGURATION
 ESSENTIAL_REGISTERS = [
-    # Power - Hauptdaten
+    # Power & Energy (8)
     "active_power",
     "input_power",
-    "active_grid_power_peak",
     "storage_charge_discharge_power",
     "storage_state_of_capacity",
-    
-    # Energy - Ertrag & Grid
     "daily_yield_energy",
     "accumulated_yield_energy",
     "grid_exported_energy",
     "grid_accumulated_energy",
-    "storage_day_charge",
-    "storage_day_discharge",
-    
-    # PV String 1
-    "pv_01_power",
-    "pv_01_voltage",
-    "pv_01_current",
-    
-    # Inverter
-    "internal_temperature",
-    "efficiency",
-    "day_active_power_peak",
-    
-    # Grid - 3-Phase Voltage
+
+    # PV Strings 1-4 (8)
+    "pv_01_voltage", "pv_01_current",
+    "pv_02_voltage", "pv_02_current",
+    "pv_03_voltage", "pv_03_current",
+    "pv_04_voltage", "pv_04_current",
+
+    # Battery (4)
+    "storage_total_charge",
+    "storage_total_discharge",
+    "storage_bus_voltage",
+    "storage_bus_current",
+
+    # Grid 3-Phase (7)
     "grid_A_voltage",
     "grid_B_voltage",
     "grid_C_voltage",
-    
-    # Grid - 3-Phase Current
-    "grid_A_current",
-    "grid_B_current",
-    "grid_C_current",
-    
-    # Grid - 3-Phase Power
-    "phase_A_active_power",
-    "phase_B_active_power",
-    "phase_C_active_power",
-    
-    # Grid - Frequency
+    "line_voltage_A_B",
+    "line_voltage_B_C",
+    "line_voltage_C_A",
     "grid_frequency",
+
+    # Inverter Performance (6)
+    "internal_temperature",
+    "day_active_power_peak",
+    "power_factor",
+    "efficiency",
+    "reactive_power",
+    "insulation_resistance",
+
+    # Status & State (3)
+    "device_status",
+    "state_1",
+    "state_2",
+
+    # Device Information (4)
+    "model_name",
+    "serial_number",
+    "rated_power",
+    "startup_time",
+
+    # Extended (2)
+    "storage_running_status",
+    "alarm_1",
 ]
 
 LAST_SUCCESS = 0
