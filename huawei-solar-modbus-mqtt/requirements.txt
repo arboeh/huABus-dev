@@ -1,10 +1,10 @@
 # Core Dependencies
 huawei-solar>=2.5.0
-pymodbus>=3.7.4
+pymodbus>=3.11.4
 
 # MQTT Support
 paho-mqtt>=2.1.0
 
 # Utilities
 backoff>=2.2.1
-pytz>=2024.2
+pytz>=2025.2
