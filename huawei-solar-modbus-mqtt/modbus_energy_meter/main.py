@@ -137,7 +137,7 @@ def log_cycle_summary(cycle_num: int, timings: Dict[str, float],
     else:
         # Standard human-readable log
         logger.info(
-            "Published - PV: %dW | AC Out: %dW | Grid: %dW | Battery: %dW",
+            "📊 Published - PV: %dW | AC Out: %dW | Grid: %dW | Battery: %dW",
             data.get('power_input', 0),
             data.get('power_active', 0),
             data.get('meter_power_active', 0),
