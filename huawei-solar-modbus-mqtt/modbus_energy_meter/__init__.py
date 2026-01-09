@@ -1,1 +1,2 @@
-# Empty file to make this directory a Python package
+# modbus_energy_meter/__init__.py
+"""Huawei Solar Modbus to MQTT Bridge."""

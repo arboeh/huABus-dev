@@ -11,7 +11,7 @@
 
 Home Assistant Add-on for Huawei SUN2000 inverters via Modbus TCP → MQTT with Auto-Discovery.
 
-**Version 1.4.1** – 58 Essential Registers, 69+ entities, ~2–5 s cycle time  
+**Version 1.4.2** – 58 Essential Registers, 69+ entities, ~2–5 s cycle time  
 **Changelog** - [CHANGELOG.md](huawei-solar-modbus-mqtt/CHANGELOG.md)
 
 ## Features
@@ -21,6 +21,7 @@ Home Assistant Add-on for Huawei SUN2000 inverters via Modbus TCP → MQTT with 
 - **Performance:** ~2-5s cycle, configurable (30-60s recommended)
 - **Error Tracking:** Intelligent error aggregation with downtime tracking
 - **Optimized Logging:** Bashio log level synchronization
+- **Cross-Platform:** Supports all major architectures (aarch64, amd64, armhf, armv7, i386)
 
 ## Installation
 
@@ -58,19 +59,30 @@ Add-on configuration via Home Assistant UI with translated field names:
 | **Device**  | `model_name`, `serial_number`, `efficiency`, `temperature`, `rated_power`                |
 | **Status**  | `inverter_status`, `battery_status`, `meter_status`                                      |
 
-## What's new in 1.4.1?
+## What's new in 1.4.2?
 
-**Improvements:** Enhanced startup logging with emoji icons (🚀🔌📡📍⏱️), visual separator lines in connection summary, bashio log level dynamically synced with HUAWEI_LOG_LEVEL
+**Repository Maintenance:** Added `.gitattributes`, `.editorconfig`, and `.gitignore` for better development workflow; normalized all files to LF line endings (prevents Linux/Docker compatibility issues)
+
+**Fixed:** Corrected `pymodbus` dependency version requirement; enhanced `.dockerignore` to include required Home Assistant documentation files
+
+**Documentation:** Added GitHub Issue Templates for structured bug reports and feature requests; troubleshooting guide for connection timeout issues
+
+**Previous (1.4.1):** Enhanced startup logging with emoji icons, visual separators, dynamic log level synchronization
 
 **Previous (1.4.0):** Error tracker with downtime tracking, improved logging architecture, poll interval default optimized to 30s
 
 ## Troubleshooting
 
 **No Connection:** Enable Modbus TCP, verify IP/Slave-ID (try 1/16/0), set Log Level to `DEBUG`  
+**Connection Timeouts:** Try different Slave IDs (`0`, `1`, `16`); increase Poll Interval to 60s; check if FusionSolar Cloud is blocking Modbus access  
 **MQTT Errors:** Set MQTT Broker to `core-mosquitto`, leave credentials empty  
 **Performance:** Increase Poll Interval to 60 if cycle warnings appear
 
 **Logs:** Add-ons → Huawei Solar Modbus to MQTT → Log Tab
+
+## Support & Issues
+
+Found a bug or have a feature request? Please use our [GitHub Issue Templates](https://github.com/arboeh/homeassistant-huawei-solar-addon/issues/new/choose) for structured reporting.
 
 ## Documentation
 

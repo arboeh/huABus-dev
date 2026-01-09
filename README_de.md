@@ -11,7 +11,7 @@
 
 Home Assistant Add-on für Huawei SUN2000 Wechselrichter via Modbus TCP → MQTT mit Auto-Discovery.
 
-**Version 1.4.1** – 58 Essential Registers, 69+ Entitäten, ~2–5 s Zykluszeit  
+**Version 1.4.2** – 58 Essential Registers, 69+ Entitäten, ~2–5 s Zykluszeit  
 **Changelog** - [CHANGELOG.md](huawei-solar-modbus-mqtt/CHANGELOG.md)
 
 ## Features
@@ -21,6 +21,7 @@ Home Assistant Add-on für Huawei SUN2000 Wechselrichter via Modbus TCP → MQTT
 - **Performance:** ~2-5s Cycle, konfigurierbar (30-60s empfohlen)
 - **Error Tracking:** Intelligente Fehler-Aggregation mit Downtime-Tracking
 - **Optimiertes Logging:** Bashio Log-Level Synchronisation
+- **Plattformübergreifend:** Unterstützt alle gängigen Architekturen (aarch64, amd64, armhf, armv7, i386)
 
 ## Installation
 
@@ -58,20 +59,30 @@ Die Add-on-Konfiguration erfolgt über die Home Assistant UI mit übersetzten de
 | **Device**  | `model_name`, `serial_number`, `efficiency`, `temperature`, `rated_power`                |
 | **Status**  | `inverter_status`, `battery_status`, `meter_status`                                      |
 
-## Was ist neu in 1.4.0?
+## Was ist neu in 1.4.2?
 
-**Features:** Error Tracker mit Downtime-Tracking, verbesserte Logging-Architektur, Bashio Log-Level Sync, Abfrageintervall Default auf 30s optimiert  
-**Improvements:** ENV-Variablen konsistent (`HUAWEI_SLAVE_ID`), redundantes Logging entfernt, Dockerfile vereinfacht  
-**Bugfixes:** Docstrings korrigiert, Connection Recovery zeigt Downtime in Sekunden  
-**Breaking Changes:** Keine – vollständig backwards-compatible ✅
+**Repository-Wartung:** `.gitattributes`, `.editorconfig` und `.gitignore` für besseren Entwicklungs-Workflow hinzugefügt; alle Dateien auf LF Line-Endings normalisiert (verhindert Linux/Docker-Kompatibilitätsprobleme)
+
+**Behoben:** `pymodbus` Dependency-Version korrigiert; `.dockerignore` verbessert, um erforderliche Home Assistant Dokumentationsdateien einzuschließen
+
+**Dokumentation:** GitHub Issue Templates für strukturierte Bug-Reports und Feature-Requests hinzugefügt; Troubleshooting-Guide für Connection-Timeout-Probleme
+
+**Vorher (1.4.1):** Verbessertes Startup-Logging mit Emoji-Icons, visuelle Trennlinien, dynamische Log-Level-Synchronisation
+
+**Vorher (1.4.0):** Error Tracker mit Downtime-Tracking, verbesserte Logging-Architektur, Abfrageintervall Standard auf 30s optimiert
 
 ## Fehlerbehebung
 
 **Keine Verbindung:** Modbus TCP aktivieren, IP/Slave-ID prüfen (1/16/0 testen), Log-Level auf `DEBUG` setzen  
+**Connection Timeouts:** Verschiedene Slave IDs testen (`0`, `1`, `16`); Abfrageintervall auf 60s erhöhen; prüfen, ob FusionSolar Cloud den Modbus-Zugriff blockiert  
 **MQTT Fehler:** MQTT Broker auf `core-mosquitto` setzen, Credentials leer lassen  
 **Performance:** Abfrageintervall auf 60 bei Cycle-Warnungen erhöhen
 
 **Logs:** Add-ons → Huawei Solar Modbus to MQTT → Log-Tab
+
+## Support & Issues
+
+Bug gefunden oder Feature-Wunsch? Bitte nutze unsere [GitHub Issue Templates](https://github.com/arboeh/homeassistant-huawei-solar-addon/issues/new/choose) für strukturierte Meldungen.
 
 ## Dokumentation
 

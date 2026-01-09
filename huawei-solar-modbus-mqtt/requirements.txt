@@ -1,6 +1,6 @@
 # Core Dependencies
-huawei-solar>=2.5.0
-pymodbus>=3.11.4
+huawei-solar>=2.5.0,<3.0.0
+pymodbus>=3.11.4,<4.0.0
 
 # MQTT Support
-paho-mqtt>=2.1.0
+paho-mqtt>=2.1.0,<3.0.0

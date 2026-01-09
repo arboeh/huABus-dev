@@ -1,5 +1,33 @@
 # Changelog
 
+## [1.4.2] - 2026-01-09
+
+### Added
+
+- `.gitattributes` for enforced LF line endings across all text files (Linux/Docker compatibility)
+- `.editorconfig` for standardized editor configuration (indent, charset, line endings)
+- `.gitignore` with comprehensive Python/Docker/IDE exclusions
+- GitHub Issue Templates for structured bug reports and feature requests
+- GitHub Release Workflow for automated releases
+
+### Changed
+
+- Normalized all repository files to LF line endings (prevents `/bin/sh: bad interpreter` errors)
+- Enhanced `.dockerignore` to properly include required Home Assistant files (CHANGELOG.md, DOCS.md)
+- Improved `__init__.py` files with package docstrings for better code organization
+- Updated `requirements.txt` with version constraints to prevent breaking changes
+
+### Fixed
+
+- Corrected `pymodbus` version requirement from non-existent `3.11.4` to `>=3.7.4,<4.0.0`
+- Fixed potential line ending issues on Windows development environments
+- Resolved `.dockerignore` accidentally excluding required add-on documentation
+
+### Documentation
+
+- Added troubleshooting guide for connection timeout issues (Slave ID configuration)
+- Updated community support information with GitHub Issues link
+
 ## [1.4.1] - 2026-01-08
 
 ### Changed
@@ -98,8 +126,7 @@
 
 - `huawei-solar`: 2.3.0 → **2.5.0**
 - `paho-mqtt`: 1.6.1 → **2.1.0** (MQTT 5.0 support)
-- `pymodbus`: 3.8.6 → **3.11.4**
-- `pytz`: 2024.2 → **2025.2**
+- `pymodbus`: 3.8.6 → **3.7.4**
 
 ---
 

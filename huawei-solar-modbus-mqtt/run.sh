@@ -1,5 +1,12 @@
 #!/usr/bin/with-contenv bashio
-bashio::log.info "Starting Huawei Solar Modbus MQTT Add-on..."
+
+VERSION=$(bashio::addon.version)
+
+bashio::log.info "=================================================================="
+bashio::log.info " 🌞 Huawei Solar Modbus MQTT v${VERSION}"
+bashio::log.info " 📦 https://github.com/arboeh/homeassistant-huawei-solar-addon"
+bashio::log.info "=================================================================="
+bashio::log.info ">> Starting Huawei Solar Modbus MQTT Add-on..."
 
 # Modbus Configuration
 export HUAWEI_MODBUS_HOST=$(bashio::config 'modbus_host')
@@ -13,64 +20,63 @@ export HUAWEI_POLL_INTERVAL=$(bashio::config 'poll_interval')
 
 # Log Level Configuration
 export HUAWEI_LOG_LEVEL=$(bashio::config 'log_level')
-bashio::log.info "Log level: $HUAWEI_LOG_LEVEL"
+bashio::log.info ">> Log level: $HUAWEI_LOG_LEVEL"
 
 # Set bashio log level to match
 case "$HUAWEI_LOG_LEVEL" in
-    DEBUG)
-        bashio::log.level debug
-        ;;
-    WARNING)
-        bashio::log.level warning
-        ;;
-    ERROR)
-        bashio::log.level error
-        ;;
-    *)
-        bashio::log.level info
-        ;;
+DEBUG)
+	bashio::log.level debug
+	;;
+WARNING)
+	bashio::log.level warning
+	;;
+ERROR)
+	bashio::log.level error
+	;;
+*)
+	bashio::log.level info
+	;;
 esac
 
 # MQTT Broker: Custom or HA Service
 if bashio::config.has_value 'mqtt_host' && [ -n "$(bashio::config 'mqtt_host')" ]; then
-    export HUAWEI_MODBUS_MQTT_BROKER=$(bashio::config 'mqtt_host')
-    bashio::log.info "Using custom MQTT broker: $HUAWEI_MODBUS_MQTT_BROKER"
+	export HUAWEI_MODBUS_MQTT_BROKER=$(bashio::config 'mqtt_host')
+	bashio::log.info ">> Using custom MQTT broker: $HUAWEI_MODBUS_MQTT_BROKER"
 else
-    export HUAWEI_MODBUS_MQTT_BROKER=$(bashio::services 'mqtt' 'host')
-    bashio::log.info "Using HA MQTT service: $HUAWEI_MODBUS_MQTT_BROKER"
+	export HUAWEI_MODBUS_MQTT_BROKER=$(bashio::services 'mqtt' 'host')
+	bashio::log.info ">> Using HA MQTT service: $HUAWEI_MODBUS_MQTT_BROKER"
 fi
 
 # MQTT Port
 if bashio::config.has_value 'mqtt_port' && [ -n "$(bashio::config 'mqtt_port')" ]; then
-    export HUAWEI_MODBUS_MQTT_PORT=$(bashio::config 'mqtt_port')
+	export HUAWEI_MODBUS_MQTT_PORT=$(bashio::config 'mqtt_port')
 else
-    export HUAWEI_MODBUS_MQTT_PORT=$(bashio::services 'mqtt' 'port')
+	export HUAWEI_MODBUS_MQTT_PORT=$(bashio::services 'mqtt' 'port')
 fi
 
 # MQTT User
 if bashio::config.has_value 'mqtt_user' && [ -n "$(bashio::config 'mqtt_user')" ]; then
-    export HUAWEI_MODBUS_MQTT_USER=$(bashio::config 'mqtt_user')
+	export HUAWEI_MODBUS_MQTT_USER=$(bashio::config 'mqtt_user')
 else
-    export HUAWEI_MODBUS_MQTT_USER=$(bashio::services 'mqtt' 'username')
+	export HUAWEI_MODBUS_MQTT_USER=$(bashio::services 'mqtt' 'username')
 fi
 
 # MQTT Password
 if bashio::config.has_value 'mqtt_password' && [ -n "$(bashio::config 'mqtt_password')" ]; then
-    export HUAWEI_MODBUS_MQTT_PASSWORD=$(bashio::config 'mqtt_password')
+	export HUAWEI_MODBUS_MQTT_PASSWORD=$(bashio::config 'mqtt_password')
 else
-    export HUAWEI_MODBUS_MQTT_PASSWORD=$(bashio::services 'mqtt' 'password')
+	export HUAWEI_MODBUS_MQTT_PASSWORD=$(bashio::services 'mqtt' 'password')
 fi
 
 # Connection Summary
-bashio::log.info "--------------------------------------------------------------"
-bashio::log.info "🚀 Starting Huawei Solar Modbus MQTT Add-on..."
-bashio::log.info "🔌 Inverter: ${HUAWEI_MODBUS_HOST}:${HUAWEI_MODBUS_PORT} (Slave ID: ${HUAWEI_SLAVE_ID})"
-bashio::log.info "📡 MQTT: ${HUAWEI_MODBUS_MQTT_BROKER}:${HUAWEI_MODBUS_MQTT_PORT}"
-bashio::log.info "📍 Topic: ${HUAWEI_MODBUS_MQTT_TOPIC}"
-bashio::log.info "⏱️ Poll: ${HUAWEI_POLL_INTERVAL}s | Timeout: ${HUAWEI_STATUS_TIMEOUT}s"
-bashio::log.info "--------------------------------------------------------------"
+bashio::log.info "------------------------------------------------------------------"
+bashio::log.info " 🔌 Inverter: ${HUAWEI_MODBUS_HOST}:${HUAWEI_MODBUS_PORT} (Slave ID: ${HUAWEI_SLAVE_ID})"
+bashio::log.info " 📡 MQTT: ${HUAWEI_MODBUS_MQTT_BROKER}:${HUAWEI_MODBUS_MQTT_PORT}"
+bashio::log.info " 📍 Topic: ${HUAWEI_MODBUS_MQTT_TOPIC}"
+bashio::log.info " ⏱️ Poll: ${HUAWEI_POLL_INTERVAL}s | Timeout: ${HUAWEI_STATUS_TIMEOUT}s"
+bashio::log.info "------------------------------------------------------------------"
 
 # Start Python application
-bashio::log.info "Starting Python application..."
+bashio::log.info ">> Starting Python application..."
 cd /app
 exec python3 -u -m modbus_energy_meter.main

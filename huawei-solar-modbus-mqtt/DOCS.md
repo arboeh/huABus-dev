@@ -5,16 +5,18 @@ Dieses Add-on liest Daten deines Huawei SUN2000 Wechselrichters per Modbus TCP a
 ## Funktionen
 
 - **Schnelle Modbus TCP Verbindung** zum Huawei SUN2000 Inverter
-  - Optimierte Essential Registers (nur 21 kritische Werte)
-  - Typische Cycle-Time: 1-3 Sekunden
+  - 58 Essential Registers (kritische Werte + erweiterte Daten)
+  - Typische Cycle-Time: 2-5 Sekunden
   - Empfohlenes Poll-Interval: 30-60 Sekunden
 - Veröffentlichung der Messwerte auf einem MQTT-Topic als JSON
 - Automatische Erstellung von Home Assistant Entitäten via MQTT Discovery
+- **Error Tracking:** Intelligente Fehler-Aggregation mit Downtime-Tracking
 - Unterstützung für:
-  - PV-Leistungen (PV1, optional PV2/PV3/PV4)
-  - Netzleistung (Import/Export)
+  - PV-Leistungen (PV1-4 mit Spannung und Strom)
+  - Netzleistung (Import/Export, 3-phasig)
   - Batterie (SOC, Lade-/Entladeleistung, Tages- und Gesamtenergie)
-  - 3-phasige Netzspannungen
+  - 3-phasige Netzspannungen, Line-to-Line Spannungen
+  - Smart Meter Integration (3-phasig)
   - Tages- und Gesamtenergieertrag
   - Inverter-Temperatur und Wirkungsgrad
 - Online-/Offline-Status mit:
@@ -35,17 +37,19 @@ Dieses Add-on liest Daten deines Huawei SUN2000 Wechselrichters per Modbus TCP a
 
 Beispielkonfiguration im Add-on-UI:
 
-    modbus_host: "192.168.1.100"
-    modbus_port: 502
-    slave_id: 1
-    mqtt_host: "core-mosquitto"
-    mqtt_port: 1883
-    mqtt_user: ""
-    mqtt_password: ""
-    mqtt_topic: "huawei-solar"
-    log_level: "INFO"
-    status_timeout: 180
-    poll_interval: 30
+```yaml
+modbus_host: "192.168.1.100"
+modbus_port: 502
+slave_id: 1
+mqtt_host: "core-mosquitto"
+mqtt_port: 1883
+mqtt_user: ""
+mqtt_password: ""
+mqtt_topic: "huawei-solar"
+log_level: "INFO"
+status_timeout: 180
+poll_interval: 30
+```
 
 ### Optionen
 
@@ -57,8 +61,9 @@ Beispielkonfiguration im Add-on-UI:
 - **modbus_port** (Standard: `502`)  
   Modbus TCP Port.
 
-- **slave_id** (Standard: `1`, Range: 1-247)  
-  Modbus Slave ID des Inverters. In vielen Installationen ist dies `1`, in manchen `16` oder `0`.
+- **slave_id** (Standard: `1`, Range: 0-247)  
+  Modbus Slave ID des Inverters. In vielen Installationen ist dies `1`, in manchen `16` oder `0`.  
+  **Tipp:** Bei Connection Timeouts verschiedene Werte testen (`0`, `1`, `16`).
 
 #### MQTT-Einstellungen
 
@@ -82,8 +87,8 @@ Beispielkonfiguration im Add-on-UI:
 - **log_level** (Standard: `INFO`)  
   Logging-Detailgrad:
 
-  - `DEBUG`: Sehr detailliert - zeigt Performance-Metriken, einzelne Register-Reads, Zeitmessungen für jeden Schritt
-  - `INFO`: Normal - zeigt wichtige Ereignisse und aktuelle Datenpunkte (Solar/Grid/Battery Power)
+  - `DEBUG`: Sehr detailliert - zeigt Performance-Metriken, einzelne Register-Reads, Zeitmessungen für jeden Schritt, Error-Details
+  - `INFO`: Normal - zeigt wichtige Ereignisse und aktuelle Datenpunkte (Solar/Grid/Battery Power), Error-Recovery
   - `WARNING`: Nur Warnungen und Fehler
   - `ERROR`: Nur Fehler
 
@@ -135,16 +140,28 @@ Nach dem Start des Add-ons werden automatisch MQTT Discovery Konfigurationen pub
 #### Batterie
 
 - `sensor.battery_soc` - Batterieladezustand (%)
+- `sensor.battery_bus_voltage` - Batterie Bus-Spannung
+- `sensor.battery_bus_current` - Batterie Bus-Strom
 
 #### Netz
 
 - `sensor.grid_voltage_phase_a/b/c` - 3-phasige Netzspannungen
+- `sensor.grid_line_voltage_ab/bc/ca` - Line-to-Line Spannungen
 - `sensor.grid_frequency` - Netzfrequenz
+- `sensor.grid_current_phase_a/b/c` - 3-phasige Ströme
+
+#### Smart Meter (falls vorhanden)
+
+- `sensor.meter_power_phase_a/b/c` - Phasen-Leistung
+- `sensor.meter_current_phase_a/b/c` - Phasen-Ströme
+- `sensor.meter_reactive_power` - Blindleistung
 
 #### Inverter
 
 - `sensor.inverter_temperature` - Wechselrichter-Temperatur
 - `sensor.inverter_efficiency` - Wirkungsgrad
+- `sensor.model_name` - Inverter-Modell
+- `sensor.serial_number` - Seriennummer
 
 #### Status
 
@@ -158,38 +175,53 @@ Diese Entitäten können in Home Assistant manuell aktiviert werden:
 
 - PV2/PV3/PV4 Leistung, Spannung, Strom
 - Detaillierte Phasen-Ströme und -Leistungen
-- Line-to-Line Spannungen
-- Batterie Bus-Spannung und -Strom
+- Batterie Gesamtstatistiken (Total Charge/Discharge)
 - Inverter State-Details
-- Gesamtstatistiken (Total Charge/Discharge)
 
 ## Performance & Optimierung
 
-### Version 1.1.2 - Aktuelle Optimierungen
+### Version 1.4.x - Aktuelle Optimierungen
 
-**Essential Registers Ansatz:**
+**58 Essential Registers:**
 
-- Nur 21 kritische Register werden gelesen (statt 500+)
-- Typische Cycle-Time: 1-3 Sekunden
+- Erweiterte Register-Set mit allen wichtigen Werten
+- Typische Cycle-Time: 2-5 Sekunden
 - Empfohlenes Poll-Interval: **30-60 Sekunden**
+
+**Error Tracking (NEU in 1.4.0):**
+
+- Intelligente Fehler-Aggregation
+- Downtime-Tracking mit Recovery-Logging
+- Format: `Connection restored after {downtime}s ({attempts} failed attempts, {types} error types)`
 
 **Vorteile:**
 
 - Minimale Netzwerklast
 - Schnelle Updates der wichtigsten Werte
 - Zuverlässige Verbindung auch bei langsamen Netzwerken
+- Automatische Fehler-Recovery mit Statistiken
 
 ### Performance-Monitoring
 
 Das Add-on überwacht automatisch die Cycle-Performance:
 
-    INFO - Essential read: 1.8s (21/21)
-    INFO - Published - Solar: 4500W | Grid: -200W | Battery: 800W (85.0%)
-    DEBUG - Cycle: 1.9s (Modbus: 1.8s, Transform: 0.003s, MQTT: 0.124s)
+```
+INFO - Essential read: 2.1s (58/58)
+INFO - Published - Solar: 4500W | Grid: -200W | Battery: 800W (85.0%)
+DEBUG - Cycle: 2.3s (Modbus: 2.1s, Transform: 0.005s, MQTT: 0.194s)
+```
 
 **Automatische Warnungen** bei langsamen Zyklen:
 
-    WARNING - Cycle 52.1s > 80% poll_interval (30s)
+```
+WARNING - Cycle 52.1s > 80% poll_interval (30s)
+```
+
+**Error Recovery Logging:**
+
+```
+INFO - Connection restored after 47s (3 failed attempts, 2 error types)
+```
 
 ### Empfohlene Einstellungen
 
@@ -206,23 +238,22 @@ Das Add-on überwacht automatisch die Cycle-Performance:
 
 **INFO (Standard)** - Übersichtlich für den normalen Betrieb:
 
-    2025-12-08T19:00:00+0100 - huawei.main - INFO - Logging initialized: INFO
-    2025-12-08T19:00:00+0100 - huawei.main - INFO - Huawei Solar → MQTT starting
-    2025-12-08T19:00:01+0100 - huawei.main - INFO - Connected (Slave ID: 1)
-    2025-12-08T19:00:02+0100 - huawei.main - INFO - Essential read: 1.8s (21/21)
-    2025-12-08T19:00:02+0100 - huawei.main - INFO - Published - Solar: 4500W | Grid: -200W | Battery: 800W (85.0%)
+```
+2026-01-09T08:00:00+0100 - huawei.main - INFO - 🚀 Starting Huawei Solar → MQTT
+2026-01-09T08:00:01+0100 - huawei.main - INFO - 🔌 Connected (Slave ID: 1)
+2026-01-09T08:00:02+0100 - huawei.main - INFO - Essential read: 2.1s (58/58)
+2026-01-09T08:00:02+0100 - huawei.main - INFO - Published - Solar: 4500W | Grid: -200W | Battery: 800W (85.0%)
+```
 
 **DEBUG** - Detailliert mit Performance-Metriken:
 
-    2025-12-08T19:00:02+0100 - huawei.main - DEBUG - Cycle #1
-    2025-12-08T19:00:02+0100 - huawei.main - DEBUG - Starting cycle
-    2025-12-08T19:00:02+0100 - huawei.main - DEBUG - Reading 21 essential registers
-    2025-12-08T19:00:03+0100 - huawei.main - INFO - Essential read: 1.8s (21/21)
-    2025-12-08T19:00:03+0100 - huawei.transform - DEBUG - Transforming 21 registers
-    2025-12-08T19:00:03+0100 - huawei.transform - DEBUG - Transform complete: 18 values (0.003s)
-    2025-12-08T19:00:03+0100 - huawei.mqtt - DEBUG - Publishing: Solar=4500W, Grid=-200W, Battery=800W
-    2025-12-08T19:00:03+0100 - huawei.mqtt - DEBUG - Data published: 18 keys
-    2025-12-08T19:00:03+0100 - huawei.main - DEBUG - Cycle: 1.9s (Modbus: 1.8s, Transform: 0.003s, MQTT: 0.124s)
+```
+2026-01-09T08:00:02+0100 - huawei.main - DEBUG - Cycle #1
+2026-01-09T08:00:02+0100 - huawei.main - DEBUG - Reading 58 essential registers
+2026-01-09T08:00:03+0100 - huawei.main - INFO - Essential read: 2.1s (58/58)
+2026-01-09T08:00:03+0100 - huawei.transform - DEBUG - Transforming 58 registers
+2026-01-09T08:00:03+0100 - huawei.main - DEBUG - Cycle: 2.3s (Modbus: 2.1s, Transform: 0.005s, MQTT: 0.194s)
+```
 
 ### Add-on Logs ansehen
 
@@ -230,17 +261,49 @@ Das Add-on überwacht automatisch die Cycle-Performance:
 
 ### Typische Fehler & Lösungen
 
+#### Connection Timeout Fehler (NEU)
+
+**Symptom:**
+
+```
+ERROR - Timeout while waiting for connection. Reconnecting
+TimeoutError
+```
+
+**Lösungen:**
+
+1. **Slave ID ändern** - Die häufigste Lösung!
+   - Versuche: `0`, `1`, `16`
+   - Manche Dongle nutzen andere IDs
+
+2. **Poll Interval erhöhen**
+   - Von `30` auf `60` oder höher
+   - Gibt mehr Zeit für langsame Verbindungen
+
+3. **Netzwerk prüfen**
+   - Ping zum Inverter: `ping <IP>`
+   - Latenz und Packet Loss checken
+
+4. **FusionSolar Cloud prüfen**
+   - Cloud-Verbindung kann Modbus blockieren
+   - Temporär deaktivieren zum Testen
+
+5. **DEBUG-Log aktivieren**
+   - Zeigt genau, welches Register beim Timeout hängt
+
 #### Modbus-Verbindungsfehler
 
 **Symptom:**
 
-    ERROR - Connection failed: [Errno 111] Connection refused
+```
+ERROR - Connection failed: [Errno 111] Connection refused
+```
 
 **Lösungen:**
 
 - IP-Adresse und Port prüfen
 - Modbus TCP im Inverter-Webinterface aktivieren
-- Verschiedene Slave IDs testen (0, 1, 16, 100)
+- Verschiedene Slave IDs testen (0, 1, 16)
 - Firewall-Regeln prüfen
 - Bei `log_level: DEBUG` werden Details angezeigt
 
@@ -248,7 +311,9 @@ Das Add-on überwacht automatisch die Cycle-Performance:
 
 **Symptom:**
 
-    ERROR - MQTT publish failed: [Errno 111] Connection refused
+```
+ERROR - MQTT publish failed: [Errno 111] Connection refused
+```
 
 **Lösungen:**
 
@@ -261,7 +326,9 @@ Das Add-on überwacht automatisch die Cycle-Performance:
 
 **Symptom:**
 
-    WARNING - Cycle 52.1s > 80% poll_interval (30s)
+```
+WARNING - Cycle 52.1s > 80% poll_interval (30s)
+```
 
 **Lösungen:**
 
@@ -274,7 +341,9 @@ Das Add-on überwacht automatisch die Cycle-Performance:
 
 **Symptom:**
 
-    WARNING - Critical 'meter_power_active' missing, using 0
+```
+WARNING - Critical 'meter_power_active' missing, using 0
+```
 
 **Ursache:** Dein Inverter hat keinen Power Meter oder andere Hardware-Konfiguration
 
@@ -290,18 +359,40 @@ Das Add-on überwacht automatisch die Cycle-Performance:
 4. Prüfe die ersten Datenpunkte im Log
 5. Gehe zu MQTT Integration und aktiviere gewünschte Entitäten
 
+### Bei Connection Timeout Problemen
+
+1. **Slave ID variieren:**
+   ```yaml
+   slave_id: 0  # Versuche 0, 1, 16
+   ```
+
+2. **Poll Interval erhöhen:**
+   ```yaml
+   poll_interval: 60  # Statt 30
+   ```
+
+3. **DEBUG aktivieren:**
+   ```yaml
+   log_level: DEBUG
+   ```
+
+4. **Netzwerk testen:**
+   - SSH/Terminal: `ping <INVERTER_IP>`
+   - Latenz unter 50ms = gut
+
 ### Normalbetrieb
 
 - Nutze `log_level: INFO` für übersichtliche Logs
 - `poll_interval: 30-60s` für optimale Performance
 - Überwache gelegentlich die Cycle-Times im Log
+- Error Tracker zeigt automatisch Recovery-Statistiken
 
 ### Performance optimieren
 
 - Achte auf WARNING-Meldungen im Log
 - Bei Cycle-Times > 80% poll_interval → `poll_interval` erhöhen
 - DEBUG-Level zeigt genaue Zeitmessungen für jeden Schritt
-- Essential Registers (Version 1.1.1+) sind bereits optimiert
+- Error Tracker gibt Einblick in Verbindungsstabilität
 
 ### Fehlersuche
 
@@ -309,6 +400,7 @@ Das Add-on überwacht automatisch die Cycle-Performance:
 - Prüfe `binary_sensor.huawei_solar_status` für Verbindungsstatus
 - Logs regelmäßig auf Warnings/Errors prüfen
 - Health Check im Home Assistant Add-on Status beachten
+- Error Recovery Meldungen zeigen Downtime und Fehlertypen
 
 ### Multi-Inverter Setup
 
@@ -328,18 +420,19 @@ Das Add-on verfügt über einen integrierten Health Check:
 
 ## Changelog & Updates
 
-Aktuelle Version: **1.3.6**
+Aktuelle Version: **1.4.2**
 
 ### Wichtigste Änderungen
 
-- **1.3.6:** Code-Refactoring, optimierte run.sh, verbesserte ENV-Variablen
+- **1.4.2:** Repository-Wartung (Git-Konfiguration, Line-Endings), Dependencies korrigiert, GitHub Issue Templates
+- **1.4.1:** Enhanced startup logging mit Emoji-Icons, visuelle Trennlinien
+- **1.4.0:** Error Tracker mit Downtime-Tracking, optimierte Logging-Architektur, Poll-Interval Standard 30s
 - **1.3.5:** Template variable warnings eliminated, dependency cleanup
-- **1.3.4:** Logging corrections for solar power display
-- **1.3.3:** MQTT Discovery validation error fixed
 
-Vollständiger Changelog: [CHANGELOG.md](https://github.com/arboeh/homeassistant-huawei-solar-addon/blob/main/CHANGELOG.md)
+Vollständiger Changelog: [CHANGELOG.md](https://github.com/arboeh/homeassistant-huawei-solar-addon/blob/main/huawei-solar-modbus-mqtt/CHANGELOG.md)
 
 ## Support & Weiterentwicklung
 
 - **GitHub Repository:** [arboeh/homeassistant-huawei-solar-addon](https://github.com/arboeh/homeassistant-huawei-solar-addon)
+- **Issues & Feature Requests:** [GitHub Issue Templates](https://github.com/arboeh/homeassistant-huawei-solar-addon/issues/new/choose)
 - **Basierend auf:** [mjaschen/huawei-solar-modbus-to-mqtt](https://github.com/mjaschen/huawei-solar-modbus-to-mqtt)
