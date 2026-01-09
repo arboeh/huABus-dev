@@ -10,7 +10,7 @@
 [![release](https://img.shields.io/github/v/release/arboeh/homeassistant-huawei-solar-addon?display_name=tag)](https://github.com/arboeh/homeassistant-huawei-solar-addon/releases/latest)
 
 > **⚠️ WICHTIG: Nur EINE Modbus-Verbindung möglich**  
-> Huawei-Wechselrichter erlauben **nur EINE aktive Modbus TCP-Verbindung** gleichzeitig. Dies ist ein häufiger Anfängerfehler bei der Integration von PV-Anlagen ins Smart Home.
+> Huawei-Wechselrichter erlauben **nur EINE aktive Modbus TCP-Verbindung**. Dies ist ein häufiger Anfängerfehler bei der Integration von Huawei-PV-Anlagen ins Smart Home.
 >
 > **Vor Installation dieses Add-ons:**
 > - ✅ Deaktiviere oder entferne alle anderen Huawei Solar Integrationen (offizielle wlcrs/huawei_solar, HACS-Integrationen, etc.)
