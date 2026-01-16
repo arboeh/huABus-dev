@@ -2,43 +2,33 @@
 __pycache__/
 *.py[cod]
 *$py.class
-*.pyc
+*.so
+.Python
 
-# Virtual Environment
-.venv/
+# Virtual Environments
+venv/
 env/
+ENV/
+.venv
 
-# IDE - VS Code
+# IDE
 .vscode/
-*.code-workspace
-
-# IDE - PyCharm
 .idea/
+*.swp
+*.swo
+*~
 
-# OS Files
+# OS
 .DS_Store
 Thumbs.db
-*.swp
-*~
+
+# Build artifacts
+build/
+dist/
+*.egg-info/
 
 # Logs
 *.log
 
-# Secrets & Environment
-.env
+# Home Assistant specific
 secrets.yaml
-
-# Temporary
-*.tmp
-*.bak
-
-# Testing
-.pytest_cache/
-.coverage
-htmlcov/
-
-# Local development/testing
-huawei-solar-modbus-mqtt/data/
-options.json
-
-/huawei-solar-modbus-mqtt/run_local.py
