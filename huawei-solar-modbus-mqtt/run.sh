@@ -92,11 +92,23 @@ echo "[$(date +'%T')] INFO:  📊 Registers: ${REGISTER_COUNT} essential"
 
 echo "[$(date +'%T')] INFO: ------------------------------------------------------------------"
 
-# System-Info
-echo "[$(date +'%T')] INFO: >> System Info:"
-echo "[$(date +'%T')] INFO:    - Python: $(python3 --version | cut -d' ' -f2)"
-echo "[$(date +'%T')] INFO:    - huawei-solar: $(python3 -c "import huawei_solar; print(huawei_solar.__version__)" 2>/dev/null || echo "unknown")"
-echo "[$(date +'%T')] INFO:    - Architecture: $(uname -m)"
+# System Info
+bashio::log.info ">> System Info:"
+bashio::log.info "   - Python: $(python3 --version | cut -d' ' -f2)"
+
+# Get huawei-solar version
+HUAWEI_SOLAR_VERSION=$(python3 -c "import huawei_solar; print(huawei_solar.__version__)" 2>/dev/null || echo "unknown")
+bashio::log.info "   - huawei-solar: ${HUAWEI_SOLAR_VERSION}"
+
+# Get pymodbus version (optional, but useful)
+PYMODBUS_VERSION=$(python3 -c "import pymodbus; print(pymodbus.__version__)" 2>/dev/null || echo "unknown")
+bashio::log.info "   - pymodbus: ${PYMODBUS_VERSION}"
+
+# Get paho-mqtt version (optional)
+PAHO_VERSION=$(python3 -c "import paho.mqtt; print(paho.mqtt.__version__)" 2>/dev/null || echo "unknown")
+bashio::log.info "   - paho-mqtt: ${PAHO_VERSION}"
+
+bashio::log.info "   - Architecture: $(uname -m)"
 
 echo "[$(date +'%T')] INFO: >> Starting Python application..."
 

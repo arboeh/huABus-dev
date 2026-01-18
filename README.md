@@ -21,7 +21,7 @@
 
 Home Assistant Add-on for Huawei SUN2000 inverters via Modbus TCP → MQTT with Auto-Discovery.
 
-**Version 1.5.0** – 57 Essential Registers, 69+ entities, ~2–5 s cycle time  
+**Version 1.5.1** – 58 Essential Registers, 69+ entities, ~2–5 s cycle time  
 **Changelog** - [CHANGELOG.md](huawei-solar-modbus-mqtt/CHANGELOG.md)
 
 ## Features
@@ -77,10 +77,10 @@ Add-on configuration via Home Assistant UI with translated field names:
 ### MQTT Topics
 
 - **Messdaten (JSON)**: `huawei-solar` (oder dein konfiguriertes Topic)  
-Enthält alle Sensordaten als JSON-Objekt mit `last_update` Timestamp.
+All sensor data as JSON-Objekt mit `last_update` Timestamp.
   
 - **Status (online/offline)**: `huawei-solar/status`  
-  Wird genutzt für Binary Sensor, `availability_topic`, und Last Will Testament.
+  Used for binary sensor, `availability_topic`, and last will testament.
 
 ### Example MQTT Payload
 
@@ -104,7 +104,7 @@ Published to topic `huawei-solar`:
 }
 ```
 
-*Complete example with all 57+ data points: [examples/mqtt_payload.json](examples/mqtt_payload.json)*
+*Complete example with all 58+ data points: [examples/mqtt_payload.json](examples/mqtt_payload.json)*
 
 ## Important Entities
 

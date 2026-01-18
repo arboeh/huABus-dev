@@ -42,7 +42,7 @@ Dieses Add-on liest Daten deines Huawei SUN2000 Wechselrichters per Modbus TCP a
 ## Funktionen
 
 - **Schnelle Modbus TCP Verbindung** zum Huawei SUN2000 Inverter
-  - 57 Essential Registers (kritische Werte + erweiterte Daten)
+  - 58 Essential Registers (kritische Werte + erweiterte Daten)
   - Typische Cycle-Time: 2-5 Sekunden
   - Empfohlenes Poll-Interval: 30-60 Sekunden
 - Veröffentlichung der Messwerte auf einem MQTT-Topic als JSON
@@ -220,7 +220,7 @@ Diese Entitäten können in Home Assistant manuell aktiviert werden:
 
 ### Version 1.5.0 - Aktuelle Optimierungen
 
-**57 Essential Registers:**
+**58 Essential Registers:**
 
 - Erweiterte Register-Set mit allen wichtigen Werten
 - Typische Cycle-Time: 2-5 Sekunden
@@ -251,7 +251,7 @@ Diese Entitäten können in Home Assistant manuell aktiviert werden:
 Das Add-on überwacht automatisch die Cycle-Performance:
 
 ```
-INFO - Essential read: 2.1s (57/57)
+INFO - Essential read: 2.1s (58/58)
 INFO - Published - Solar: 4500W | Grid: -200W | Battery: 800W (85.0%)
 DEBUG - Cycle: 2.3s (Modbus: 2.1s, Transform: 0.005s, MQTT: 0.194s)
 ```
@@ -286,7 +286,7 @@ INFO - Connection restored after 47s (3 failed attempts, 2 error types)
 ```
 2026-01-16T12:00:00+0100 - huawei.main - INFO - 🚀 Starting Huawei Solar → MQTT
 2026-01-16T12:00:01+0100 - huawei.main - INFO - 🔌 Connected (Slave ID: 1)
-2026-01-16T12:00:02+0100 - huawei.main - INFO - Essential read: 2.1s (57/57)
+2026-01-16T12:00:02+0100 - huawei.main - INFO - Essential read: 2.1s (58/58)
 2026-01-16T12:00:02+0100 - huawei.main - INFO - Published - Solar: 4500W | Grid: -200W | Battery: 800W (85.0%)
 ```
 
@@ -294,9 +294,9 @@ INFO - Connection restored after 47s (3 failed attempts, 2 error types)
 
 ```
 2026-01-16T12:00:02+0100 - huawei.main - DEBUG - Cycle #1
-2026-01-16T12:00:02+0100 - huawei.main - DEBUG - Reading 57 essential registers
-2026-01-16T12:00:03+0100 - huawei.main - INFO - Essential read: 2.1s (57/57)
-2026-01-16T12:00:03+0100 - huawei.transform - DEBUG - Transforming 57 registers
+2026-01-16T12:00:02+0100 - huawei.main - DEBUG - Reading 58 essential registers
+2026-01-16T12:00:03+0100 - huawei.main - INFO - Essential read: 2.1s (58/58)
+2026-01-16T12:00:03+0100 - huawei.transform - DEBUG - Transforming 58 registers
 2026-01-16T12:00:03+0100 - huawei.main - DEBUG - Cycle: 2.3s (Modbus: 2.1s, Transform: 0.005s, MQTT: 0.194s)
 ```
 
