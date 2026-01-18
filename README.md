@@ -98,9 +98,9 @@ Published to topic `huawei-solar`:
   "inverterstatus": "On-grid",
   "modelname": "SUN2000-6KTL-M1",
   "lastupdate": 1768649491
-  .....
-  ..
-  .
+   ...
+   ..
+   .
 }
 ```
 
