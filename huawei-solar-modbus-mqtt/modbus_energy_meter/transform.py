@@ -1,15 +1,23 @@
 # modbus_energy_meter/transform.py
 import logging
 import time
-from typing import Optional, Dict, Any
+from typing import Optional, Dict, Any, Callable
 
 from .config.mappings import REGISTER_MAPPING, CRITICAL_DEFAULTS
 
 logger = logging.getLogger("huawei.transform")
 
+def transform_data(
+    data: Dict[str, Any], 
+    export_filter_fn: Optional[Callable[[Optional[float]], Optional[float]]] = None
+) -> Dict[str, Any]:
+    """Transform Huawei register data to MQTT format.
+    
+    Args:
+        data: Raw Modbus register data
+        export_filter_fn: Optional callback to filter export energy values
+    """
 
-def transform_data(data: Dict[str, Any]) -> Dict[str, Any]:
-    """Transform Huawei register data to MQTT format."""
     logger.debug(f"Transforming {len(data)} registers")
     start = time.time()
 
@@ -18,6 +26,16 @@ def transform_data(data: Dict[str, Any]) -> Dict[str, Any]:
         mqtt_key: get_value(data.get(register_key))
         for register_key, mqtt_key in REGISTER_MAPPING.items()
     }
+
+    # Optional: Apply export energy filtering
+    if export_filter_fn and 'energy_grid_exported' in result:
+        raw_export = result['energy_grid_exported']
+        filtered_export = export_filter_fn(raw_export)
+        
+        if raw_export is not None:
+            result['energy_grid_exported_raw'] = raw_export # Raw-Wert speichern
+        
+        result['energy_grid_exported'] = filtered_export
 
     # Critical defaults for missing keys
     for key, default in CRITICAL_DEFAULTS.items():
@@ -32,7 +50,6 @@ def transform_data(data: Dict[str, Any]) -> Dict[str, Any]:
     logger.debug(f"Transform complete: {len(result)} values ({duration:.3f}s)")
 
     return result
-
 
 def get_value(register_value: Any) -> Optional[Any]:
     """Extract value from register object safely and filter invalid Modbus values."""
@@ -62,7 +79,6 @@ def get_value(register_value: Any) -> Optional[Any]:
     except Exception as e:
         logger.warning(f"Value extract failed: {type(register_value).__name__}: {e}")
         return None
-
 
 def _cleanup_result(data: Dict[str, Any]) -> Dict[str, Any]:
     """Remove None values and convert complex types to str."""

@@ -1,34 +1,48 @@
 configuration:
   modbus_host:
-    name: Modbus Host
-    description: IP address of the Huawei Solar inverter
+    name: Inverter IP Address
+    description: IP address of your Huawei SUN2000 inverter (e.g. 192.168.1.100)
+
   modbus_port:
     name: Modbus Port
-    description: Port for Modbus connection (default 502)
+    description: Modbus TCP port (default 502)
+
   slave_id:
     name: Slave ID
-    description: Modbus Slave ID of the inverter (1-247)
+    description: Modbus Slave ID of the inverter. Usually 1, sometimes 0 or 16. Try different values if you get connection timeouts!
+
   mqtt_host:
     name: MQTT Broker
-    description: Hostname or IP address of the MQTT broker
+    description: Hostname of the MQTT broker (default core-mosquitto for Home Assistant add-on)
+
   mqtt_port:
     name: MQTT Port
     description: Port of the MQTT broker (default 1883)
+
   mqtt_user:
     name: MQTT Username
-    description: Username for MQTT authentication (optional)
+    description: Optional - Leave empty to use credentials from Home Assistant MQTT service
+
   mqtt_password:
     name: MQTT Password
-    description: Password for MQTT authentication (optional)
+    description: Optional - Leave empty to use credentials from Home Assistant MQTT service
+
   mqtt_topic:
     name: MQTT Topic
-    description: Base topic for MQTT messages
+    description: Base topic where sensor data will be published (e.g. huawei-solar)
+
   log_level:
     name: Log Level
-    description: Verbosity level of logging
+    description: "DEBUG: Detailed performance metrics | INFO: Important events (recommended) | WARNING/ERROR: Problems only"
+
   status_timeout:
     name: Status Timeout
-    description: Timeout in seconds for status checks (30-600 seconds)
+    description: Time in seconds before status switches to offline when no data is received (default 180s)
+
   poll_interval:
     name: Poll Interval
-    description: Interval in seconds between Modbus polls (10-300 seconds)
+    description: Interval in seconds between Modbus queries. Recommended 30-60s for optimal balance between data freshness and network load
+
+  filter_energy_resets:
+    name: Export Energy Filter
+    description: "⚡ Experimental: Prevents jumps in export counters during inverter state changes (e.g. night Standby → Running). Only enable if you experience Utility Meter issues!"
