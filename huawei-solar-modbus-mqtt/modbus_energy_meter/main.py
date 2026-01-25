@@ -65,12 +65,12 @@ LAST_SUCCESS = 0
 def init_logging() -> None:
     """
     Initialisiert komplettes Logging-System mit ENV-Konfiguration.
-    
+
     Konfiguriert drei Logger-Hierarchien:
     1. Root Logger - für alle eigenen Module (huawei.*)
     2. pymodbus Logger - für Modbus-Library (meist zu verbose)
     3. huawei_solar Logger - für Inverter-Library
-    
+
     Wird einmalig beim Start aufgerufen, bevor irgendwas anderes passiert.
     """
     log_level = _parse_log_level()
@@ -84,14 +84,14 @@ def init_logging() -> None:
 def _parse_log_level() -> int:
     """
     Parsed Log-Level aus ENV-Variablen mit Fallback auf INFO.
-    
+
     Unterstützt zwei Konfigurationsmethoden:
     1. HUAWEI_LOG_LEVEL=DEBUG|INFO|WARNING|ERROR (neue Methode)
     2. HUAWEI_MODBUS_DEBUG=yes (Legacy für Abwärtskompatibilität)
-    
+
     Returns:
         logging.DEBUG (10), INFO (20), WARNING (30) oder ERROR (40)
-        
+
     Beispiel ENV-Konfiguration:
         HUAWEI_LOG_LEVEL=DEBUG    → Zeigt alle Details, Register-Reads, Timings
         HUAWEI_LOG_LEVEL=INFO     → Zeigt Cycle-Zusammenfassungen, Errors
@@ -117,17 +117,17 @@ def _parse_log_level() -> int:
 def _setup_root_logger(level: int) -> None:
     """
     Konfiguriert Root Logger mit einheitlichem Format für Container-Umgebung.
-    
+
     Format: "YYYY-MM-DD HH:MM:SS - logger.name - LEVEL - message"
     Beispiel: "2026-01-25 12:22:00 - huawei.main - INFO - Connected"
-    
+
     Output geht zu stdout (nicht stderr), damit Docker/Hassio die Logs
     korrekt abfangen kann. Home Assistant Add-on Logs zeigen dann
     genau diese Ausgabe.
-    
+
     Args:
         level: Logging-Level für Root Logger (alle huawei.* Logger)
-        
+
     Hinweis:
         Handler werden explizit cleared, damit bei Reinitialisierung
         (z.B. Tests) keine doppelten Log-Zeilen entstehen.
@@ -151,18 +151,18 @@ def _setup_root_logger(level: int) -> None:
 def _configure_pymodbus(level: int) -> None:
     """
     Konfiguriert pymodbus Logger - standardmäßig auf ERROR beschränken.
-    
+
     Problem: pymodbus ist sehr verbose und loggt bei INFO/DEBUG zu viele
     technische Details (Register-Adressen, Byte-Arrays, Protokoll-Details).
-    
+
     Lösung: Standardmäßig nur ERROR-Level, außer bei explizitem DEBUG-Modus.
-    
+
     Args:
         level: Haupt-Log-Level (aus HUAWEI_LOG_LEVEL)
-        
+
     Beispiel bei level=INFO:
         pymodbus Logger wird auf ERROR gesetzt → keine Register-Details
-    
+
     Beispiel bei level=DEBUG:
         pymodbus Logger wird auf DEBUG gesetzt → alle Modbus-Protokoll-Details
         Nützlich bei Verbindungsproblemen oder Register-Debugging
@@ -175,16 +175,16 @@ def _configure_pymodbus(level: int) -> None:
 def _configure_huawei_solar(level: int) -> None:
     """
     Konfiguriert huawei_solar Library Logger - Tracebacks unterdrücken.
-    
+
     Die huawei_solar Library loggt interne State-Änderungen und Register-Mappings.
     Bei normalem Betrieb ist das zu detailliert, nur bei Debugging relevant.
-    
+
     Args:
         level: Haupt-Log-Level (aus HUAWEI_LOG_LEVEL)
-        
+
     Bei INFO/WARNING/ERROR:
         huawei_solar auf ERROR → Nur echte Library-Fehler
-        
+
     Bei DEBUG:
         huawei_solar auf DEBUG → Alle Library-Internals
         Zeigt z.B. wie Register-Namen zu Modbus-Adressen gemappt werden
@@ -200,24 +200,24 @@ def _configure_huawei_solar(level: int) -> None:
 def heartbeat(topic: str) -> None:
     """
     Überwacht erfolgreiche Reads und setzt Status auf offline bei Timeout.
-    
+
     Wird nach jedem Cycle aufgerufen (auch bei Fehlern) und prüft ob
     LAST_SUCCESS innerhalb des konfigurierbaren Timeouts liegt.
-    
+
     Logik:
     1. LAST_SUCCESS == 0 → Startup, noch kein Check
     2. Zeit seit LAST_SUCCESS < timeout → Alles OK (nur DEBUG-Log)
     3. Zeit seit LAST_SUCCESS > timeout → Offline-Status setzen (WARNING-Log)
-    
+
     Das WARNING wird nur einmal beim Übergang zu offline geloggt, nicht
     bei jedem Cycle (sonst Log-Spam).
-    
+
     Args:
         topic: MQTT-Topic für Status-Publishing (z.B. "huawei-solar/status")
-        
+
     ENV-Konfiguration:
         HUAWEI_STATUS_TIMEOUT: Sekunden bis Offline-Status (default: 180)
-        
+
     Beispiel:
         STATUS_TIMEOUT=180, LAST_SUCCESS vor 200s
         → Log: "Inverter offline for 200s (timeout: 180s)"
@@ -260,26 +260,26 @@ def log_cycle_summary(
 ) -> None:
     """
     Loggt Cycle-Zusammenfassung - human-readable oder JSON für Monitoring-Tools.
-    
+
     Zwei Output-Modi über ENV-Variable HUAWEI_LOG_FORMAT:
-    
+
     1. Human-readable (default):
        "📊 Published - PV: 4500W | AC Out: 4200W | Grid: -200W | Battery: 800W"
        Gut lesbar für Menschen, inkl. Emojis
-       
+
     2. JSON (HUAWEI_LOG_FORMAT=json):
        {"cycle": 42, "timestamp": 1706184000, "timings": {...}, "power": {...}}
        Strukturiert für Monitoring-Tools, Grafana, etc.
-    
+
     Bei DEBUG-Level zusätzlich:
        Alle 20 Zyklen Filter-Statistik ausgeben (wie oft wurden Werte gefiltert)
        Nützlich um Modbus-Probleme zu erkennen
-    
+
     Args:
         cycle_num: Aktuelle Cycle-Nummer seit Start (fortlaufend)
         timings: Dict mit Zeitmessungen {modbus, transform, mqtt, total}
         data: MQTT-Daten (für Power-Werte)
-        
+
     Beispiel JSON-Output:
         {
           "cycle": 42,
@@ -308,12 +308,12 @@ def log_cycle_summary(
         # Filter-Statistik für aktuellen Cycle holen
         filter_stats = get_filter().get_stats()
         filter_indicator = ""
-        
+
         # Wenn in diesem Cycle gefiltert wurde, Indikator hinzufügen
         if filter_stats:
             total_filtered = sum(filter_stats.values())
             filter_indicator = f" 🔍[{total_filtered} filtered]"
-        
+
         # Standard human-readable log mit Emojis und Einheiten
         # Zeigt die vier wichtigsten Power-Werte im Überblick
         logger.info(
@@ -328,17 +328,17 @@ def log_cycle_summary(
         # Alle 20 Zyklen Filter-Zusammenfassung zeigen (auch wenn 0)
         if cycle_num % 20 == 0:
             total_filtered = sum(filter_stats.values()) if filter_stats else 0
-            
+
             if total_filtered > 0:
                 # Es wurde gefiltert → Details zeigen
                 logger.info(
-                    f"🔍 Filter summary (last 20 cycles): {total_filtered} values filtered | "
+                    f"└──> 🔍 Filter summary (last 20 cycles): {total_filtered} values filtered | "
                     f"Details: {dict(filter_stats)}"
                 )
             else:
                 # Nichts gefiltert → Bestätigung dass Filter funktioniert
                 logger.info(
-                    "🔍 Filter summary (last 20 cycles): 0 values filtered - all data valid ✓"
+                    "└──> 🔍 Filter summary (last 20 cycles): 0 values filtered - all data valid ✓"
                 )
 
             # Stats für nächste Periode zurücksetzen
@@ -348,32 +348,33 @@ def log_cycle_summary(
         elif filter_stats and logger.isEnabledFor(logging.DEBUG):
             logger.debug(f"🔍 Filter details: {dict(filter_stats)}")
 
+
 async def read_registers(client: AsyncHuaweiSolar) -> Dict[str, Any]:
     """
     Liest Essential Registers sequentiell vom Inverter via Modbus TCP.
-    
+
     Liest alle in ESSENTIAL_REGISTERS (config/registers.py) definierten
     Register einzeln. Fehler bei einzelnen Registern werden gefangen,
     damit der Read weiterlaufen kann (partial success).
-    
+
     Typische Read-Zeit: 2-5 Sekunden für 58 Register
-    
+
     Args:
         client: AsyncHuaweiSolar Client (muss bereits verbunden sein)
-        
+
     Returns:
         Dict mit erfolgreich gelesenen Register-Werten
         Format: {"activepower": RegisterValue, "inputpower": RegisterValue, ...}
-        
+
     Raises:
         Exception: Bei totalem Verbindungsverlust (kein einziges Register lesbar)
-        
+
     Beispiel:
         >>> data = await read_registers(client)
         >>> # Log: "Essential read: 2.1s (58/58)"
         >>> data["activepower"]  # RegisterValue Objekt von huawei_solar
         <RegisterValue: 4500 W>
-        
+
     Hinweis:
         Einzelne fehlende Register (z.B. Meter bei Systemen ohne) werden
         nur im DEBUG-Log erwähnt, nicht als Fehler behandelt.
@@ -410,23 +411,23 @@ async def read_registers(client: AsyncHuaweiSolar) -> Dict[str, Any]:
 def is_modbus_exception(exc: Exception) -> bool:
     """
     Prüft ob Exception eine Modbus-spezifische Exception ist.
-    
+
     Wird verwendet um zwischen echten Modbus-Verbindungsfehlern
     (ModbusException, ExceptionResponse) und anderen Fehlern
     (z.B. ValueError, RuntimeError) zu unterscheiden.
-    
+
     Wichtig für:
     - Korrekte Fehler-Klassifizierung im Error-Tracker
     - Unterschiedliches Logging (WARNING vs ERROR)
     - Entscheidung über Reconnect-Strategie
-    
+
     Args:
         exc: Exception-Objekt das geprüft werden soll
-        
+
     Returns:
         True wenn ModbusException oder ExceptionResponse
         False bei allen anderen Exception-Typen
-        
+
     Beispiel:
         >>> try:
         ...     data = await read_registers(client)
@@ -435,7 +436,7 @@ def is_modbus_exception(exc: Exception) -> bool:
         ...         logger.warning("Modbus read failed")  # Erwartbar
         ...     else:
         ...         logger.error("Unexpected error")      # Unerwartete
-        
+
     Hinweis:
         Falls pymodbus nicht importiert werden konnte (MODBUS_EXCEPTIONS = ()),
         gibt diese Funktion immer False zurück (Safety-First).
@@ -448,7 +449,7 @@ def is_modbus_exception(exc: Exception) -> bool:
 async def main_once(client: AsyncHuaweiSolar, cycle_num: int) -> None:
     """
     Führt einen kompletten Read-Transform-Publish Cycle aus.
-    
+
     Workflow:
     1. Modbus Read - Essential Registers vom Inverter lesen (2-5s)
     2. Transform - Register in MQTT-Format umwandeln (< 0.01s)
@@ -456,23 +457,23 @@ async def main_once(client: AsyncHuaweiSolar, cycle_num: int) -> None:
     3. MQTT Publish - Daten zum Broker senden (< 0.2s)
     4. Logging - Timings und Zusammenfassung ausgeben
     5. Performance-Check - Warnung bei zu langsamen Cycles
-    
+
     Bei Erfolg: LAST_SUCCESS wird aktualisiert (für Heartbeat)
     Bei Fehler: Exception wird durchgereicht zu main() Error-Handler
-    
+
     Args:
         client: AsyncHuaweiSolar Client (muss verbunden sein)
         cycle_num: Aktuelle Cycle-Nummer (fortlaufend seit Start)
-        
+
     Raises:
         RuntimeError: Wenn HUAWEI_MODBUS_MQTT_TOPIC nicht gesetzt
         Exception: Bei Modbus-Read-Fehler (wird in main() gefangen)
-        
+
     Globale Seiteneffekte:
         - LAST_SUCCESS wird auf current timestamp gesetzt
         - MQTT-Daten werden publiziert
         - Logs werden ausgegeben
-        
+
     Performance-Beispiel:
         Modbus: 2.1s (58/58 Register)
         Transform: 0.005s (Mapping + Filter)
@@ -561,7 +562,7 @@ async def main_once(client: AsyncHuaweiSolar, cycle_num: int) -> None:
 async def main() -> None:
     """
     Haupt-Loop mit Error-Handling, automatischer Wiederverbindung und Filter-Reset.
-    
+
     Lifecycle:
     1. Logging initialisieren
     2. ENV-Variablen validieren (Host, Port, Topic)
@@ -569,32 +570,32 @@ async def main() -> None:
     4. Discovery publizieren (erstellt Home Assistant Entities)
     5. Modbus Client erstellen und verbinden
     6. Endlos-Loop: Cycle → Sleep → Repeat
-    
+
     Error-Handling-Strategie:
     - TimeoutError → Reset Filter, 10s Pause, Retry
     - ModbusException → Reset Filter, 10s Pause, Retry
     - ConnectionRefusedError → Reset Filter, 10s Pause, Retry
     - Unbekannte Fehler → Log mit Traceback, Reset Filter, 10s Pause, Retry
-    
+
     Warum Filter-Reset bei JEDEM Fehler?
     Nach Verbindungsproblemen könnten:
     - Inverter neu gestartet sein (Counter resetten)
     - Teilweise Register gelesen sein (inkonsistente Werte)
     - Alle gespeicherten Werte veraltet sein
     → Sicherer neue Filter-Session zu starten
-    
+
     ENV-Variablen:
         HUAWEI_MODBUS_HOST: IP des Inverters (required)
         HUAWEI_MODBUS_PORT: Modbus Port (default: 502)
         HUAWEI_SLAVE_ID: Modbus Slave ID (default: 1, manchmal 0 oder 16)
         HUAWEI_MODBUS_MQTT_TOPIC: MQTT Basis-Topic (required)
         HUAWEI_POLL_INTERVAL: Sekunden zwischen Cycles (default: 30)
-        
+
     MQTT Topics:
         {topic}: JSON mit allen Sensordaten
         {topic}/status: "online" oder "offline"
         homeassistant/sensor/{device}/*/config: Discovery-Configs
-        
+
     Graceful Shutdown:
         - Bei SIGTERM (Docker Stop): Status auf offline, MQTT disconnect
         - Bei Ctrl+C (lokal): Status auf offline, MQTT disconnect
@@ -740,7 +741,7 @@ async def main() -> None:
 if __name__ == "__main__":
     """
     Entry-Point beim direkten Ausführen der Datei.
-    
+
     Startet async main() Loop und fängt KeyboardInterrupt ab
     (Ctrl+C bei lokalem Testing).
     """
