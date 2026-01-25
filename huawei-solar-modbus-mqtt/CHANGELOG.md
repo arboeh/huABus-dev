@@ -1,5 +1,80 @@
 # Changelog
 
+## [1.6.0] - 2026-01-25
+
+### Added
+
+- **total_increasing Filter**: Prevents false counter resets in Home Assistant energy statistics
+  - Filters negative values for energy counters (physically impossible)
+  - Filters drops > 5% as likely Modbus read errors
+  - Replaces invalid values with last valid value instead of 0
+  - Configurable via `HUAWEI_FILTER_TOLERANCE` ENV variable (default: 0.05 = 5%)
+  - Protects sensors: `energy_yield_accumulated`, `energy_grid_exported`, `energy_grid_accumulated`, `battery_charge_total`, `battery_discharge_total`
+
+- **Automatic Filter Reset**: Filter state is reset on connection errors to prevent stale values
+  - Reset triggers: Timeout, Modbus exception, Connection refused, Unexpected errors
+  - Ensures fresh state after inverter restart or reconnect
+
+- **Filter Status Indication**: Cycle summary now shows when values were filtered
+  - INFO level: `📊 Published - PV: 788W | AC Out: 211W | Grid: 11W | Battery: 569W 🔍[2 filtered]`
+  - DEBUG level: Detailed filter statistics showing which sensors were affected
+  - Helps quickly identify Modbus read issues during operation
+
+- **Filter Statistics Logging**: Comprehensive filter monitoring at different log levels
+  - INFO level: Summary every 20 cycles when filters were active
+  - DEBUG level: Detailed statistics after each filtered cycle
+  - Format: `🔍 Filter details: {'energy_yield_accumulated': 2, 'battery_charge_total': 1}`
+
+### Fixed
+
+- **datetime Serialization**: `startup_time` register now correctly converted to ISO string for JSON compatibility
+  - Fixes "Object of type datetime is not JSON serializable" error
+  - Converts to ISO format: `2026-01-25T06:30:00`
+
+- **Exception Handling**: Improved Modbus exception catching to avoid BaseException errors
+  - Simplified to single `except Exception` with internal type checking
+  - More robust handling when pymodbus exceptions are not available
+
+### Changed
+
+- **Enhanced Code Documentation**: Extensive German inline comments added across all modules
+  - Every function documented with purpose, logic, examples
+  - Technical decisions explained (why 5% tolerance, why filter reset, etc.)
+  - Hardware dependencies and optional features clearly marked
+  - Improved maintainability for future development
+
+- **Cycle Summary Logging**: `log_cycle_summary()` now includes real-time filter status
+  - Shows count of filtered values in main INFO log line
+  - No additional log lines needed for basic filter awareness
+  - Detailed breakdown available at DEBUG level
+
+### Technical Details
+
+- New module: `modbus_energy_meter/total_increasing_filter.py`
+  - Singleton pattern with `get_filter()` and `reset_filter()` functions
+  - Stores last valid values per sensor key
+  - 5% tolerance prevents false positives during concurrent register updates
+  - Filter statistics tracking for debugging and monitoring
+
+- `transform.py` enhancements:
+  - `_apply_total_increasing_filter()` function integrated into transform pipeline
+  - `get_value()` now handles datetime objects via `.isoformat()`
+  - Filter applied after mapping but before cleanup
+
+- `main.py` improvements:
+  - Filter reset added to all error handlers (timeout, modbus_exception, connection_refused, unexpected)
+  - `log_cycle_summary()` enhanced with inline filter status indicator
+  - Filter statistics logged at INFO level (periodic) and DEBUG level (detailed)
+  - Simplified exception handling structure
+
+**Breaking Changes:** None - fully backwards compatible
+
+**Upgrade Notes:**
+
+- Filter is enabled by default with 5% tolerance
+- Filter activity visible at INFO level in cycle summary
+- Detailed filter statistics available with `HUAWEI_LOG_LEVEL=DEBUG`
+
 ## [1.5.1] - 2026-01-18
 
 ### Fixed
@@ -16,9 +91,8 @@
   [18:01:44] INFO: - Python: 3.12.12  
   [18:01:44] INFO: - huawei-solar: 2.5.0  
   [18:01:44] INFO: - pymodbus: 3.11.4  
-  [18:01:44] INFO: - paho-mqtt: 2.1.0  
+  [18:01:44] INFO: - paho-mqtt: 2.1.0
 
-  
 ### Technical Details
 
 - `run.sh`: Added dynamic version detection using Python imports
@@ -90,14 +164,14 @@
 
 ## [1.4.0] - 2026-01-08
 
-**Features:**
+### Features
 
 - Error Tracker with intelligent error aggregation and downtime tracking
 - Enhanced logging architecture with `log_cycle_summary()` function (supports JSON format for machine parsing)
 - Bashio log level synchronization for consistent add-on logs across all components
 - Performance optimization: `poll_interval` default lowered to 30s (previously 60s) for faster data updates
 
-**Improvements:**
+### Improvements
 
 - ENV variables consistently named: `HUAWEI_SLAVE_ID` instead of `HUAWEI_MODBUS_DEVICE_ID` for better clarity
 - Redundant logging removed: eliminated duplicate DEBUG statements in `main_once()` and `read_registers()`
@@ -106,80 +180,16 @@
 - run.sh refactored: removed legacy debug mode code, added case-based log level mapping
 - DOCS.md fully synchronized with config.yaml defaults and updated examples
 
-**Bugfixes:**
+### Bugfixes
 
 - Docstrings corrected: `publish_data()` now correctly documents exception behavior
 - Connection recovery messages now include downtime duration in seconds
 - Fixed inconsistent default values between config.yaml and main.py
 
-**Technical Details:**
+### Technical Details
 
 - Error recovery logging format: `Connection restored after {downtime}s ({attempts} failed attempts, {types} error types)`
 - All configuration examples updated to reflect `poll_interval: 30` default
 - Recommended settings table adjusted: Standard scenario now 30s instead of 60s
 
 **Breaking Changes:** None - fully backwards-compatible with existing configurations
-
-## [1.3.5] - 2026-01-03
-
-**Bugfix:** Template variable warnings in Home Assistant eliminated
-
-- All optional sensor definitions now include `default()` filters in `value_template` to prevent "dict object has no attribute" warnings
-- Affected sensors: All battery values, PV strings 2-4, grid phases B/C, meter phases, efficiency, and status fields
-- **Root cause:** `_cleanup_result()` removes `None` values from JSON payload → missing keys in MQTT message → Home Assistant template errors
-- **Solution:** Custom `value_template` with `| default(0)` for numeric sensors and `| default('unknown')` for text sensors
-- `_build_sensor_config()` now respects custom `value_template` from sensor definitions instead of always generating standard template
-
-**Dependencies:** Cleaned up and corrected to installable versions
-
-- **Removed:** `backoff` and `pytz` (not used in codebase)
-- `paho-mqtt` 2.1.0 unchanged (current stable)
-- Reduces installation footprint and eliminates dependency resolution conflicts
-
-## [1.3.4] - 2025-12-16
-
-**Bugfix:** Logging statement corrected - Solar power was displayed incorrectly
-
-- Log line "Published - Solar: XW" incorrectly used `power_active` (AC output power of inverter) instead of `power_input` (DC input power from PV modules)
-- **Register meanings:**
-- `power_input` (Register 32064) = actual solar/PV power (DC)
-- `power_active` (Register 32080) = inverter AC output (combined from PV + battery)
-- **Symptom:** At night, e.g. 240W "solar" power was displayed, although this was actually battery discharge
-- **Solution:** Logging now correctly uses `mqtt_data.get('power_input', 0)` for solar display
-- Fixes confusing nighttime values in log; MQTT data and Home Assistant entities were already correct
-
-## [1.3.3] - 2025-12-15
-
-**Bugfix:** MQTT Discovery validation error fixed
-
-- Unit for reactive power sensors corrected from `VAr` to `var` (Home Assistant requires lowercase for `device_class: reactive_power`)
-- Fixes error: "The unit of measurement `VAr` is not valid together with device class `reactive_power`"
-- Affects sensors: `power_reactive` and `meter_reactive_power`
-
-## [1.3.2] - 2025-12-15
-
-**Bugfixes:** Register names corrected for Battery Daily Charge/Discharge
-
-- `storage_charge_capacity_today` → `storage_current_day_charge_capacity`
-- `storage_discharge_capacity_today` → `storage_current_day_discharge_capacity`
-- `alarm_1` register removed (not available on all inverter models, caused template errors)
-- Fixes "Template variable warning: 'dict object' has no attribute" error in Home Assistant
-
-**Dependencies:** All core dependencies updated to latest stable versions
-
-- `huawei-solar`: 2.3.0 → **2.5.0**
-- `paho-mqtt`: 1.6.1 → **2.1.0** (MQTT 5.0 support)
-- `pymodbus`: 3.8.6 → **3.7.4**
-
-## [1.3.1] - 2025-12-10
-
-- Register set expanded to **58 Essential Registers**; all names strictly aligned with `huawei-solar-lib` (including grid/meter registers and capitalization)
-- Full 3-phase smart meter support: phase power, current, line-to-line voltages, frequency and power factor are now published as individual MQTT values
-- MQTT Discovery sensors synchronized with new keys and consistently using `unit_of_measurement`, compliant with Home Assistant MQTT specification
-- PV power sensors removed; only PV voltage/current are transmitted, allowing power calculation in Home Assistant via template if needed
-- Add-on option `modbus_device_id` renamed to `slave_id` to avoid conflicts with Home Assistant device IDs
-
-## [1.3.0] - 2025-12-09
-
-**Config:** Configuration moved to config/ (registers.py, mappings.py, sensors_mqtt.py) with 47 Essential Registers and 58 sensors  
-**Registers:** Five new registers (including smart meter power, battery today, meter status, grid reactive power) and 13 additional entities for battery bus and grid details

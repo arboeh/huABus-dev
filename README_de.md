@@ -13,6 +13,7 @@
 > Huawei-Wechselrichter erlauben **nur EINE aktive Modbus TCP-Verbindung**. Dies ist ein häufiger Anfängerfehler bei der Integration von Huawei-PV-Anlagen ins Smart Home.
 >
 > **Vor Installation dieses Add-ons:**
+>
 > - ✅ Deaktiviere oder entferne alle anderen Huawei Solar Integrationen (offizielle wlcrs/huawei_solar, HACS-Integrationen, etc.)
 > - ✅ Stelle sicher, dass keine andere Software auf Modbus TCP zugreift (Monitoring-Tools, Apps, andere Home Assistant Instanzen)
 > - ✅ Hinweis: FusionSolar Cloud zeigt möglicherweise "Abnormale Kommunikation" wenn Modbus aktiv ist - das ist normal
@@ -21,18 +22,61 @@
 
 Home Assistant Add-on für Huawei SUN2000 Wechselrichter via Modbus TCP → MQTT mit Auto-Discovery.
 
-**Version 1.5.1** – 58 Essential Registers, 69+ Entitäten, ~2–5 s Zykluszeit  
+**Version 1.6.0** – 58 Essential Registers, 69+ Entitäten, ~2–5 s Zykluszeit  
 **Changelog** - [CHANGELOG.md](huawei-solar-modbus-mqtt/CHANGELOG.md)
 
 ## Features
 
 - **Modbus TCP → MQTT:** 69+ Entitäten mit Auto-Discovery
 - **Vollständiges Monitoring:** Batterie, PV (1-4), Netz (3-Phasen), Ertrag, Grid Power
+- **total_increasing Filter (NEU):** Verhindert falsche Counter-Resets in Home Assistant Energie-Statistiken
 - **Performance:** ~2-5s Cycle, konfigurierbar (30-60s empfohlen)
 - **Error Tracking:** Intelligente Fehler-Aggregation mit Downtime-Tracking
 - **MQTT-Stabilität:** Connection Wait-Loop und Retry-Logik für zuverlässiges Publishing
-- **Optimiertes Logging:** Bashio Log-Level Synchronisation
+- **Optimiertes Logging:** Bashio Log-Level Synchronisation mit Filter-Status-Indikatoren
 - **Plattformübergreifend:** Unterstützt alle gängigen Architekturen (aarch64, amd64, armhf, armv7, i386)
+
+## Vergleich: wlcrs/huawei_solar vs. dieses Add-on
+
+Beide Lösungen nutzen die gleiche `huawei-solar` Library, haben aber unterschiedliche Anwendungsfälle:
+
+**wlcrs/huawei_solar** (Native HA Integration):
+
+- ✅ Batterie-Steuerung (Lade-/Entlade-Befehle)
+- ✅ GUI-Konfiguration
+- ✅ Optimizer-Monitoring
+- ✅ RS485 Serial-Support
+
+**Dieses Add-on** (MQTT Bridge):
+
+- ✅ MQTT-nativ (Daten für Node-RED, Grafana, etc.)
+- ✅ total_increasing Filter (schützt Energie-Statistiken vor falschen Resets)
+- ✅ Advanced Error Tracking & Performance Monitoring
+- ✅ Schnelle 2-5s Zykluszeiten
+- ✅ Read-only Monitoring
+
+**Wichtig:** Beide teilen die gleiche Limitierung - Huawei-Inverter erlauben **nur EINE Modbus-Verbindung**. Für gleichzeitige Nutzung wird ein Modbus Proxy benötigt.
+
+**Wann welches nutzen?**
+
+- **wlcrs:** Batterie-Steuerung + native HA-Integration
+- **Dieses Add-on:** MQTT-Monitoring + externe System-Integration
+
+## Screenshots
+
+### Home Assistant Integration
+
+![Diagnostic Entities](screenshots/diagnostics.png)
+
+_Diagnose-Entitäten mit Inverter-Status, Temperatur und Batterie-Informationen_
+
+![Sensor Overview](screenshots/sensors.png)
+
+_Vollständige Sensorübersicht mit Echtzeit-Leistung, Energie und Netzdaten_
+
+![MQTT Device Info](screenshots/mqtt-info.png)
+
+_MQTT-Geräteintegrations-Details_
 
 ## Installation
 
@@ -62,57 +106,66 @@ Die Add-on-Konfiguration erfolgt über die Home Assistant UI mit übersetzten de
 
 - **Messdaten (JSON)**: `huawei-solar` (oder dein konfiguriertes Topic)  
   Enthält alle Sensordaten als JSON-Objekt mit `last_update` Timestamp.
-  
 - **Status (online/offline)**: `huawei-solar/status`  
   Wird genutzt für Binary Sensor, `availability_topic`, und Last Will Testament.
 
-### Example MQTT Payload
+### Beispiel MQTT Payload
 
-Published to topic `huawei-solar`:
+Veröffentlicht auf Topic `huawei-solar`:
 
 ```json
 {
-  "poweractive": 1609,
-  "powerinput": 2620,
-  "batterysoc": 32,
-  "batterypower": 1020,
-  "meterpoweractive": 50,
-  "voltagegridA": 239.3,
-  "invertertemperature": 32.4,
-  "inverterstatus": "On-grid",
-  "modelname": "SUN2000-6KTL-M1",
-  "lastupdate": 1768649491
+  "power_active": 1609,
+  "power_input": 2620,
+  "battery_soc": 32,
+  "battery_power": 1020,
+  "meter_power_active": 50,
+  "voltage_grid_A": 239.3,
+  "inverter_temperature": 32.4,
+  "inverter_status": "On-grid",
+  "model_name": "SUN2000-6KTL-M1",
+  "last_update": 1768649491
   ...
   ..
   .
 }
 ```
 
-*Komplettbeispiel mit allen 58+ Datenpunkten: siehe [examples/mqtt_payload.json](examples/mqtt_payload.json)*
+_Komplettbeispiel mit allen 58+ Datenpunkten: siehe [examples/mqtt_payload.json](examples/mqtt_payload.json)_
 
 ## Wichtige Entitäten
 
-| Kategorie   | Sensoren                                                                                 |
-| ----------- | ---------------------------------------------------------------------------------------- |
-| **Power**   | `solar_power`, `input_power`, `grid_power`, `battery_power`, `pv1-4_power`               |
-| **Energy**  | `daily_yield`, `total_yield`, `grid_exported/imported`                                   |
-| **Battery** | `battery_soc`, `charge/discharge_today`, `total_charge/discharge`, `bus_voltage/current` |
-| **Grid**    | `voltage_phase_a/b/c`, `line_voltage_ab/bc/ca`, `frequency`                              |
-| **Meter**   | `meter_power_phase_a/b/c`, `meter_current_a/b/c`, `meter_reactive_power`                 |
-| **Device**  | `model_name`, `serial_number`, `efficiency`, `temperature`, `rated_power`                |
-| **Status**  | `inverter_status`, `battery_status`, `meter_status`                                      |
+| Kategorie   | Sensoren                                                                                   |
+| ----------- | ------------------------------------------------------------------------------------------ |
+| **Power**   | `solar_power`, `input_power`, `grid_power`, `battery_power`, `pv1-4_power`                 |
+| **Energy**  | `daily_yield`, `total_yield`_, `grid_exported/imported`_                                   |
+| **Battery** | `battery_soc`, `charge/discharge_today`, `total_charge/discharge`\*, `bus_voltage/current` |
+| **Grid**    | `voltage_phase_a/b/c`, `line_voltage_ab/bc/ca`, `frequency`                                |
+| **Meter**   | `meter_power_phase_a/b/c`, `meter_current_a/b/c`, `meter_reactive_power`                   |
+| **Device**  | `model_name`, `serial_number`, `efficiency`, `temperature`, `rated_power`                  |
+| **Status**  | `inverter_status`, `battery_status`, `meter_status`                                        |
 
-## Was ist neu in 1.5.0?
+_\* Sensoren mit Sternchen sind durch total_increasing Filter vor falschen Counter-Resets geschützt_
 
-**MQTT-Verbindungsstabilität:** Wait-Loop und Retry-Logik für zuverlässige MQTT-Übertragung verhindert "not connected" Fehler; Connection State Tracking mit korrekten Callbacks; alle Publish-Operationen warten auf Bestätigung
+## Was ist neu in 1.6.0?
 
-**Entwicklungsverbesserungen:** PowerShell-Runner (`run_local.ps1`) für lokales Testen unter Windows; `.env`-Datei-Support für einfache Konfiguration; verbessertes Exception-Handling für Modbus-Fehler
+**total_increasing Filter:** Verhindert falsche Counter-Resets in Home Assistant Energie-Statistiken
 
-**Vorher (1.4.2):** Repository-Wartung - `.gitattributes`, `.editorconfig`, GitHub Issue Templates; `pymodbus` Dependency-Version korrigiert
+- Filtert negative Werte und Drops > 5% (konfigurierbar via `HUAWEI_FILTER_TOLERANCE`)
+- Schützt: `total_yield`, `grid_exported/imported`, `battery_total_charge/discharge`
+- Automatischer Reset bei Verbindungsfehlern
+- Filter-Status sichtbar in Logs: `📊 Published - PV: 788W | AC Out: 211W | Grid: 11W | Battery: 569W 🔍[2 filtered]`
 
-**Vorher (1.4.1):** Verbessertes Startup-Logging mit Emoji-Icons, visuelle Trennlinien
+**Bugfixes:**
 
-**Vorher (1.4.0):** Error Tracker mit Downtime-Tracking, Abfrageintervall auf 30s optimiert
+- datetime-Serialisierungsfehler für `startup_time` Register behoben (jetzt ISO-Format)
+- Verbessertes Modbus-Exception-Handling gegen BaseException-Fehler
+
+**Erweiterte Dokumentation:** Umfangreiche deutsche Inline-Kommentare in allen Modulen
+
+**Vorher (1.5.1):** Library-Versionserkennung in Startup-Logs  
+**Vorher (1.5.0):** MQTT-Verbindungsstabilität mit Wait-Loop und Retry-Logik  
+**Vorher (1.4.2):** Repository-Wartung und Dependency-Fixes
 
 ## Fehlerbehebung
 
@@ -123,6 +176,7 @@ Published to topic `huawei-solar`:
 **Ursache:** Huawei-Wechselrichter unterstützen **nur EINE aktive Modbus TCP-Verbindung**
 
 **Lösung:**
+
 1. Prüfe **Einstellungen → Geräte & Dienste** auf andere Huawei-Integrationen
 2. Entferne oder deaktiviere:
    - Offizielle `wlcrs/huawei_solar` Integration
@@ -136,7 +190,8 @@ Published to topic `huawei-solar`:
 **Keine Verbindung:** Modbus TCP aktivieren, IP/Slave-ID prüfen (1/16/0 testen), Log-Level auf `DEBUG` setzen  
 **Connection Timeouts:** Verschiedene Slave IDs testen (`0`, `1`, `16`); Abfrageintervall auf 60s erhöhen; prüfen, ob FusionSolar Cloud den Modbus-Zugriff blockiert  
 **MQTT Fehler:** MQTT Broker auf `core-mosquitto` setzen, Credentials leer lassen  
-**Performance:** Abfrageintervall auf 60 bei Cycle-Warnungen erhöhen
+**Performance:** Abfrageintervall auf 60s bei Cycle-Warnungen erhöhen  
+**Filter-Aktivität:** Gelegentliches Filtern (1-2 pro Stunde) ist normal; häufiges Filtern deutet auf Verbindungsprobleme hin - DEBUG-Modus aktivieren
 
 **Logs:** Add-ons → Huawei Solar Modbus to MQTT → Log-Tab
 

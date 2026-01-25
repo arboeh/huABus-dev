@@ -1,6 +1,12 @@
 # Core Dependencies
+# huawei-solar: Modbus TCP client for Huawei SUN2000 inverters
 huawei-solar>=2.1.5,<3.0.0
-pymodbus>=3.8.3,<4.0.0
+
+# pymodbus: Modbus protocol implementation
+# Note: 3.7.4+ tested and working, <4.0.0 to avoid breaking changes
+pymodbus>=3.7.4,<4.0.0
 
 # MQTT Support
+# paho-mqtt: MQTT client for Home Assistant integration
+# v2.x required for CallbackAPIVersion.VERSION2 support
 paho-mqtt>=2.1.0,<3.0.0

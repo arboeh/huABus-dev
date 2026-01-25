@@ -23,6 +23,9 @@ export HUAWEI_POLL_INTERVAL=$(bashio::config 'poll_interval')
 # Log Level Configuration
 export HUAWEI_LOG_LEVEL=$(bashio::config 'log_level')
 
+# Nach anderen ENV exports
+export HUAWEI_FILTER_TOLERANCE="${HUAWEI_FILTER_TOLERANCE:-0.05}"
+
 # Set bashio log level to match
 case "${HUAWEI_LOG_LEVEL}" in
 DEBUG)
