@@ -82,7 +82,7 @@ _MQTT device integration details_
 
 ## Installation
 
-1. [![Add Repository](https://my.home-assistant.io/badges/supervisor_add_addon_repository.svg)](https://my.home-assistant.io/redirect/supervisor_add_addon_repository/?repository_url=https%3A%2F%2Fgithub.com%2Farboeh%2Fhomeassistant-huawei-solar-addon)
+1. [![Add Repository](https://my.home-assistant.io/badges/supervisor_add_addon_repository.svg)](https://my.home-assistant.io/redirect/supervisor_add_addon_repository/?repository_url=https%3A%2F%2Fgithub.com%2Farboeh%2FhuABus)
 2. Install "Huawei Solar Modbus to MQTT" → Start
 3. **Settings → Devices & Services → MQTT → "Huawei Solar Inverter"**
 
@@ -199,7 +199,7 @@ _\* Sensors marked with asterisk are protected by total_increasing filter agains
 
 ## Support & Issues
 
-Found a bug or have a feature request? Please use our [GitHub Issue Templates](https://github.com/arboeh/homeassistant-huawei-solar-addon/issues/new/choose) for structured reporting.
+Found a bug or have a feature request? Please use our [GitHub Issue Templates](https://github.com/arboeh/huABus/issues/new/choose) for structured reporting.
 
 ## Documentation
 
