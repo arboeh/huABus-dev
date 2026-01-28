@@ -1,4 +1,4 @@
-<img src="../logo.svg" alt="jaABlu" height="40"/>
+# huABus | Huawei Solar Modbus to MQTT
 
 ### Huawei Solar Modbus → Home Assistant via MQTT + Auto Discovery
 
