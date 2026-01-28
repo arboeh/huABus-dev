@@ -1,5 +1,10 @@
 # huABus | Huawei Solar Modbus to MQTT
 
+### Huawei Solar Modbus → Home Assistant via MQTT + Auto Discovery
+
+Dieses Add-on liest Daten deines Huawei SUN2000 Wechselrichters per Modbus TCP aus und veröffentlicht sie über MQTT inklusive Home Assistant MQTT Discovery.
+
+> <br>  
 > **⚠️ KRITISCH: Nur EINE Modbus-Verbindung erlaubt!**
 >
 > Huawei-Wechselrichter haben eine **fundamentale Einschränkung**: Sie erlauben **nur EINE aktive Modbus TCP-Verbindung** zur selben Zeit. Dies ist eine **Hardware-Limitierung** und der häufigste Fehler bei der Smart-Home-Integration.
@@ -32,9 +37,72 @@
 >    ```
 >    → Das liegt NICHT am Add-on, sondern an Konkurrenz um die Verbindung!
 >
-> **Regel:** NUR EINE Modbus-Verbindung zur selben Zeit = stabiles System ✅
+> **Regel:** NUR EINE Modbus-Verbindung zur selben Zeit = stabiles System ✅  
+> <br>
 
-Dieses Add-on liest Daten deines Huawei SUN2000 Wechselrichters per Modbus TCP aus und veröffentlicht sie über MQTT inklusive Home Assistant MQTT Discovery.
+## 🚀 Schnellstart (5 Minuten)
+
+### 1. Vor der Installation (KRITISCH!)
+
+✅ **Konkurrierende Modbus-Verbindungen entfernen:**
+
+- Einstellungen → Geräte & Dienste → Suche "Huawei" → ALLE Integrationen entfernen
+- Monitoring-Software, mobile Apps mit Modbus-Zugriff deaktivieren
+- Nur EINE Modbus-Verbindung erlaubt!
+
+✅ **Verbindungsdaten vorbereiten:**
+
+- IP-Adresse des Inverters (z.B. `192.168.1.100`)
+- Prüfen ob Inverter erreichbar: `ping 192.168.1.100`
+
+### 2. Installation
+
+1. Einstellungen → Add-ons → Add-on Store
+2. Klick ⋮ (oben rechts) → Repositories
+3. Hinzufügen: `https://github.com/arboeh/huABus`
+4. Installiere "Huawei Solar Modbus to MQTT"
+
+### 3. Konfiguration
+
+**Minimalkonfiguration (erforderlich):**
+
+```yaml
+modbus_host: "192.168.1.100" # Deine Inverter-IP
+slave_id: 1 # Starte mit 1
+log_level: "INFO" # Guter Standard
+```
+
+**💡 Connection Timeout?** Probiere verschiedene Slave IDs:
+
+```yaml
+slave_id: 0 # oder 1, oder 16
+```
+
+### 4. Erster Start & Überprüfung
+
+1. **Add-on starten** → Logs sofort prüfen
+2. **Erfolgs-Indikatoren:**
+   ```
+   INFO - 🚀 Huawei Solar → MQTT starting
+   INFO - 🔌 Connected (Slave ID: 1)
+   INFO - Essential read: 2.1s (58/58)
+   INFO - 📊 Published - PV: 4500W | ...
+   ```
+3. **Sensoren aktivieren:**
+   - Einstellungen → Geräte & Dienste → MQTT
+   - Finde "Huawei Solar Inverter"
+   - Aktiviere gewünschte Sensoren
+
+### 5. Häufige Erstinstallations-Probleme
+
+| Symptom                     | Schnelle Lösung                                     |
+| --------------------------- | --------------------------------------------------- |
+| `ERROR - Timeout`           | Versuche `slave_id: 0`, dann `16`                   |
+| `Connection refused`        | IP prüfen, Modbus TCP im Inverter aktivieren        |
+| `Keine Sensoren erscheinen` | 30s warten, MQTT Integration neu laden              |
+| Zu viele Sensoren!          | Normal! Ungenutzte in MQTT Integration deaktivieren |
+
+**Immer noch Probleme?** Siehe vollständiges [Troubleshooting](#logging--fehleranalyse) unten.
 
 ## Funktionen
 
