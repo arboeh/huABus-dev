@@ -61,7 +61,7 @@ def _on_connect(client, userdata, flags, rc, properties=None):
     global _is_connected
     if rc == 0:
         _is_connected = True
-        logger.info("MQTT connected")
+        logger.info("📡 MQTT connected")
     else:
         # rc != 0 bedeutet Verbindungsfehler
         logger.error(f"MQTT connection failed: {rc}")
@@ -467,7 +467,7 @@ def publish_discovery_configs(base_topic: str) -> None:
         logger.warning("MQTT not connected, skipping discovery")
         return
 
-    logger.info("Publishing MQTT Discovery")
+    logger.info("🔍 Publishing MQTT Discovery")
     client = _get_mqtt_client()
 
     # Device-Config für HA Gruppierung
@@ -494,7 +494,7 @@ def publish_discovery_configs(base_topic: str) -> None:
     # Binary Sensor für Connectivity-Status
     _publish_status_sensor(client, base_topic, device_config)
 
-    logger.info(f"Discovery complete: {count + text_count + 1} entities")
+    logger.info(f"✅ Discovery complete: {count + text_count + 1} entities")
 
 
 def _publish_status_sensor(

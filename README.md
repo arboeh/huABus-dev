@@ -5,7 +5,7 @@
 🇬🇧 **English** | [🇩🇪 Deutsch](README.de.md)
 
 [![release](https://img.shields.io/github/v/release/arboeh/huABus?display_name=tag)](https://github.com/arboeh/huABus/releases/latest)
-[![License](https://img.shields.io/github/license/arboeh/huABus)](https://github.com/arboeh/huABus/blob/main/LICENSE)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://github.com/arboeh/huABus/blob/main/LICENSE)
 [![Home Assistant](https://img.shields.io/badge/Home%20Assistant-Add--on-41BDF5?logo=home-assistant)](https://www.home-assistant.io/)  
 [![aarch64](https://img.shields.io/badge/aarch64-yes-green.svg)](https://github.com/arboeh/huABus)
 [![amd64](https://img.shields.io/badge/amd64-yes-green.svg)](https://github.com/arboeh/huABus)
@@ -24,7 +24,7 @@
 >
 > Running multiple Modbus connections simultaneously will cause **connection timeouts and data loss** for all clients!
 
-**Version 1.6.0** – 58 Essential Registers, 69+ entities, ~2–5 s cycle time  
+**Version 1.6.1** – 58 Essential Registers, 69+ entities, ~2–5 s cycle time  
 **Changelog** - [CHANGELOG.md](huawei-solar-modbus-mqtt/CHANGELOG.md)
 
 ## Features
@@ -37,6 +37,17 @@
 - **MQTT Stability:** Connection wait loop and retry logic for reliable publishing
 - **Optimized Logging:** Bashio log level synchronization with filter status indicators
 - **Cross-Platform:** Supports all major architectures (aarch64, amd64, armhf, armv7, i386)
+
+## 🚀 Quick Start
+
+**New to huABus?** Check out our [5-minute Quick Start Guide](huawei-solar-modbus-mqtt/DOCS.md#-quick-start-5-minutes) for:
+
+- ✅ Step-by-step installation with expected outputs
+- ✅ Connection troubleshooting (Slave ID issues, timeouts)
+- ✅ Clear success indicators
+- ✅ Common first-time problems solved
+
+Perfect for first-time users! Experienced users can jump directly to [Configuration](#configuration).
 
 ## Comparison: wlcrs/huawei_solar vs. This Add-on
 
@@ -149,25 +160,22 @@ _Complete example with all 58+ data points: [examples/mqtt_payload.json](example
 
 _\* Sensors marked with asterisk are protected by total_increasing filter against false counter resets_
 
-## What's new in 1.6.0?
+## What's new in 1.6.1?
 
-**total_increasing Filter:** Prevents false counter resets in Home Assistant energy statistics
+**Documentation Improvements:**
 
-- Filters negative values and drops > 5% (configurable via `HUAWEI_FILTER_TOLERANCE`)
-- Protects: `total_yield`, `grid_exported/imported`, `battery_total_charge/discharge`
-- Automatic reset on connection errors
-- Filter status visible in logs: `📊 Published - PV: 788W | AC Out: 211W | Grid: 11W | Battery: 569W 🔍[2 filtered]`
+- **Quick Start Guide**: 5-minute onboarding for new users
+  - Step-by-step installation with expected log outputs
+  - Troubleshooting table for common first-time issues
+  - Clear success indicators after first start
 
-**Bug Fixes:**
+- **Improved README Structure**: Better navigation and hierarchy
+  - Quick Start positioned before Features
+  - Architecture badges for platform visibility
 
-- Fixed datetime serialization error for `startup_time` register (now ISO format)
-- Improved Modbus exception handling to avoid BaseException errors
-
-**Enhanced Documentation:** Extensive inline comments across all modules in German
-
+**Previous (1.6.0):** total_increasing filter for energy statistics  
 **Previous (1.5.1):** Library version detection in startup logs  
-**Previous (1.5.0):** MQTT connection stability with wait-loop and retry logic  
-**Previous (1.4.2):** Repository maintenance and dependency fixes
+**Previous (1.5.0):** MQTT connection stability improvements
 
 ## Troubleshooting
 

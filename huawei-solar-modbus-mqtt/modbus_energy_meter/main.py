@@ -78,7 +78,7 @@ def init_logging() -> None:
     _configure_pymodbus(log_level)
     _configure_huawei_solar(log_level)
 
-    logger.info(f"Logging initialized: {logging.getLevelName(log_level)}")
+    logger.info(f"📋 Logging initialized: {logging.getLevelName(log_level)}")
 
 
 def _parse_log_level() -> int:
@@ -402,7 +402,7 @@ async def read_registers(client: AsyncHuaweiSolar) -> Dict[str, Any]:
     # Beispiel: "Essential read: 2.1s (58/58)" = alle Register erfolgreich
     # Beispiel: "Essential read: 2.3s (55/58)" = 3 Register fehlen (z.B. kein Meter)
     logger.info(
-        "Essential read: %.1fs (%d/%d)", duration, successful, len(ESSENTIAL_REGISTERS)
+        "📖 Essential read: %.1fs (%d/%d)", duration, successful, len(ESSENTIAL_REGISTERS)
     )
 
     return data

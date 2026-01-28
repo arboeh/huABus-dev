@@ -1,5 +1,24 @@
 # Changelog
 
+## [1.6.1] - 2026-01-28
+
+### Documentation
+
+- **Quick Start Guide**: Added 5-minute onboarding for new users
+  - Step-by-step installation with expected log outputs
+  - Troubleshooting table for common first-time issues
+  - Clear success indicators after first start
+
+- **README Structure**: Improved hierarchy and navigation
+  - Quick Start positioned before Features
+  - Architecture badges added for platform visibility
+  - Better visual separation between sections
+
+### Technical Details
+
+- Documentation-only release
+- No code or configuration changes
+
 ## [1.6.0] - 2026-01-25
 
 ### Added
