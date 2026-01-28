@@ -13,7 +13,6 @@
 [![armv7](https://img.shields.io/badge/armv7-yes-green.svg)](https://github.com/arboeh/huABus)
 [![i386](https://img.shields.io/badge/i386-yes-green.svg)](https://github.com/arboeh/huABus)
 
-> <br>  
 > **⚠️ WICHTIG: Nur EINE Modbus-Verbindung möglich**  
 > Huawei-Wechselrichter erlauben **nur EINE aktive Modbus TCP-Verbindung**. Dies ist ein häufiger Anfängerfehler bei der Integration von Huawei-PV-Anlagen ins Smart Home.
 >
@@ -23,8 +22,7 @@
 > - ✅ Stelle sicher, dass keine andere Software auf Modbus TCP zugreift (Monitoring-Tools, Apps, andere Home Assistant Instanzen)
 > - ✅ Hinweis: FusionSolar Cloud zeigt möglicherweise "Abnormale Kommunikation" wenn Modbus aktiv ist - das ist normal
 >
-> Mehrere gleichzeitige Modbus-Verbindungen führen zu **Connection-Timeouts und Datenverlust** für alle Clients!  
-> <br>  
+> Mehrere gleichzeitige Modbus-Verbindungen führen zu **Connection-Timeouts und Datenverlust** für alle Clients!
 
 **Version 1.6.1** – 58 Essential Registers, 69+ entities, ~2–5 s cycle time  
 **Changelog** - [CHANGELOG.md](huawei-solar-modbus-mqtt/CHANGELOG.md)

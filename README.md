@@ -13,7 +13,6 @@
 [![armv7](https://img.shields.io/badge/armv7-yes-green.svg)](https://github.com/arboeh/huABus)
 [![i386](https://img.shields.io/badge/i386-yes-green.svg)](https://github.com/arboeh/huABus)
 
-> <br>  
 > **⚠️ IMPORTANT: Single Modbus Connection Limit**  
 > Huawei inverters allow **only ONE active Modbus TCP connection**. This is a common beginner mistake when integrating Huawei solar systems into smart home environments.
 >
@@ -23,8 +22,7 @@
 > - ✅ Ensure no other software is accessing Modbus TCP (monitoring tools, apps, other Home Assistant instances)
 > - ✅ Note: FusionSolar Cloud may show "Abnormal communication" when Modbus is active - this is expected
 >
-> Running multiple Modbus connections simultaneously will cause **connection timeouts and data loss** for all clients!  
-> <br>  
+> Running multiple Modbus connections simultaneously will cause **connection timeouts and data loss** for all clients!
 
 **Version 1.6.1** – 58 Essential Registers, 69+ entities, ~2–5 s cycle time  
 **Changelog** - [CHANGELOG.md](huawei-solar-modbus-mqtt/CHANGELOG.md)
