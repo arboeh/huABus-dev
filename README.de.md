@@ -26,7 +26,7 @@
 > Mehrere gleichzeitige Modbus-Verbindungen führen zu **Connection-Timeouts und Datenverlust** für alle Clients!  
 > <br>  
 
-**Version 1.6.2** – 58 Essential Registers, 69+ entities, ~2–5 s cycle time  
+**Version 1.6.1** – 58 Essential Registers, 69+ entities, ~2–5 s cycle time  
 **Changelog** - [CHANGELOG.md](huawei-solar-modbus-mqtt/CHANGELOG.md)
 
 ## Features
@@ -162,7 +162,7 @@ _Komplettbeispiel mit allen 58+ Datenpunkten: siehe [examples/mqtt_payload.json]
 
 _\* Sensoren mit Sternchen sind durch total_increasing Filter vor falschen Counter-Resets geschützt_
 
-## Was ist neu in 1.6.2?
+## Was ist neu in 1.6.1?
 
 **Kritischer Bugfix:** Filter-Timing-Problem behoben
 
@@ -180,7 +180,6 @@ Neu: Modbus → Transform → Filter → Publish ✅
 
 **Auswirkung:** Falls deine täglichen Export-Zähler um Tausende kWh gesprungen sind, behebt dieses Update das Problem.
 
-**Vorher (1.6.1):** Dokumentations-Verbesserungen mit Schnellstart-Guide  
 **Vorher (1.6.0):** `total_increasing` Filter für Energie-Statistiken  
 **Vorher (1.5.0):** MQTT-Verbindungsstabilitäts-Verbesserungen
 
