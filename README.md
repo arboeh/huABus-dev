@@ -13,6 +13,7 @@
 [![armv7](https://img.shields.io/badge/armv7-yes-green.svg)](https://github.com/arboeh/huABus)
 [![i386](https://img.shields.io/badge/i386-yes-green.svg)](https://github.com/arboeh/huABus)
 
+> <br>  
 > **⚠️ IMPORTANT: Single Modbus Connection Limit**  
 > Huawei inverters allow **only ONE active Modbus TCP connection**. This is a common beginner mistake when integrating Huawei solar systems into smart home environments.
 >
@@ -22,9 +23,10 @@
 > - ✅ Ensure no other software is accessing Modbus TCP (monitoring tools, apps, other Home Assistant instances)
 > - ✅ Note: FusionSolar Cloud may show "Abnormal communication" when Modbus is active - this is expected
 >
-> Running multiple Modbus connections simultaneously will cause **connection timeouts and data loss** for all clients!
+> Running multiple Modbus connections simultaneously will cause **connection timeouts and data loss** for all clients!  
+> <br>  
 
-**Version 1.6.1** – 58 Essential Registers, 69+ entities, ~2–5 s cycle time  
+**Version 1.6.2** – 58 Essential Registers, 69+ entities, ~2–5 s cycle time  
 **Changelog** - [CHANGELOG.md](huawei-solar-modbus-mqtt/CHANGELOG.md)
 
 ## Features
@@ -160,21 +162,26 @@ _Complete example with all 58+ data points: [examples/mqtt_payload.json](example
 
 _\* Sensors marked with asterisk are protected by total_increasing filter against false counter resets_
 
-## What's new in 1.6.1?
+## What's new in 1.6.2?
 
-**Documentation Improvements:**
+**Critical Bug Fix:** Filter timing issue resolved
 
-- **Quick Start Guide**: 5-minute onboarding for new users
-  - Step-by-step installation with expected log outputs
-  - Troubleshooting table for common first-time issues
-  - Clear success indicators after first start
+- **Fixed**: `total_increasing` filter now prevents zero values from reaching Home Assistant
+  - Filter moved **before** MQTT publish (was: after)
+  - Eliminates Utility Meter jumps caused by temporary Modbus read errors
+  - Fixes [Issue #7](https://github.com/arboeh/huABus/issues/7)
 
-- **Improved README Structure**: Better navigation and hierarchy
-  - Quick Start positioned before Features
-  - Architecture badges for platform visibility
+**Technical improvement:**
 
-**Previous (1.6.0):** total_increasing filter for energy statistics  
-**Previous (1.5.1):** Library version detection in startup logs  
+```
+Old: Modbus → Transform → Publish (0!) → Filter ❌
+New: Modbus → Transform → Filter → Publish ✅
+```
+
+**Impact:** If you experienced daily export counters jumping by thousands of kWh, this update fixes it.
+
+**Previous (1.6.1):** Documentation improvements with Quick Start Guide  
+**Previous (1.6.0):** `total_increasing` filter for energy statistics  
 **Previous (1.5.0):** MQTT connection stability improvements
 
 ## Troubleshooting

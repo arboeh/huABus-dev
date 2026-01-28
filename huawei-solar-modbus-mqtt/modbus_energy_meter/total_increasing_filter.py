@@ -14,7 +14,7 @@ und verhindert, dass ungültige Werte zu Home Assistant gelangen.
 
 import logging
 import os
-from typing import Optional, Dict
+from typing import Optional, Dict, Any
 
 logger = logging.getLogger("huawei.filter")
 
@@ -74,6 +74,46 @@ class TotalIncreasingFilter:
         logger.info(
             f"🛡️  TotalIncreasingFilter initialized with {tolerance*100:.0f}% tolerance"
         )
+
+    def filter(self, data: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Filtert ein komplettes Daten-Dictionary.
+
+        Geht durch alle Werte im Dictionary und wendet should_filter()
+        auf jeden total_increasing Sensor an. Gefilterte Werte werden
+        durch den letzten gültigen Wert ersetzt.
+
+        Args:
+            data: Dictionary mit Sensor-Daten (MQTT-Format)
+
+        Returns:
+            Gefiltertes Dictionary (gefilterte Werte ersetzt)
+
+        Beispiel:
+            Input:  {'energy_yield_accumulated': 0, 'power_active': 4500}
+            Output: {'energy_yield_accumulated': 15420.5, 'power_active': 4500}
+                    # 0 wurde durch letzten gültigen Wert ersetzt
+        """
+        result = data.copy()
+
+        for key, value in data.items():
+            # Nur numerische Werte prüfen
+            if not isinstance(value, (int, float)):
+                continue
+
+            # Prüfen ob gefiltert werden soll
+            if self.should_filter(key, value):
+                # Durch letzten gültigen Wert ersetzen
+                last_value = self.get_last_value(key)
+                if last_value is not None:
+                    result[key] = last_value
+                    logger.debug(f"Replaced {key}: {value} → {last_value} (filtered)")
+                else:
+                    # Kein letzter Wert verfügbar → Original behalten
+                    # (sollte nur beim allerersten Cycle passieren)
+                    logger.warning(f"Cannot filter {key}: {value} (no previous value)")
+
+        return result
 
     def should_filter(self, key: str, value: float) -> bool:
         """

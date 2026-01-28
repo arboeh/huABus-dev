@@ -277,21 +277,20 @@ def log_cycle_summary(
 
     Args:
         cycle_num: Aktuelle Cycle-Nummer seit Start (fortlaufend)
-        timings: Dict mit Zeitmessungen {modbus, transform, mqtt, total}
+        timings: Dict mit Zeitmessungen {modbus, transform, filter, mqtt, total}
         data: MQTT-Daten (für Power-Werte)
 
     Beispiel JSON-Output:
         {
           "cycle": 42,
           "timestamp": 1706184000.5,
-          "timings": {"modbus": 2.1, "transform": 0.005, "mqtt": 0.194, "total": 2.3},
+          "timings": {"modbus": 2.1, "transform": 0.005, "filter": 0.001, "mqtt": 0.194, "total": 2.3},
           "power": {"pv": 4500, "ac_out": 4200, "grid": -200, "battery": 800}
         }
     """
     if os.environ.get("HUAWEI_LOG_FORMAT") == "json":
         import json
 
-        # JSON-Format für Machine-Parsing (Monitoring, Grafana)
         summary = {
             "cycle": cycle_num,
             "timestamp": time.time(),
@@ -305,17 +304,14 @@ def log_cycle_summary(
         }
         logger.info(json.dumps(summary))
     else:
-        # Filter-Statistik für aktuellen Cycle holen
         filter_stats = get_filter().get_stats()
         filter_indicator = ""
 
-        # Wenn in diesem Cycle gefiltert wurde, Indikator hinzufügen
         if filter_stats:
             total_filtered = sum(filter_stats.values())
-            filter_indicator = f" 🔍[{total_filtered} filtered]"
+            if total_filtered > 0:  # ← WICHTIG: Nur wenn > 0!
+                filter_indicator = f" 🔍[{total_filtered} filtered]"
 
-        # Standard human-readable log mit Emojis und Einheiten
-        # Zeigt die vier wichtigsten Power-Werte im Überblick
         logger.info(
             "📊 Published - PV: %dW | AC Out: %dW | Grid: %dW | Battery: %dW%s",
             data.get("power_input", 0),
@@ -325,26 +321,21 @@ def log_cycle_summary(
             filter_indicator,
         )
 
-        # Alle 20 Zyklen Filter-Zusammenfassung zeigen (auch wenn 0)
         if cycle_num % 20 == 0:
             total_filtered = sum(filter_stats.values()) if filter_stats else 0
 
             if total_filtered > 0:
-                # Es wurde gefiltert → Details zeigen
                 logger.info(
                     f"└─> 🔍 Filter summary (last 20 cycles): {total_filtered} values filtered | "
                     f"Details: {dict(filter_stats)}"
                 )
             else:
-                # Nichts gefiltert → Bestätigung dass Filter funktioniert
                 logger.info(
                     "└─> 🔍 Filter summary (last 20 cycles): 0 values filtered - all data valid ✓"
                 )
 
-            # Stats für nächste Periode zurücksetzen
             get_filter().reset_stats()
 
-        # DEBUG: Detaillierte Filter-Info bei jedem Filter-Event
         elif filter_stats and logger.isEnabledFor(logging.DEBUG):
             logger.debug(f"🔍 Filter details: {dict(filter_stats)}")
 
@@ -402,7 +393,10 @@ async def read_registers(client: AsyncHuaweiSolar) -> Dict[str, Any]:
     # Beispiel: "Essential read: 2.1s (58/58)" = alle Register erfolgreich
     # Beispiel: "Essential read: 2.3s (55/58)" = 3 Register fehlen (z.B. kein Meter)
     logger.info(
-        "📖 Essential read: %.1fs (%d/%d)", duration, successful, len(ESSENTIAL_REGISTERS)
+        "📖 Essential read: %.1fs (%d/%d)",
+        duration,
+        successful,
+        len(ESSENTIAL_REGISTERS),
     )
 
     return data
@@ -448,15 +442,15 @@ def is_modbus_exception(exc: Exception) -> bool:
 
 async def main_once(client: AsyncHuaweiSolar, cycle_num: int) -> None:
     """
-    Führt einen kompletten Read-Transform-Publish Cycle aus.
+    Führt einen kompletten Read-Transform-Filter-Publish Cycle aus.
 
     Workflow:
     1. Modbus Read - Essential Registers vom Inverter lesen (2-5s)
     2. Transform - Register in MQTT-Format umwandeln (< 0.01s)
-       ↳ Hier läuft auch der total_increasing Filter!
-    3. MQTT Publish - Daten zum Broker senden (< 0.2s)
-    4. Logging - Timings und Zusammenfassung ausgeben
-    5. Performance-Check - Warnung bei zu langsamen Cycles
+    3. Filter - total_increasing Protection anwenden (< 0.001s)  ← NEU!
+    4. MQTT Publish - Gefilterte Daten zum Broker senden (< 0.2s)  ← GEÄNDERT!
+    5. Logging - Timings und Zusammenfassung ausgeben
+    6. Performance-Check - Warnung bei zu langsamen Cycles
 
     Bei Erfolg: LAST_SUCCESS wird aktualisiert (für Heartbeat)
     Bei Fehler: Exception wird durchgereicht zu main() Error-Handler
@@ -476,7 +470,8 @@ async def main_once(client: AsyncHuaweiSolar, cycle_num: int) -> None:
 
     Performance-Beispiel:
         Modbus: 2.1s (58/58 Register)
-        Transform: 0.005s (Mapping + Filter)
+        Transform: 0.005s (Mapping)
+        Filter: 0.001s (total_increasing Check)  ← NEU!
         MQTT: 0.194s (Publish + Wait)
         Total: 2.3s
     """
@@ -513,26 +508,36 @@ async def main_once(client: AsyncHuaweiSolar, cycle_num: int) -> None:
     # Hier passiert:
     # 1. Register-Namen mappen (activepower → power_active)
     # 2. RegisterValue-Objekte extrahieren (value-Attribut)
-    # 3. total_increasing Filter anwenden (verhindert falsche Drops)
-    # 4. None-Werte entfernen
-    # 5. Timestamp hinzufügen
+    # 3. None-Werte entfernen
+    # 4. Timestamp hinzufügen
+    # NICHT MEHR: total_increasing Filter (wird jetzt in Phase 3 gemacht!)
     transform_start = time.time()
-    mqtt_data = transform_data(data)
+    transformed = transform_data(data)
     transform_duration = time.time() - transform_start
 
-    # === PHASE 3: MQTT Publish ===
+    # === NEU: PHASE 3: Filter ===
+    # total_increasing Filter VOR MQTT Publish anwenden!
+    # Verhindert dass 0-Werte (Modbus-Lesefehler) nach MQTT gelangen
+    # und dort Utility Meter Helper durcheinanderbringen
+    filter_start = time.time()
+    filter_instance = get_filter()
+    mqtt_data = filter_instance.filter(transformed)
+    filter_duration = time.time() - filter_start
+
+    # === PHASE 4: MQTT Publish (mit gefilterten Daten!) ===
     mqtt_start = time.time()
-    publish_data(mqtt_data, topic)
+    publish_data(mqtt_data, topic)  # ← mqtt_data statt transformed!
     mqtt_duration = time.time() - mqtt_start
 
     # Erfolg markieren für Heartbeat
     LAST_SUCCESS = time.time()
     cycle_duration = time.time() - start
 
-    # === PHASE 4: Logging ===
+    # === PHASE 5: Logging ===
     timings = {
         "modbus": modbus_duration,
         "transform": transform_duration,
+        "filter": filter_duration,  # ← NEU!
         "mqtt": mqtt_duration,
         "total": cycle_duration,
     }
@@ -541,14 +546,15 @@ async def main_once(client: AsyncHuaweiSolar, cycle_num: int) -> None:
 
     # Debug-Details nur bei DEBUG-Level (detaillierte Zeitmessungen)
     logger.debug(
-        "Cycle: %.1fs (Modbus: %.1fs, Transform: %.2fs, MQTT: %.2fs)",
+        "Cycle: %.1fs (Modbus: %.1fs, Transform: %.3fs, Filter: %.3fs, MQTT: %.2fs)",
         cycle_duration,
         modbus_duration,
         transform_duration,
+        filter_duration,  # ← NEU!
         mqtt_duration,
     )
 
-    # === PHASE 5: Performance-Check ===
+    # === PHASE 6: Performance-Check ===
     # Warnung wenn Cycle zu lange dauert (> 80% vom poll_interval)
     # Beispiel: poll_interval=30s, cycle=25s → 83% → WARNING
     # Grund: Nächster Cycle wird verzögert, Daten kommen nicht rechtzeitig

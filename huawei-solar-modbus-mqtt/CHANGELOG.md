@@ -1,5 +1,24 @@
 # Changelog
 
+All notable changes to this project will be documented in this file.
+
+## [1.6.2] - 2026-01-29
+
+### Fixed
+
+- **Critical Bug Fix**: `total_increasing` filter now applies **before** MQTT publish instead of after
+  - **Problem**: Previously the filter ran after MQTT publish, allowing zero values from Modbus read errors to reach Home Assistant for a brief moment
+  - **Impact**: Utility Meter helpers would see the zero value and calculate incorrect daily totals (jumping by total accumulated energy)
+  - **Solution**: Filter now runs in the data pipeline before publishing: `Modbus Read → Transform → Filter → MQTT Publish`
+  - **Result**: Zero values are replaced with last valid value before they reach Home Assistant
+- Fixes issue [#7](https://github.com/arboeh/huABus/issues/7) - Export energy counter drops to zero causing Utility Meter jumps
+
+### Changed
+
+- Filter now integrated into `main_once()` pipeline as explicit step
+- Added filter timing measurement for performance monitoring
+- Improved filter logging with cycle-by-cycle statistics
+
 ## [1.6.1] - 2026-01-28
 
 ### Documentation

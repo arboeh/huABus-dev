@@ -13,6 +13,7 @@
 [![armv7](https://img.shields.io/badge/armv7-yes-green.svg)](https://github.com/arboeh/huABus)
 [![i386](https://img.shields.io/badge/i386-yes-green.svg)](https://github.com/arboeh/huABus)
 
+> <br>  
 > **⚠️ WICHTIG: Nur EINE Modbus-Verbindung möglich**  
 > Huawei-Wechselrichter erlauben **nur EINE aktive Modbus TCP-Verbindung**. Dies ist ein häufiger Anfängerfehler bei der Integration von Huawei-PV-Anlagen ins Smart Home.
 >
@@ -22,9 +23,10 @@
 > - ✅ Stelle sicher, dass keine andere Software auf Modbus TCP zugreift (Monitoring-Tools, Apps, andere Home Assistant Instanzen)
 > - ✅ Hinweis: FusionSolar Cloud zeigt möglicherweise "Abnormale Kommunikation" wenn Modbus aktiv ist - das ist normal
 >
-> Mehrere gleichzeitige Modbus-Verbindungen führen zu **Connection-Timeouts und Datenverlust** für alle Clients!
+> Mehrere gleichzeitige Modbus-Verbindungen führen zu **Connection-Timeouts und Datenverlust** für alle Clients!  
+> <br>  
 
-**Version 1.6.1** – 58 Essential Registers, 69+ entities, ~2–5 s cycle time  
+**Version 1.6.2** – 58 Essential Registers, 69+ entities, ~2–5 s cycle time  
 **Changelog** - [CHANGELOG.md](huawei-solar-modbus-mqtt/CHANGELOG.md)
 
 ## Features
@@ -160,21 +162,26 @@ _Komplettbeispiel mit allen 58+ Datenpunkten: siehe [examples/mqtt_payload.json]
 
 _\* Sensoren mit Sternchen sind durch total_increasing Filter vor falschen Counter-Resets geschützt_
 
-## Was ist neu in 1.6.1?
+## Was ist neu in 1.6.2?
 
-**Dokumentations-Verbesserungen:**
+**Kritischer Bugfix:** Filter-Timing-Problem behoben
 
-- **Schnellstart-Guide**: 5-Minuten-Onboarding für neue Nutzer
-  - Schritt-für-Schritt Installation mit erwarteten Log-Ausgaben
-  - Troubleshooting-Tabelle für häufige Erstinstallations-Probleme
-  - Klare Erfolgsindikatoren nach dem ersten Start
+- **Behoben**: `total_increasing` Filter verhindert jetzt zuverlässig Null-Werte in Home Assistant
+  - Filter läuft jetzt **vor** MQTT-Publish (vorher: danach)
+  - Eliminiert Utility-Meter-Sprünge durch temporäre Modbus-Lesefehler
+  - Behebt [Issue #7](https://github.com/arboeh/huABus/issues/7)
 
-- **Verbesserte README-Struktur**: Bessere Navigation und Hierarchie
-  - Schnellstart vor Features-Bereich positioniert
-  - Architektur-Badges für Plattform-Sichtbarkeit
+**Technische Verbesserung:**
 
-**Vorher (1.6.0):** total_increasing Filter für Energie-Statistiken  
-**Vorher (1.5.1):** Library-Versionserkennung in Startup-Logs  
+```
+Alt: Modbus → Transform → Publish (0!) → Filter ❌
+Neu: Modbus → Transform → Filter → Publish ✅
+```
+
+**Auswirkung:** Falls deine täglichen Export-Zähler um Tausende kWh gesprungen sind, behebt dieses Update das Problem.
+
+**Vorher (1.6.1):** Dokumentations-Verbesserungen mit Schnellstart-Guide  
+**Vorher (1.6.0):** `total_increasing` Filter für Energie-Statistiken  
 **Vorher (1.5.0):** MQTT-Verbindungsstabilitäts-Verbesserungen
 
 ## Fehlerbehebung
