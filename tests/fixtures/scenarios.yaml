@@ -4,18 +4,24 @@ meter_change:
   cycles:
     - # Cycle 0: Installation - erster Wert 0
       energy_grid_exported: 0
+      energy_grid_accumulated: 0
       energy_yield_accumulated: 0
       battery_charge_total: 0
+      battery_discharge_total: 0
 
     - # Cycle 1: Erste Produktion - kleine Werte müssen durchkommen!
       energy_grid_exported: 0.03
+      energy_grid_accumulated: 0.01
       energy_yield_accumulated: 0.05
       battery_charge_total: 0.02
+      battery_discharge_total: 0.01
 
     - # Cycle 2: Normale Werte
       energy_grid_exported: 0.15
+      energy_grid_accumulated: 0.05
       energy_yield_accumulated: 0.25
       battery_charge_total: 0.10
+      battery_discharge_total: 0.03
 
 # Szenario 2: Modbus-Lesefehler (Drops auf 0)
 modbus_errors:

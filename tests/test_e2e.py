@@ -102,8 +102,8 @@ async def test_e2e_modbus_errors_filtered_before_mqtt():
 async def test_e2e_multiple_sensors():
     """
     End-to-End: Multiple Sensoren gleichzeitig
-    - Grid Export, Solar Yield, Battery Charge
-    - Alle werden korrekt gefiltert
+    - Grid Export/Import, Solar Yield, Battery Charge/Discharge
+    - Alle 5 total_increasing Sensoren werden korrekt gefiltert
     """
     reset_filter()
     mock_modbus = MockHuaweiSolar()
@@ -113,15 +113,19 @@ async def test_e2e_multiple_sensors():
     filter_instance = get_filter()
 
     for cycle in range(3):
-        # Lese alle 3 Sensoren
-        grid = await mock_modbus.get("energy_grid_exported")
+        # Lese ALLE 5 total_increasing Sensoren
+        grid_export = await mock_modbus.get("energy_grid_exported")
+        grid_import = await mock_modbus.get("energy_grid_accumulated")
         solar = await mock_modbus.get("energy_yield_accumulated")
-        battery = await mock_modbus.get("battery_charge_total")
+        battery_charge = await mock_modbus.get("battery_charge_total")
+        battery_discharge = await mock_modbus.get("battery_discharge_total")
 
         transformed = {
-            "energy_grid_exported": grid.value,
+            "energy_grid_exported": grid_export.value,
+            "energy_grid_accumulated": grid_import.value,
             "energy_yield_accumulated": solar.value,
-            "battery_charge_total": battery.value,
+            "battery_charge_total": battery_charge.value,
+            "battery_discharge_total": battery_discharge.value,
         }
 
         filtered = filter_instance.filter(transformed)
@@ -131,18 +135,22 @@ async def test_e2e_multiple_sensors():
 
         mock_modbus.next_cycle()
 
-    # Check: Alle 3 Sensoren in allen Messages vorhanden
+    # Check: Alle 5 Sensoren in allen Messages vorhanden
     all_messages = mock_mqtt.get_messages("huawei-solar")
     assert len(all_messages) == 3
 
     for msg in all_messages:
         payload_dict = msg.as_dict()
-        payload = payload_dict["payload"]  # ← FIX: Separate Zeile
+        payload = payload_dict["payload"]
+
+        # Alle 5 total_increasing Sensoren müssen vorhanden sein
         assert "energy_grid_exported" in payload
+        assert "energy_grid_accumulated" in payload  # ← NEU
         assert "energy_yield_accumulated" in payload
         assert "battery_charge_total" in payload
+        assert "battery_discharge_total" in payload  # ← NEU
 
-    print("✅ E2E Test passed: Multiple sensors correctly handled")
+    print("✅ E2E Test passed: All 5 total_increasing sensors correctly handled")
 
 
 @pytest.mark.asyncio
