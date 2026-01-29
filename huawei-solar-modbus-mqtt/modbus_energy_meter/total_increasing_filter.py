@@ -404,6 +404,5 @@ def reset_filter() -> None:
             reset_filter()  # Alle gespeicherten Werte verwerfen
             reconnect()
     """
-    global _filter_instance
     if _filter_instance is not None:
         _filter_instance.reset()
