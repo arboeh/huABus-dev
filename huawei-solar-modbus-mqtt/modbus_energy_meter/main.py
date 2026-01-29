@@ -489,14 +489,14 @@ async def main_once(client: AsyncHuaweiSolar, cycle_num: int) -> None:
     if not topic:
         raise RuntimeError("HUAWEI_MODBUS_MQTT_TOPIC not set")
 
-    start = time.time()
+    start: float = time.time()
     logger.debug("Starting cycle")
 
     # === PHASE 1: Modbus Read ===
-    modbus_start = time.time()
+    modbus_start: float = time.time()
     try:
         data = await read_registers(client)
-        modbus_duration = time.time() - modbus_start
+        modbus_duration: float = time.time() - modbus_start
     except Exception as e:
         # Unterscheide zwischen Modbus-Fehler und anderen Fehlern
         # für besseres Logging
@@ -520,21 +520,21 @@ async def main_once(client: AsyncHuaweiSolar, cycle_num: int) -> None:
     # 3. None-Werte entfernen
     # 4. Timestamp hinzufügen
     # NICHT MEHR: total_increasing Filter (wird jetzt in Phase 3 gemacht!)
-    transform_start = time.time()
+    transform_start: float = time.time()
     transformed = transform_data(data)
-    transform_duration = time.time() - transform_start
+    transform_duration: float = time.time() - transform_start
 
     # === NEU: PHASE 3: Filter ===
     # total_increasing Filter VOR MQTT Publish anwenden!
     # Verhindert dass 0-Werte (Modbus-Lesefehler) nach MQTT gelangen
     # und dort Utility Meter Helper durcheinanderbringen
-    filter_start = time.time()
+    filter_start: float = time.time()
     filter_instance = get_filter()
     mqtt_data = filter_instance.filter(transformed)
     filter_duration = time.time() - filter_start
 
     # === PHASE 4: MQTT Publish (mit gefilterten Daten!) ===
-    mqtt_start = time.time()
+    mqtt_start: float = time.time()
     publish_data(mqtt_data, topic)  # ← mqtt_data statt transformed!
     mqtt_duration = time.time() - mqtt_start
 
