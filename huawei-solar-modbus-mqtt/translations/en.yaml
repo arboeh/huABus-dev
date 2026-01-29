@@ -1,131 +1,48 @@
 configuration:
   modbus_host:
     name: Inverter IP Address
-    description: >
-      IP address of your Huawei Solar Inverter in your local network.
-
-      💡 Tip: Find the IP in your router's DHCP settings or active connections.
-
-      📍 Example: 192.168.1.100
+    description: IP address of your Huawei SUN2000 inverter (e.g. 192.168.1.100)
 
   modbus_port:
-    name: Modbus TCP Port
-    description: >
-      Modbus TCP port of the inverter.
-
-      🔧 Default: 502 (usually no change needed)
-
-      ℹ️ Only change if you configured a custom port.
+    name: Modbus Port
+    description: Modbus TCP port (default 502)
 
   slave_id:
-    name: Modbus Slave ID
-    description: >
-      Slave ID of your inverter in the Modbus network.
-
-      🎯 Usually: 1 (default for most Huawei inverters)
-      🔀 Sometimes: 0 or 16 (depending on model)
-      👥 Multiple inverters: Check manufacturer documentation
-
-      📊 Valid range: 1-247
+    name: Slave ID
+    description: Modbus Slave ID of the inverter. Usually 1, sometimes 0 or 16. Try different values if you get connection timeouts!
 
   mqtt_host:
-    name: MQTT Broker Address
-    description: >
-      Hostname or IP address of the MQTT broker.
-
-      🏠 For Mosquitto add-on: "core-mosquitto"
-      🌐 For external broker: IP address or hostname
-
-      📍 Examples:
-      • core-mosquitto (recommended for HA-internal broker)
-      • 192.168.1.50
-      • mqtt.local
+    name: MQTT Broker
+    description: Hostname of the MQTT broker (default core-mosquitto for Home Assistant add-on)
 
   mqtt_port:
-    name: MQTT Broker Port
-    description: >
-      Port of the MQTT broker.
-
-      🔧 Default: 1883 (unencrypted)
-      🔒 With TLS: 8883 (encrypted)
-
-      ℹ️ Usually no change needed.
+    name: MQTT Port
+    description: Port of the MQTT broker (default 1883)
 
   mqtt_user:
     name: MQTT Username
-    description: >
-      Username for MQTT authentication.
-
-      🔓 Optional: Leave empty if no authentication is required
-      🔐 Recommended: Set username for better security
-
-      💡 For Mosquitto add-on: Create user under "Mosquitto Broker" → "Logins"
+    description: Optional - Leave empty to use credentials from Home Assistant MQTT service
 
   mqtt_password:
     name: MQTT Password
-    description: >
-      Password for MQTT authentication.
-
-      🔓 Optional: Leave empty if no authentication is required
-      🔐 Recommended: Use a strong password
-
-      💡 Must match the user created under "MQTT Username"
+    description: Optional - Leave empty to use credentials from Home Assistant MQTT service
 
   mqtt_topic:
-    name: MQTT Base Topic
-    description: >
-      Main topic under which all sensor data will be published.
-
-      📡 Default: "huawei-solar"
-      📊 All sensors will appear under this topic
-
-      ℹ️ Multiple inverters: Use different topics
-      📍 Examples: huawei-solar, inverter-1, solar-garage
+    name: MQTT Topic
+    description: Base topic where sensor data will be published (e.g. huawei-solar)
 
   log_level:
     name: Log Level
-    description: >
-      Verbosity of log output in the add-on.
-
-      🔍 TRACE: Maximum detail incl. Modbus bytes (deep debugging only)
-      🐛 DEBUG: Detailed with cycle timings and filter decisions
-      ℹ️ INFO: Normal (recommended) - shows only important events
-      ⚠️ WARNING: Warnings and errors only
-      ❌ ERROR: Errors only
-
-      💡 For normal operation: INFO
-      💡 When troubleshooting: Enable DEBUG
+    description: "TRACE: Everything | DEBUG: Detailed performance metrics | INFO: Important events (recommended) | WARNING/ERROR: Problems only"
 
   status_timeout:
-    name: Offline Timeout
-    description: >
-      Time in seconds after which the inverter is marked as offline
-      when no successful connection is possible.
-
-      ⏱️ Default: 180 seconds (3 minutes)
-      📊 Range: 30-600 seconds
-
-      💡 Lower value: Faster offline detection
-      💡 Higher value: More tolerant to brief network issues
+    name: Status Timeout
+    description: Time in seconds before status switches to offline when no data is received (default 180s)
 
   poll_interval:
     name: Poll Interval
-    description: >
-      Time interval in seconds between data queries from the inverter.
+    description: Interval in seconds between Modbus queries. Recommended 30-60s for optimal balance between data freshness and network load
 
-      ⏱️ Default: 30 seconds (recommended for best balance)
-      📊 Range: 10-300 seconds
-
-      ⚡ Shorter intervals (10-20s): More current data, higher network load
-      🐌 Longer intervals (60-300s): Less load, less current data
-
-      💡 For solar monitoring: 30 seconds is optimal
-
-network:
-  host:
-    name: MQTT Broker Host
-    description: Hostname or IP address of the MQTT broker (automatically taken from mqtt_host)
-
-  port:
-    name: MQTT Broker Port
-    description: Port of the MQTT broker (automatically taken from mqtt_port)
+  filter_energy_resets:
+    name: Export Energy Filter
+    description: "⚡ Experimental: Prevents jumps in export counters during inverter state changes (e.g. night Standby → Running). Only enable if you experience Utility Meter issues!"
