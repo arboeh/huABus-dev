@@ -540,7 +540,7 @@ async def main_once(client: AsyncHuaweiSolar, cycle_num: int) -> None:
 
     # Erfolg markieren für Heartbeat
     LAST_SUCCESS = time.time()
-    cycle_duration = time.time() - start
+    cycle_duration: float = time.time() - start
 
     # === PHASE 5: Logging ===
     timings = {

@@ -204,7 +204,7 @@ def connect_mqtt() -> None:
     # Warte bis _is_connected True ist (wird von _on_connect gesetzt)
     # Polling alle 100ms, max 10 Sekunden
     timeout: float = 10
-    waited = 0
+    waited: float = 0
     while not _is_connected and waited < timeout:
         time.sleep(0.1)
         waited += 0.1
