@@ -6,27 +6,30 @@ __pycache__/
 .Python
 *.pyc
 
+
 # Virtual Environments
 venv/
 env/
 ENV/
 .venv
 
-# Environment Variables (NEU!)
+
+# Environment Variables
 .env
 .env.*
 *.env
 .env.local
 .env.production
 
-# IDE
-.vscode/
+
+# IDE - VS Code
+.vscode/launch.json
+.vscode/tasks.json
+# .vscode/settings.json wird commitet (Team-Settings für Tests)
+
+# IDE - Other
 .idea/
-*.swp
-*.swo
-*~
-.project
-.settings/
+
 
 # OS
 .DS_Store
@@ -34,33 +37,62 @@ Thumbs.db
 .Spotlight-V100
 .Trashes
 
+
 # Build artifacts
 build/
+develop-eggs/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
 dist/
 *.egg-info/
+MANIFEST
+
 
 # Logs
 *.log
+
 
 # Home Assistant specific
 secrets.yaml
 home-assistant.log
 home-assistant_v2.db
 
-# Testing (NEU!)
+
+# Testing
 .pytest_cache/
 .coverage
 htmlcov/
 .tox/
+.nox/
+coverage.xml
+*.cover
+.hypothesis/
+test-results/
+tests/fixtures/local_*.yaml
 
-# Docker (NEU!)
+
+# Docker
 .dockerignore.backup
 
-# Temporary files (NEU!)
+
+# Temporary files
 *.tmp
 *.bak
 *.swp
 *~
 
-# Git (NEU!)
+
+# Git
 *.orig
+
+
+# ✅ NEU: VS Code Private Settings (Team-Settings bleiben)
+.vscode/launch.json
+.vscode/tasks.json

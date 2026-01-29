@@ -1,5 +1,36 @@
 # run_local.ps1 - Local development runner (PowerShell)
 
+param(
+    [switch]$Test,
+    [switch]$Coverage
+)
+
+# ===== TEST MODE =====
+if ($Test) {
+    Write-Host "🧪 Running tests..." -ForegroundColor Yellow
+    
+    if ($Coverage) {
+        pytest tests/ -v --cov=huawei-solar-modbus-mqtt/modbus_energy_meter --cov-report=html
+        if ($LASTEXITCODE -eq 0) {
+            Write-Host "✅ All tests passed!" -ForegroundColor Green
+            Write-Host "📊 Opening coverage report..." -ForegroundColor Cyan
+            start htmlcov/index.html
+        } else {
+            Write-Host "❌ Tests failed!" -ForegroundColor Red
+        }
+    } else {
+        pytest tests/ -v
+        if ($LASTEXITCODE -eq 0) {
+            Write-Host "✅ All tests passed!" -ForegroundColor Green
+        } else {
+            Write-Host "❌ Tests failed!" -ForegroundColor Red
+        }
+    }
+    
+    exit $LASTEXITCODE
+}
+
+# ===== NORMAL MODE =====
 Write-Host "========================================================================" -ForegroundColor Cyan
 Write-Host "🚀 huABus - Local Development" -ForegroundColor Green
 Write-Host "========================================================================" -ForegroundColor Cyan

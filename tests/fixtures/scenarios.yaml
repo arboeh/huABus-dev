@@ -1,0 +1,65 @@
+# Szenario 1: Neuer Meter installiert
+meter_change:
+  description: "New meter installed - first values should be accepted"
+  cycles:
+    - # Cycle 0: Installation - erster Wert 0
+      energy_grid_exported: 0
+      energy_yield_accumulated: 0
+      battery_charge_total: 0
+
+    - # Cycle 1: Erste Produktion - kleine Werte müssen durchkommen!
+      energy_grid_exported: 0.03
+      energy_yield_accumulated: 0.05
+      battery_charge_total: 0.02
+
+    - # Cycle 2: Normale Werte
+      energy_grid_exported: 0.15
+      energy_yield_accumulated: 0.25
+      battery_charge_total: 0.10
+
+# Szenario 2: Modbus-Lesefehler (Drops auf 0)
+modbus_errors:
+  description: "Modbus read errors causing drops to zero"
+  cycles:
+    - # Cycle 0: Normale Werte
+      energy_grid_exported: 5432.1
+      energy_yield_accumulated: 15420.5
+      battery_charge_total: 4804.5
+
+    - # Cycle 1: Modbus-Fehler → 0 (soll gefiltert werden!)
+      energy_grid_exported: 0
+      energy_yield_accumulated: 0
+      battery_charge_total: 0
+
+    - # Cycle 2: Wieder normal (höher als vor dem Fehler)
+      energy_grid_exported: 5432.8
+      energy_yield_accumulated: 15421.2
+      battery_charge_total: 4805.1
+
+# Szenario 3: Toleranz-Grenze (5%)
+tolerance_edge:
+  description: "Values at 5% tolerance threshold"
+  cycles:
+    - # Cycle 0: Baseline
+      energy_grid_exported: 10000.0
+
+    - # Cycle 1: 4.9% Drop → Sollte akzeptiert werden (innerhalb Toleranz)
+      energy_grid_exported: 9510.0
+
+    - # Cycle 2: Zurück zu 10000
+      energy_grid_exported: 10000.0
+
+    - # Cycle 3: 5.1% Drop → Sollte gefiltert werden (außerhalb Toleranz)
+      energy_grid_exported: 9490.0
+
+# Szenario 4: Negative Werte (unmöglich für Energy Counter)
+negative_values:
+  description: "Negative values should always be filtered"
+  cycles:
+    - energy_grid_exported: 5432.1
+
+    - # Negativer Wert → muss gefiltert werden
+      energy_grid_exported: -10.5
+
+    - # Wieder positiv
+      energy_grid_exported: 5432.8
