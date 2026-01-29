@@ -41,14 +41,12 @@ from .total_increasing_filter import get_filter, reset_filter
 from .transform import transform_data
 
 try:
-    from pymodbus.exceptions import ModbusException  # type: ignore
-    from pymodbus.pdu import ExceptionResponse  # type: ignore
+    from pymodbus.exceptions import ModbusException
+    from pymodbus.pdu import ExceptionResponse
 
     MODBUS_EXCEPTIONS = (ModbusException, ExceptionResponse)
 except ImportError:
-    # Fallback wenn pymodbus nicht verfügbar (sollte nie passieren,
-    # aber macht Code robuster bei Library-Problemen)
-    MODBUS_EXCEPTIONS = ()
+    MODBUS_EXCEPTIONS = ()  # type: ignore[assignment]
 
 # Logger für dieses Modul
 logger = logging.getLogger("huawei.main")
@@ -569,7 +567,7 @@ async def main_once(client: AsyncHuaweiSolar, cycle_num: int) -> None:
     # Warnung wenn Cycle zu lange dauert (> 80% vom poll_interval)
     # Beispiel: poll_interval=30s, cycle=25s → 83% → WARNING
     # Grund: Nächster Cycle wird verzögert, Daten kommen nicht rechtzeitig
-    poll_interval = int(os.environ.get("HUAWEI_POLL_INTERVAL", "30"))
+    poll_interval: float = int(os.environ.get("HUAWEI_POLL_INTERVAL", "30"))
     if cycle_duration > poll_interval * 0.8:
         logger.warning(
             "Cycle %.1fs > 80%% poll_interval (%ds)", cycle_duration, poll_interval
