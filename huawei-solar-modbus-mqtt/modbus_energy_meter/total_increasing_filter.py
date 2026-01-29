@@ -14,7 +14,7 @@ und verhindert, dass ungültige Werte zu Home Assistant gelangen.
 
 import logging
 import os
-from typing import Optional, Dict, Any
+from typing import Any, Dict, Optional
 
 logger = logging.getLogger("huawei.filter")
 
@@ -95,6 +95,7 @@ class TotalIncreasingFilter:
                     # 0 wurde durch letzten gültigen Wert ersetzt
         """
         result = data.copy()
+        filtered_count = 0
 
         for key, value in data.items():
             # Nur numerische Werte prüfen
@@ -107,11 +108,24 @@ class TotalIncreasingFilter:
                 last_value = self.get_last_value(key)
                 if last_value is not None:
                     result[key] = last_value
-                    logger.debug(f"Replaced {key}: {value} → {last_value} (filtered)")
+                    filtered_count += 1
+                    logger.debug(
+                        f"⚠️ Replaced {key}: {value} → {last_value:.2f} (filtered)"
+                    )
                 else:
                     # Kein letzter Wert verfügbar → Original behalten
                     # (sollte nur beim allerersten Cycle passieren)
-                    logger.warning(f"Cannot filter {key}: {value} (no previous value)")
+                    logger.warning(
+                        f"⚠️ Cannot filter {key}: {value} (no previous value)"
+                    )
+        else:
+            # Logge auch akzeptierte Werte (nur bei DEBUG)
+            if key in self.TOTAL_INCREASING_KEYS:
+                last = self.get_last_value(key)
+                if last is not None:
+                    logger.debug(f"✓ Accepted {key}: {last:.2f} → {value:.2f}")
+                else:
+                    logger.debug(f"✓ First value for {key}: {value:.2f}")
 
         return result
 

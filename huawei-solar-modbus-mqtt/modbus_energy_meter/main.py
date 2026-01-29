@@ -24,24 +24,25 @@ import logging
 import os
 import sys
 import time
-from typing import Dict, Any
+from typing import Any, Dict
 
-from huawei_solar import AsyncHuaweiSolar
-from .error_tracker import ConnectionErrorTracker
+from huawei_solar import AsyncHuaweiSolar  # type: ignore
+
 from .config.registers import ESSENTIAL_REGISTERS
+from .error_tracker import ConnectionErrorTracker
 from .mqtt_client import (
     connect_mqtt,
     disconnect_mqtt,
-    publish_status,
-    publish_discovery_configs,
     publish_data,
+    publish_discovery_configs,
+    publish_status,
 )
-from .transform import transform_data
 from .total_increasing_filter import get_filter, reset_filter
+from .transform import transform_data
 
 try:
-    from pymodbus.exceptions import ModbusException
-    from pymodbus.pdu import ExceptionResponse
+    from pymodbus.exceptions import ModbusException  # type: ignore
+    from pymodbus.pdu import ExceptionResponse  # type: ignore
 
     MODBUS_EXCEPTIONS = (ModbusException, ExceptionResponse)
 except ImportError:

@@ -1,9 +1,9 @@
 """Mock für AsyncHuaweiSolar mit Test-Szenarien"""
 
 from pathlib import Path
-from typing import Any, Dict, Optional
+from typing import Dict, Optional
 
-import yaml
+import yaml  # type: ignore
 
 
 class MockRegisterValue:
@@ -34,7 +34,7 @@ class MockHuaweiSolar:
 
     def _load_scenarios(self) -> Dict:
         """Lädt Test-Szenarien aus YAML"""
-        with open(self.scenario_file) as f:
+        with open(self.scenario_file, encoding="utf-8") as f:
             return yaml.safe_load(f)
 
     def load_scenario(self, name: str):

@@ -63,3 +63,83 @@ negative_values:
 
     - # Wieder positiv
       energy_grid_exported: 5432.8
+
+# Szenario 5: Add-on Restart (HANTs Problem!)
+addon_restart:
+  description: "Add-on restarts - sensor becomes unavailable then returns"
+  cycles:
+    - # Cycle 0: Normaler Betrieb
+      energy_grid_exported: 5432.1
+      energy_yield_accumulated: 15420.5
+      battery_charge_total: 4804.5
+
+    - # Cycle 1: Noch normal
+      energy_grid_exported: 5432.8
+      energy_yield_accumulated: 15421.2
+      battery_charge_total: 4805.1
+
+    # === RESTART PASSIERT HIER ===
+    # Filter wird reset, last_values sind weg
+
+    - # Cycle 2: Nach Restart - erster Wert nach Filter-Reset
+      energy_grid_exported: 5433.5 # ← Höher als vor Restart
+      energy_yield_accumulated: 15422.0
+      battery_charge_total: 4805.8
+
+    - # Cycle 3: Normaler Betrieb wieder
+      energy_grid_exported: 5434.2
+      energy_yield_accumulated: 15422.7
+      battery_charge_total: 4806.5
+
+# Szenario 6: Startup mit letztem bekannten Wert
+startup_with_previous_value:
+  description: "Startup - last value from before shutdown"
+  cycles:
+    - # Cycle 0: Letzter Wert vor Shutdown (z.B. 23:59 Uhr)
+      energy_grid_exported: 5432.1
+
+    # === SHUTDOWN ÜBER NACHT ===
+
+    - # Cycle 1: Startup am nächsten Morgen (6:00 Uhr)
+      # Wert ist HÖHER (Nacht-Einspeisung ist passiert)
+      energy_grid_exported: 5435.8
+
+    - # Cycle 2: Normal weiter
+      energy_grid_exported: 5436.5
+
+# Szenario 7: Modbus-Fehler während laufendem Betrieb
+intermittent_modbus_failures:
+  description: "Random Modbus failures during operation"
+  cycles:
+    - energy_grid_exported: 5432.1
+
+    - energy_grid_exported: 5432.8
+
+    - # Modbus-Fehler → 0
+      energy_grid_exported: 0
+
+    - # Wieder normal (sollte auf 5433.5 springen, nicht 0)
+      energy_grid_exported: 5433.5
+
+    - # Nochmal Fehler
+      energy_grid_exported: 0
+
+    - # Wieder normal
+      energy_grid_exported: 5434.2
+
+# Szenario 8: HA Utility Meter Edge Case
+utility_meter_reset_simulation:
+  description: "Simulates what HA Utility Meter sees during restart"
+  cycles:
+    - # Tag 1, 23:50 Uhr
+      energy_grid_exported: 5432.1
+      timestamp: "2026-01-28T23:50:00"
+
+    - # Tag 2, 00:05 Uhr (nach Midnight Reset)
+      # Utility Meter hat resetet, aber Sensor-Wert ist weiter gestiegen
+      energy_grid_exported: 5432.3
+      timestamp: "2026-01-29T00:05:00"
+
+    - # Tag 2, 06:00 Uhr (nach Add-on Restart)
+      energy_grid_exported: 5435.8
+      timestamp: "2026-01-29T06:00:00"
