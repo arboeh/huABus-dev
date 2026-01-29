@@ -612,10 +612,10 @@ Das Add-on verfügt über einen integrierten Health Check:
 - Status sichtbar in: **Einstellungen → Add-ons → Huawei Solar → Status**
 - Bei `unhealthy` → Add-on neu starten
 
-Vollständiger Changelog: [CHANGELOG.md](https://github.com/arboeh/homeassistant-huawei-solar-addon/blob/main/huawei-solar-modbus-mqtt/CHANGELOG.md)
+Vollständiger Changelog: [CHANGELOG.md](https://github.com/arboeh/huABus/blob/main/huawei-solar-modbus-mqtt/CHANGELOG.md)
 
 ## Support & Weiterentwicklung
 
-- **GitHub Repository:** [arboeh/homeassistant-huawei-solar-addon](https://github.com/arboeh/homeassistant-huawei-solar-addon)
-- **Issues & Feature Requests:** [GitHub Issue Templates](https://github.com/arboeh/homeassistant-huawei-solar-addon/issues/new/choose)
+- **GitHub Repository:** [arboeh/huABus](https://github.com/arboeh/huABus)
+- **Issues & Feature Requests:** [GitHub Issue Templates](https://github.com/arboeh/huABus/issues/new/choose)
 - **Basierend auf:** [mjaschen/huawei-solar-modbus-to-mqtt](https://github.com/mjaschen/huawei-solar-modbus-to-mqtt)

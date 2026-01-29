@@ -62,6 +62,19 @@ error_tracker = ConnectionErrorTracker(log_interval=60)
 # 0 = noch kein erfolgreicher Read (Startup-Phase)
 LAST_SUCCESS = 0
 
+TRACE = 5  # DEBUG ist 10, INFO ist 20, WARNING ist 30
+logging.addLevelName(TRACE, "TRACE")
+
+
+def trace(self, message, *args, **kwargs):
+    """Custom TRACE logging method für ultra-detailliertes Debugging"""
+    if self.isEnabledFor(TRACE):
+        self._log(TRACE, message, args, **kwargs)
+
+
+# TRACE zu Logger-Klasse hinzufügen
+logging.Logger.trace = trace  # type: ignore[attr-defined]
+
 
 def init_logging() -> None:
     """
@@ -81,6 +94,13 @@ def init_logging() -> None:
 
     logger.info(f"📋 Logging initialized: {logging.getLevelName(log_level)}")
 
+    if log_level <= logging.DEBUG:
+        logger.debug(
+            f"📋 External loggers: "
+            f"pymodbus={logging.getLevelName(logging.getLogger('pymodbus').level)}, "
+            f"huawei_solar={logging.getLevelName(logging.getLogger('huawei_solar').level)}"
+        )
+
 
 def _parse_log_level() -> int:
     """
@@ -91,16 +111,18 @@ def _parse_log_level() -> int:
     2. HUAWEI_MODBUS_DEBUG=yes (Legacy für Abwärtskompatibilität)
 
     Returns:
-        logging.DEBUG (10), INFO (20), WARNING (30) oder ERROR (40)
+        TRACE (5), DEBUG (10), INFO (20), WARNING (30) oder ERROR (40)
 
     Beispiel ENV-Konfiguration:
-        HUAWEI_LOG_LEVEL=DEBUG    → Zeigt alle Details, Register-Reads, Timings
-        HUAWEI_LOG_LEVEL=INFO     → Zeigt Cycle-Zusammenfassungen, Errors
-        HUAWEI_LOG_LEVEL=WARNING  → Zeigt nur Warnungen und Fehler
-        HUAWEI_LOG_LEVEL=ERROR    → Zeigt nur Fehler
+        HUAWEI_LOG_LEVEL=TRACE    → Zeigt ALLES (inkl. Register-Bytes)
+        HUAWEI_LOG_LEVEL=DEBUG    → Zeigt Details, aber ohne Byte-Arrays
+        HUAWEI_LOG_LEVEL=INFO     → Nur Cycle-Zusammenfassungen
+        HUAWEI_LOG_LEVEL=WARNING  → Nur Warnungen und Fehler
+        HUAWEI_LOG_LEVEL=ERROR    → Nur Fehler
     """
     level_str = os.environ.get("HUAWEI_LOG_LEVEL", "INFO").upper()
     level_map = {
+        "TRACE": TRACE,
         "DEBUG": logging.DEBUG,
         "INFO": logging.INFO,
         "WARNING": logging.WARNING,
@@ -151,51 +173,48 @@ def _setup_root_logger(level: int) -> None:
 
 def _configure_pymodbus(level: int) -> None:
     """
-    Konfiguriert pymodbus Logger - standardmäßig auf ERROR beschränken.
-
-    Problem: pymodbus ist sehr verbose und loggt bei INFO/DEBUG zu viele
-    technische Details (Register-Adressen, Byte-Arrays, Protokoll-Details).
-
-    Lösung: Standardmäßig nur ERROR-Level, außer bei explizitem DEBUG-Modus.
+    Konfiguriert pymodbus Logger mit 3 Stufen.
 
     Args:
         level: Haupt-Log-Level (aus HUAWEI_LOG_LEVEL)
 
-    Beispiel bei level=INFO:
-        pymodbus Logger wird auf ERROR gesetzt → keine Register-Details
-
-    Beispiel bei level=DEBUG:
-        pymodbus Logger wird auf DEBUG gesetzt → alle Modbus-Protokoll-Details
-        Nützlich bei Verbindungsproblemen oder Register-Debugging
+    Level-Mapping:
+        TRACE   → pymodbus auf DEBUG (alle Byte-Arrays, Register-Details)
+        DEBUG   → pymodbus auf INFO (Übersicht ohne Byte-Arrays)
+        INFO+   → pymodbus auf WARNING (nur Warnungen/Fehler)
     """
-    pymodbus_logger = logging.getLogger("pymodbus")
-    # Immer ERROR, außer wenn Hauptlevel DEBUG ist
-    pymodbus_logger.setLevel(logging.ERROR if level != logging.DEBUG else logging.DEBUG)
+    for logger_name in ["pymodbus", "pymodbus.logging"]:
+        pymodbus_logger = logging.getLogger(logger_name)
+
+        if level == TRACE:
+            pymodbus_logger.setLevel(logging.DEBUG)
+        elif level == logging.DEBUG:
+            pymodbus_logger.setLevel(logging.INFO)
+        else:
+            pymodbus_logger.setLevel(logging.WARNING)
 
 
 def _configure_huawei_solar(level: int) -> None:
     """
-    Konfiguriert huawei_solar Library Logger - Tracebacks unterdrücken.
-
-    Die huawei_solar Library loggt interne State-Änderungen und Register-Mappings.
-    Bei normalem Betrieb ist das zu detailliert, nur bei Debugging relevant.
+    Konfiguriert huawei_solar Library Logger mit 3 Stufen.
 
     Args:
         level: Haupt-Log-Level (aus HUAWEI_LOG_LEVEL)
 
-    Bei INFO/WARNING/ERROR:
-        huawei_solar auf ERROR → Nur echte Library-Fehler
-
-    Bei DEBUG:
-        huawei_solar auf DEBUG → Alle Library-Internals
-        Zeigt z.B. wie Register-Namen zu Modbus-Adressen gemappt werden
+    Level-Mapping:
+        TRACE   → huawei_solar auf DEBUG (alle Register-Mappings, State-Changes)
+        DEBUG   → huawei_solar auf INFO (Übersicht der Register-Reads)
+        INFO+   → huawei_solar auf WARNING (nur Warnungen/Fehler)
     """
-    hs_logger = logging.getLogger("huawei_solar")
-    # Bei INFO nur WARNING+, bei DEBUG alles
-    if level == logging.DEBUG:
-        hs_logger.setLevel(logging.DEBUG)
-    else:
-        hs_logger.setLevel(logging.ERROR)  # Nur echte Errors
+    for logger_name in ["huawei_solar", "huawei_solar.huawei_solar"]:
+        hs_logger = logging.getLogger(logger_name)
+
+        if level == TRACE:
+            hs_logger.setLevel(logging.DEBUG)
+        elif level == logging.DEBUG:
+            hs_logger.setLevel(logging.INFO)
+        else:
+            hs_logger.setLevel(logging.WARNING)
 
 
 def heartbeat(topic: str) -> None:

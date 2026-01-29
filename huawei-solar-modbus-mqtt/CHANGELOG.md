@@ -2,6 +2,152 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.6.2] - 2026-01-29
+
+### Added
+
+- **TRACE Log Level**: Ultra-detailed logging for deep debugging
+  - New log level below DEBUG for maximum verbosity
+  - Shows all Modbus byte arrays, register mappings, and library internals
+  - Useful for protocol-level debugging and connection analysis
+  - Added to config schema: `log_level: list(TRACE|DEBUG|INFO|WARNING|ERROR)`
+  - External library log levels automatically adjusted:
+    - TRACE: pymodbus=DEBUG, huawei_solar=DEBUG
+    - DEBUG: pymodbus=INFO, huawei_solar=INFO
+    - INFO+: pymodbus=WARNING, huawei_solar=WARNING
+
+- **Comprehensive Test Suite**: 43 tests covering all critical functionality
+  - **Unit Tests**: `test_filter.py` - 17 tests for filter logic
+    - Basic filtering (negative values, drops, valid increases)
+    - Edge cases (zero handling, exact tolerance, multiple drops)
+    - Statistics tracking and reset functionality
+  - **Integration Tests**: `test_integration.py` - 10 tests for component interaction
+    - Transform pipeline with filter integration
+    - MQTT client lifecycle (connect, publish, disconnect)
+    - Error scenarios and recovery
+  - **E2E Tests**: `test_e2e.py` - 7 tests for complete workflows
+    - Full cycle with mock inverter and MQTT broker
+    - Connection handling and status updates
+    - Filter activity in real scenarios
+  - **Warmup Tests**: `test_warmup.py` - 6 tests for warmup period
+    - Initial value learning (60 second warmup)
+    - Warmup completion behavior
+    - Edge cases (immediate valid values, all filtered during warmup)
+  - **Bug Regression Tests**: `test_hant_issue.py` - 3 tests for Issue #7
+    - Verifies filter runs before MQTT publish
+    - Ensures zero values never reach Home Assistant
+    - Tests filter timing in complete pipeline
+  - **Test Fixtures**: Mock inverter and MQTT broker with realistic scenarios
+  - **CI/CD Integration**: GitHub Actions workflow for automated testing
+
+- **Warmup Period**: Filter stability improvement for startup scenarios
+  - First 60 seconds after startup treated as "warmup period"
+  - Filter learns valid baseline values before applying strict filtering
+  - Prevents false positives when starting with unknown state
+  - Visual indicators in logs:
+    - During warmup: `🔥 Warmup active (42/60s) - Learning valid values`
+    - After warmup: `✅ Warmup complete (60/60s) - Filter now active`
+
+### Changed
+
+- **Enhanced Translations**: Improved German and English configuration descriptions
+  - Added concrete examples (e.g., IP addresses, hostnames)
+  - Included helpful hints (e.g., "Use core-mosquitto for Mosquitto add-on")
+  - Explained all log levels with use cases and emoji indicators
+  - Better guidance for beginners (slave_id ranges, timeout recommendations)
+  - Multi-line descriptions with visual structure for better readability
+
+- **Documentation Localization**: Fixed DOCS file naming convention
+  - Renamed `DOCS_de.md` to `DOCS.de.md` (correct Home Assistant locale format)
+  - Enables proper German documentation display for German-speaking users
+  - English users see `DOCS.md`, German users see `DOCS.de.md`
+
+- **Log Level Configuration**: Extended supported log levels in config.yaml
+  - Schema updated from `DEBUG|INFO|WARNING|ERROR` to `TRACE|DEBUG|INFO|WARNING|ERROR`
+  - Backwards compatible - existing configurations continue to work
+
+- **Filter Logging**: Enhanced warmup status visibility
+  - Clear indication when warmup is active vs. complete
+  - Shows progress during warmup period (e.g., "42/60s")
+  - Filter statistics only shown after warmup completion
+
+### Fixed
+
+- **Filter Warmup Edge Cases**: Improved stability during startup
+  - Filter now correctly handles first valid values during warmup
+  - Prevents false filtering of legitimate startup values
+  - Better handling when all warmup values are filtered
+  - Fixes potential issues with inverter restart scenarios
+
+- **Filter Statistics**: Corrected counter behavior
+  - Statistics now properly reset after reporting
+  - No longer shows stale filter counts from previous periods
+  - Accurate representation of filter activity over time
+
+### Documentation
+
+- **Translation Files**: Comprehensive German and English UI translations
+  - `translations/de.yaml`: Complete German configuration UI
+  - `translations/en.yaml`: Complete English configuration UI
+  - All 11 configuration options fully documented
+  - Includes examples, tips, and best practices for each field
+  - Emoji indicators for better visual scanning (💡, 📍, ⏱️, 🔧, 🔍)
+
+- **README Updates**:
+  - Version bump references updated to 1.6.2
+  - Added note about TRACE log level in feature list
+  - Added note about comprehensive test suite
+  - Improved troubleshooting section with log level recommendations
+  - Updated "What's new" section with warmup period feature
+
+- **Test Documentation**: Added comprehensive testing documentation
+  - Test coverage overview in README
+  - Instructions for running tests locally
+  - Explanation of test fixtures and scenarios
+  - CI/CD integration documentation
+
+### Technical Details
+
+- **Logging Enhancements**:
+  - New `TRACE` constant (value: 5) in logging module
+  - Custom `trace()` method added to Logger class
+  - `_parse_log_level()` now handles TRACE string
+  - `_configure_pymodbus()` and `_configure_huawei_solar()` support TRACE level
+  - Log level mapping:
+    ```
+    TRACE (5)   → All libraries at DEBUG
+    DEBUG (10)  → Libraries at INFO (filtered details)
+    INFO (20)   → Libraries at WARNING (quiet)
+    WARNING+    → Libraries at WARNING
+    ```
+
+- **Filter Improvements**:
+  - `TotalIncreasingFilter` class now tracks warmup state
+  - `_warmup_start` timestamp initialized on first use
+  - `_is_warmup_complete()` method checks elapsed time
+  - Warmup status included in filter logs
+  - Statistics reset logic improved for accurate reporting
+
+- **Test Infrastructure**:
+  - `pytest` with coverage reporting (pytest-cov)
+  - Mock fixtures for Modbus inverter and MQTT broker
+  - Scenario-based testing with YAML configuration
+  - Async test support with pytest-asyncio
+  - Type checking with mypy in CI pipeline
+  - Code quality checks with flake8
+
+**Breaking Changes:** None - fully backwards compatible
+
+**Upgrade Notes:**
+
+- TRACE level available in config UI after update
+- Existing DEBUG configurations remain unchanged
+- Translation improvements visible immediately in UI
+- German documentation automatically shown for German users
+- Warmup period active by default (60s) - no configuration needed
+- Filter behavior more stable during startup scenarios
+- Tests can be run locally with `pytest tests/`
+
 ## [1.6.1] - 2026-01-29
 
 ### Fixed

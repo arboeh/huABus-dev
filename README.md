@@ -24,18 +24,27 @@
 >
 > Running multiple Modbus connections simultaneously will cause **connection timeouts and data loss** for all clients!
 
-**Version 1.6.1** – 58 Essential Registers, 69+ entities, ~2–5 s cycle time  
+**Version 1.6.2** – 58 Essential Registers, 69+ entities, ~2–5 s cycle time  
 **Changelog** - [CHANGELOG.md](huawei-solar-modbus-mqtt/CHANGELOG.md)
 
 ## Features
 
 - **Modbus TCP → MQTT:** 69+ entities with Auto-Discovery
 - **Complete Monitoring:** Battery, PV (1-4), Grid (3-phase), Yield, Grid Power
-- **total_increasing Filter (NEW):** Prevents false counter resets in Home Assistant energy statistics
+- **total_increasing Filter:** Prevents false counter resets in Home Assistant energy statistics
+  - Warmup period (60s) for stable filter initialization
+  - Automatic protection against Modbus read errors
+- **TRACE Log Level (NEW):** Ultra-detailed logging for deep debugging with Modbus byte arrays
+- **Comprehensive Test Suite (NEW):** 43 tests covering all critical functionality
+  - Unit tests for filter logic
+  - Integration tests for component interaction
+  - E2E tests for complete workflows
+  - Regression tests for bug fixes
 - **Performance:** ~2-5s cycle, configurable (30-60s recommended)
 - **Error Tracking:** Intelligent error aggregation with downtime tracking
 - **MQTT Stability:** Connection wait loop and retry logic for reliable publishing
 - **Optimized Logging:** Bashio log level synchronization with filter status indicators
+- **Enhanced Translations:** German and English UI with concrete examples and helpful tips
 - **Cross-Platform:** Supports all major architectures (aarch64, amd64, armhf, armv7, i386)
 
 ## 🚀 Quick Start
@@ -160,26 +169,40 @@ _Complete example with all 58+ data points: [examples/mqtt_payload.json](example
 
 _\* Sensors marked with asterisk are protected by total_increasing filter against false counter resets_
 
-## What's new in 1.6.1?
+## What's new in 1.6.2?
 
-**Critical Bug Fix:** Filter timing issue resolved
+**TRACE Log Level, Tests & Filter Improvements**
 
-- **Fixed**: `total_increasing` filter now prevents zero values from reaching Home Assistant
-  - Filter moved **before** MQTT publish (was: after)
-  - Eliminates Utility Meter jumps caused by temporary Modbus read errors
-  - Fixes [Issue #7](https://github.com/arboeh/huABus/issues/7)
+- **New**: Ultra-detailed TRACE logging for maximum debugging
+  - Shows all Modbus bytes, register mappings, library internals
+  - Perfect for protocol-level debugging and connection analysis
+  - pymodbus and huawei_solar libraries set to DEBUG when TRACE is active
 
-**Technical improvement:**
+- **New**: Comprehensive test suite with 43 tests
+  - Unit tests for filter logic (17 tests)
+  - Integration tests for components (10 tests)
+  - E2E tests for complete workflows (7 tests)
+  - Warmup tests for startup scenarios (6 tests)
+  - Regression tests for Issue #7 (3 tests)
+  - Automated CI/CD pipeline with GitHub Actions
+- **Improved**: Filter with warmup period (60s)
+  - Filter learns valid baseline values after restart
+  - Prevents false filtering with unknown state
+  - Visual indicator: `🔥 Warmup active (42/60s)`
+  - Better stability after inverter restart
 
-```
-Old: Modbus → Transform → Publish (0!) → Filter ❌
-New: Modbus → Transform → Filter → Publish ✅
-```
+- **Improved**: German and English UI translations
+  - Concrete examples (IP addresses, hostnames)
+  - Helpful hints ("Use core-mosquitto for Mosquitto add-on")
+  - All log levels explained with use cases
+  - Better beginner support
 
-**Impact:** If you experienced daily export counters jumping by thousands of kWh, this update fixes it.
+- **Fixed**: Documentation localization
+  - `DOCS_de.md` → `DOCS.de.md` (correct Home Assistant format)
+  - German users now automatically see German documentation
 
-**Previous (1.6.0):** `total_increasing` filter for energy statistics  
-**Previous (1.5.0):** MQTT connection stability improvements
+**Previous (1.6.1):** Critical filter timing bug fix  
+**Previous (1.6.0):** `total_increasing` filter for energy statistics
 
 ## Troubleshooting
 
@@ -216,7 +239,7 @@ Found a bug or have a feature request? Please use our [GitHub Issue Templates](h
 ## Documentation
 
 - 🇬🇧 **[DOCS.md](huawei-solar-modbus-mqtt/DOCS.md)** - Complete Documentation
-- 🇩🇪 **[DOCS_de.md](huawei-solar-modbus-mqtt/DOCS_de.md)** - Vollständige Dokumentation
+- 🇩🇪 **[DOCS.de.md](huawei-solar-modbus-mqtt/DOCS.de.md)** - Vollständige Dokumentation
 
 ## Credits
 

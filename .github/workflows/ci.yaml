@@ -1,0 +1,55 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main # Production
+      - dev # Development
+      - "feature/*" # Feature branches
+  pull_request:
+    branches:
+      - main # PRs to main
+      - dev # PRs to dev (optional)
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements-dev.txt
+
+      - name: Run tests
+        run: |
+          pytest tests/ -v --cov=modbus_energy_meter --cov-report=term-missing
+
+      - name: Lint
+        run: |
+          flake8 huawei-solar-modbus-mqtt/modbus_energy_meter --max-line-length=100
+
+      - name: Type check
+        run: |
+          mypy huawei-solar-modbus-mqtt/modbus_energy_meter --ignore-missing-imports
+        continue-on-error: true
+
+  validate-config:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Validate config.yaml
+        run: |
+          python -c "
+          import yaml
+          with open('huawei-solar-modbus-mqtt/config.yaml') as f:
+              config = yaml.safe_load(f)
+              assert 'version' in config
+              assert 'name' in config
+              print(f'✅ Config valid: {config[\"name\"]} v{config[\"version\"]}')
+          "

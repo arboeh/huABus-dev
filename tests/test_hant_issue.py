@@ -184,7 +184,7 @@ async def test_hant_intermittent_failures_dont_reach_mqtt():
 
     assert filtered_count == 1, f"Expected 1 filtered value, got {filtered_count}"
 
-    print(f"✅ HANT Test: Cycle 3 passed during warmup, Cycle 5 filtered")
+    print("✅ HANT Test: Cycle 3 passed during warmup, Cycle 5 filtered")
 
 
 @pytest.mark.asyncio

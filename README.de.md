@@ -24,23 +24,32 @@
 >
 > Mehrere gleichzeitige Modbus-Verbindungen führen zu **Connection-Timeouts und Datenverlust** für alle Clients!
 
-**Version 1.6.1** – 58 Essential Registers, 69+ entities, ~2–5 s cycle time  
+**Version 1.6.2** – 58 Essential Registers, 69+ entities, ~2–5 s cycle time  
 **Changelog** - [CHANGELOG.md](huawei-solar-modbus-mqtt/CHANGELOG.md)
 
 ## Features
 
 - **Modbus TCP → MQTT:** 69+ Entitäten mit Auto-Discovery
 - **Vollständiges Monitoring:** Batterie, PV (1-4), Netz (3-Phasen), Ertrag, Grid Power
-- **total_increasing Filter (NEU):** Verhindert falsche Counter-Resets in Home Assistant Energie-Statistiken
+- **total_increasing Filter:** Verhindert falsche Counter-Resets in Home Assistant Energie-Statistiken
+  - Warmup-Period (60s) für stabile Filter-Initialisierung
+  - Automatischer Schutz vor Modbus-Lesefehlern
+- **TRACE Log Level (NEU):** Ultra-detailliertes Logging für tiefes Debugging mit Modbus-Byte-Arrays
+- **Umfassende Test-Suite (NEU):** 43 Tests für alle kritischen Funktionen
+  - Unit Tests für Filter-Logik
+  - Integration Tests für Komponenten-Interaktion
+  - E2E Tests für komplette Workflows
+  - Regression Tests für Bug-Fixes
 - **Performance:** ~2-5s Cycle, konfigurierbar (30-60s empfohlen)
 - **Error Tracking:** Intelligente Fehler-Aggregation mit Downtime-Tracking
 - **MQTT-Stabilität:** Connection Wait-Loop und Retry-Logik für zuverlässiges Publishing
 - **Optimiertes Logging:** Bashio Log-Level Synchronisation mit Filter-Status-Indikatoren
+- **Verbesserte Übersetzungen:** Deutsche und englische UI mit konkreten Beispielen und Tipps
 - **Plattformübergreifend:** Unterstützt alle gängigen Architekturen (aarch64, amd64, armhf, armv7, i386)
 
 ## 🚀 Schnellstart
 
-**Neu bei huABus?** Schau dir unseren [5-Minuten-Schnellstart-Guide](huawei-solar-modbus-mqtt/DOCS_de.md#-schnellstart-5-minuten) an:
+**Neu bei huABus?** Schau dir unseren [5-Minuten-Schnellstart-Guide](huawei-solar-modbus-mqtt/DOCS.de.md#-schnellstart-5-minuten) an:
 
 - ✅ Schritt-für-Schritt Installation mit erwarteten Ausgaben
 - ✅ Verbindungsprobleme lösen (Slave ID, Timeouts)
@@ -160,26 +169,40 @@ _Komplettbeispiel mit allen 58+ Datenpunkten: siehe [examples/mqtt_payload.json]
 
 _\* Sensoren mit Sternchen sind durch total_increasing Filter vor falschen Counter-Resets geschützt_
 
-## Was ist neu in 1.6.1?
+## Was ist neu in 1.6.2?
 
-**Kritischer Bugfix:** Filter-Timing-Problem behoben
+**TRACE Log Level, Tests & Filter-Verbesserungen**
 
-- **Behoben**: `total_increasing` Filter verhindert jetzt zuverlässig Null-Werte in Home Assistant
-  - Filter läuft jetzt **vor** MQTT-Publish (vorher: danach)
-  - Eliminiert Utility-Meter-Sprünge durch temporäre Modbus-Lesefehler
-  - Behebt [Issue #7](https://github.com/arboeh/huABus/issues/7)
+- **Neu**: Ultra-detailliertes TRACE Logging für maximales Debugging
+  - Zeigt alle Modbus-Bytes, Register-Mappings, Library-Internals
+  - Perfekt für Protokoll-Level Debugging und Verbindungsanalyse
+  - pymodbus und huawei_solar Bibliotheken auf DEBUG bei TRACE
 
-**Technische Verbesserung:**
+- **Neu**: Umfassende Test-Suite mit 43 Tests
+  - Unit Tests für Filter-Logik (17 Tests)
+  - Integration Tests für Komponenten (10 Tests)
+  - E2E Tests für komplette Workflows (7 Tests)
+  - Warmup Tests für Startup-Szenarien (6 Tests)
+  - Regression Tests für Issue #7 (3 Tests)
+  - Automatisierte CI/CD Pipeline mit GitHub Actions
+- **Verbessert**: Filter mit Warmup-Period (60s)
+  - Filter lernt gültige Basis-Werte nach Neustart
+  - Verhindert falsche Filter-Aktivierung bei unbekanntem Zustand
+  - Visueller Indikator: `🔥 Warmup active (42/60s)`
+  - Bessere Stabilität nach Inverter-Restart
 
-```
-Alt: Modbus → Transform → Publish (0!) → Filter ❌
-Neu: Modbus → Transform → Filter → Publish ✅
-```
+- **Verbessert**: Deutsche und englische UI-Übersetzungen
+  - Konkrete Beispiele (IP-Adressen, Hostnames)
+  - Hilfreiche Tipps ("Use core-mosquitto for Mosquitto add-on")
+  - Alle Log-Level mit Anwendungsfällen erklärt
+  - Bessere Anfänger-Unterstützung
 
-**Auswirkung:** Falls deine täglichen Export-Zähler um Tausende kWh gesprungen sind, behebt dieses Update das Problem.
+- **Behoben**: Dokumentations-Lokalisierung
+  - `DOCS_de.md` → `DOCS.de.md` (korrektes Home Assistant Format)
+  - Deutsche Nutzer sehen jetzt automatisch deutsche Dokumentation
 
-**Vorher (1.6.0):** `total_increasing` Filter für Energie-Statistiken  
-**Vorher (1.5.0):** MQTT-Verbindungsstabilitäts-Verbesserungen
+**Vorher (1.6.1):** Kritischer Filter-Timing-Bugfix  
+**Vorher (1.6.0):** `total_increasing` Filter für Energie-Statistiken
 
 ## Fehlerbehebung
 
@@ -215,7 +238,7 @@ Bug gefunden oder Feature-Wunsch? Bitte nutze unsere [GitHub Issue Templates](ht
 
 ## Dokumentation
 
-- 🇩🇪 **[DOCS_de.md](huawei-solar-modbus-mqtt/DOCS_de.md)** - Vollständige Dokumentation
+- 🇩🇪 **[DOCS.de.md](huawei-solar-modbus-mqtt/DOCS.de.md)** - Vollständige Dokumentation
 - 🇬🇧 **[DOCS.md](huawei-solar-modbus-mqtt/DOCS.md)** - Complete Documentation
 
 ## Credits

@@ -73,43 +73,39 @@ class TotalIncreasingFilter:
         self._last_values: Dict[str, float] = {}  # Speichert letzte gültige Werte
         self._filter_count: Dict[str, int] = {}  # Zählt gefilterte Werte pro Sensor
 
-        # Warmup-Periode
-        self.warmup_mode = True
-        self.warmup_cycles = 0
-        self.warmup_required = warmup_cycles
+        # Warmup-Konfiguration
+        self._warmup_target = warmup_cycles  # ← Ziel (Konfiguration)
+        self._warmup_counter = 0  # ← Aktueller Stand (Counter)
+        self._warmup_active = True  # ← Status-Flag
 
         # First-Value Tracking
-        self.suspicious_first_values: Dict[str, float] = {}
+        self._suspicious_first_values: Dict[str, float] = {}
 
         logger.info(
             f"🛡️ TotalIncreasingFilter initialized with {self.tolerance*100:.0f}% tolerance "
-            f"and {self.warmup_required}-cycle warmup period"
+            f"and {self._warmup_target}-cycle warmup period"
         )
 
     def filter(self, data: Dict[str, Any]) -> Dict[str, Any]:
         """
         Filtert ein komplettes Daten-Dictionary.
 
-        Geht durch alle Werte im Dictionary und wendet should_filter()
-        auf jeden total_increasing Sensor an. Gefilterte Werte werden
-        durch den letzten gültigen Wert ersetzt.
-
         Args:
             data: Dictionary mit Sensor-Daten (MQTT-Format)
 
         Returns:
             Gefiltertes Dictionary (gefilterte Werte ersetzt)
-
-        Beispiel:
-            Input:  {'energy_yield_accumulated': 0, 'power_active': 4500}
-            Output: {'energy_yield_accumulated': 15420.5, 'power_active': 4500}
-                    # 0 wurde durch letzten gültigen Wert ersetzt
         """
         result = data.copy()
 
         # === WARMUP-PHASE ===
-        if self.warmup_mode:
-            self.warmup_cycles += 1
+        if self._warmup_active:
+            self._warmup_counter += 1
+
+            logger.info(
+                f"🔥 Warmup active ({self._warmup_counter}/{self._warmup_target} cycles) - "
+                f"Learning valid values"
+            )
 
             for key, value in data.items():
                 if key in self.TOTAL_INCREASING_KEYS and isinstance(
@@ -119,35 +115,31 @@ class TotalIncreasingFilter:
                         if value == 0:
                             logger.warning(
                                 f"⚠️ WARMUP: First value for {key} is 0 - "
-                                f"marking as suspicious (cycle {self.warmup_cycles}/{self.warmup_required})"
+                                f"marking as suspicious (cycle {self._warmup_counter}/{self._warmup_target})"
                             )
-                            self.suspicious_first_values[key] = 0
+                            self._suspicious_first_values[key] = 0
                         else:
                             logger.info(
                                 f"✅ WARMUP: First value for {key}: {value:.2f} "
-                                f"(cycle {self.warmup_cycles}/{self.warmup_required})"
+                                f"(cycle {self._warmup_counter}/{self._warmup_target})"
                             )
 
                     self._last_values[key] = value
 
-            if self.warmup_cycles >= self.warmup_required:
-                self.warmup_mode = False
+            # Warmup abgeschlossen?
+            if self._warmup_counter >= self._warmup_target:
+                self._warmup_active = False
                 logger.info(
-                    f"✅ Filter warmup complete after {self.warmup_cycles} cycles - "
-                    f"protection now ACTIVE"
+                    f"✅ Warmup complete after {self._warmup_counter} cycles - "
+                    f"Filter protection now ACTIVE"
                 )
 
-                if self.suspicious_first_values:
+                if self._suspicious_first_values:
                     logger.warning(
                         f"⚠️ Suspicious zero values detected during warmup: "
-                        f"{list(self.suspicious_first_values.keys())} - "
-                        f"monitoring closely for next cycles"
+                        f"{list(self._suspicious_first_values.keys())} - "
+                        f"monitoring closely"
                     )
-            else:
-                logger.debug(
-                    f"WARMUP: Cycle {self.warmup_cycles}/{self.warmup_required} - "
-                    f"storing values, no filtering yet"
-                )
 
             return result  # Während Warmup: Unverändert durchlassen
 
@@ -155,13 +147,10 @@ class TotalIncreasingFilter:
         filtered_count = 0
 
         for key, value in data.items():
-            # Nur numerische Werte prüfen
             if not isinstance(value, (int, float)):
                 continue
 
-            # Prüfen ob gefiltert werden soll
             if self.should_filter(key, value):
-                # Durch letzten gültigen Wert ersetzen
                 last_value = self.get_last_value(key)
                 if last_value is not None:
                     result[key] = last_value
@@ -174,8 +163,8 @@ class TotalIncreasingFilter:
                     logger.error(
                         f"❌ Cannot filter {key}={value:.2f} - no previous valid value!"
                     )
-            else:  # ✅ KORREKT: Gehört zu if self.should_filter()
-                # Logge auch akzeptierte Werte (nur bei DEBUG)
+            else:
+                # Logge akzeptierte Werte (nur bei DEBUG)
                 if key in self.TOTAL_INCREASING_KEYS:
                     last = self.get_last_value(key)
                     if last is not None:
@@ -246,12 +235,12 @@ class TotalIncreasingFilter:
             self._last_values[key] = value
 
             # Recovery from suspicious zero
-            if key in self.suspicious_first_values:
+            if key in self._suspicious_first_values:
                 logger.info(
                     f"✅ {key} recovered from suspicious zero: "
                     f"0 → {value:.2f} (normal operation resumed)"
                 )
-                del self.suspicious_first_values[key]
+                del self._suspicious_first_values[key]
 
             return False
 
@@ -336,15 +325,15 @@ class TotalIncreasingFilter:
         self._filter_count.clear()
 
         # Warmup neu starten
-        self.warmup_mode = True
-        self.warmup_cycles = 0
+        self._warmup_active = True
+        self._warmup_counter = 0
 
         # suspicious_first_values NICHT clearen (für Diagnose behalten)
         # Wenn du Diagnose-Historie behalten willst, ist das OK
         # Wenn du sauberen Reset willst: self.suspicious_first_values.clear()
 
         logger.info(
-            f"Filter reset - restarting {self.warmup_required}-cycle warmup period"
+            f"Filter reset - restarting {self._warmup_target}-cycle warmup period"
         )
 
 
