@@ -24,7 +24,7 @@
 >
 > Running multiple Modbus connections simultaneously will cause **connection timeouts and data loss** for all clients!
 
-**Version 1.7.0** – 58 Essential Registers, 69+ entities, ~2–5 s cycle time  
+**Version 1.7.1** – 58 Essential Registers, 69+ entities, ~2–5 s cycle time  
 **Changelog** - [CHANGELOG.md](huawei-solar-modbus-mqtt/CHANGELOG.md)
 
 ## Features
@@ -168,35 +168,24 @@ _Complete example with all 58+ data points: [examples/mqtt_payload.json](example
 
 _\* Sensors marked with asterisk are protected by total_increasing filter against false counter resets_
 
-## What's new in 1.7.0?
+## What's new in 1.7.1?
 
-**Simplified Filter Logic - No More Warmup or Tolerance**
+**Bugfix Release - Fixed restart zero-drops (HANT issue)**
 
-- **Removed**: Warmup period (60s learning phase)
-  - First value immediately accepted as baseline
-  - No more startup delay
-  - Simpler, more predictable behavior
-- **Removed**: Tolerance configuration (5% threshold)
-  - ALL counter drops now filtered (not just >5%)
-  - More strict protection against read errors
-  - No configuration needed - works out of the box
-- **Improved**: Filter code reduced by 60% (~300 → ~120 lines)
-  - Easier to maintain and understand
-  - Faster initialization
-  - All protection features retained
+- **Fixed**: Zero-drops on addon restart
+  - Filter now initialized before first cycle
+  - No unprotected moment during startup
+  - Energy counters protected from first publish onwards
 
-- **Added**: Pre-commit hooks with ruff
-  - Automatic code quality checks
-  - Consistent formatting across project
+- **Fixed**: Improved negative value handling
+- **Fixed**: Singleton reset behavior
+- **Added**: 12 comprehensive restart protection tests
 
-**Breaking Changes:**
+All tests passing: 51/51 ✅
 
-- `HUAWEI_FILTER_TOLERANCE` env var no longer used (silently ignored)
-- Filter now more strict: all drops filtered (previously allowed up to 5%)
-
-**Previous (1.6.2):** TRACE Log Level, comprehensive tests, warmup period  
-**Previous (1.6.1):** Critical filter timing bug fix  
-**Previous (1.6.0):** `total_increasing` filter introduction
+**Previous (1.7.0):** Filter simplification - No warmup, no tolerance  
+**Previous (1.6.2):** TRACE log level, comprehensive tests
+**Previous (1.6.2):** TRACE Log Level, comprehensive tests, warmup period
 
 ## Troubleshooting
 

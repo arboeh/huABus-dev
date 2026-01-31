@@ -2,6 +2,61 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.7.1] - 2026-01-31
+
+### Fixed
+
+- **Zero-drops on addon restart**: Filter now initialized before first cycle (reported by HANT)
+  - Filter was previously initialized AFTER first data publish, leaving brief unprotected moment
+  - Now initialized in `main()` before any data is published
+  - Ensures all values protected from first cycle onwards
+  - Log order after fix:
+    1. 🔌 Connected (Slave ID: X)
+    2. 🔍 TotalIncreasingFilter initialized (simplified)
+    3. ⏱️ Poll interval: Xs
+    4. 📊 Published (with filter protection) ✅
+
+- **Negative value handling**: Improved filter behavior for invalid counter values
+  - Negative values now properly removed from result dictionary
+  - Fixed `_should_filter()` method to avoid side effects (no storing in check method)
+  - Storing moved to `filter()` method for cleaner separation of concerns
+
+- **Singleton reset behavior**: `reset_filter()` now properly clears filter instance
+  - Previous behavior only cleared internal state but kept instance alive
+  - Now fully resets singleton for clean restart
+  - Next `get_filter()` call creates fresh instance
+
+### Added
+
+- **Comprehensive restart protection tests**: 12 new tests covering addon restart scenarios
+  - Tests verify first value acceptance after restart
+  - Edge cases: negative values, zero values, large jumps, multiple restarts
+  - Validates no zero-drops visible in Home Assistant
+  - All tests passing ✅
+
+### Changed
+
+- **Updated existing tests**: Refactored to use public API instead of private methods
+  - Tests now use `filter()` instead of `_should_filter()`
+  - Better test isolation and maintainability
+  - Total test count: 51 tests passing
+
+### Technical Details
+
+**Fix Impact:**
+
+- Prevents zero-drops in Home Assistant energy dashboard during addon restarts
+- Eliminates brief unprotected moment between startup and first filter application
+- More robust handling of edge cases (negative values, missing keys)
+
+**Test Coverage:**
+
+- Unit tests: 27 (filter logic, transform, error tracking)
+- Integration tests: 12 (restart protection, singleton behavior)
+- E2E tests: 12 (complete workflows, MQTT lifecycle)
+
+Thanks to **HANT** for the detailed bug report with screenshots! 🙏
+
 ## [1.7.0] - 2026-01-31
 
 ### Changed
@@ -481,7 +536,3 @@ Now (1.7.0):
 - Recommended settings table adjusted: Standard scenario now 30s instead of 60s
 
 **Breaking Changes:** None - fully backwards-compatible with existing configurations
-
-```
-
-```
