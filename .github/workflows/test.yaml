@@ -32,7 +32,7 @@ jobs:
 
       - name: Run tests with coverage
         run: |
-          pytest tests/ -v --cov=huawei-solar-modbus-mqtt/modbusenergymeter --cov-report=xml --cov-report=term
+          pytest tests/ -v --cov=huawei-solar-modbus-mqtt/modbus_energy_meter --cov-report=xml --cov-report=term
 
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v4
@@ -59,8 +59,8 @@ jobs:
 
       - name: Run flake8
         run: |
-          flake8 huawei-solar-modbus-mqtt/modbusenergymeter --count --select=E9,F63,F7,F82 --show-source --statistics
+          flake8 huawei-solar-modbus-mqtt/modbus_energy_meter --count --select=E9,F63,F7,F82 --show-source --statistics
 
       - name: Check code formatting with black
         run: |
-          black --check huawei-solar-modbus-mqtt/modbusenergymeter
+          black --check huawei-solar-modbus-mqtt/modbus_energy_meter
