@@ -1,3 +1,5 @@
+# tests\test_e2e.py
+
 """End-to-End Tests - Kompletter Workflow: Modbus → Transform → Filter → MQTT"""
 
 import json
@@ -55,48 +57,6 @@ async def test_e2e_meter_change_scenario():
     all_messages = mock_mqtt.get_messages("huawei-solar")
     assert len(all_messages) == 3
     print(f"✅ E2E Test passed: {expected_values} correctly transmitted via MQTT")
-
-
-@pytest.mark.asyncio
-async def test_e2e_modbus_errors_filtered_before_mqtt():
-    """
-    End-to-End: Modbus-Fehler werden gefiltert NACH Warmup
-    - Cycles 1-3: Warmup (5432.1 → 0 → 5432.8) - alles durchlassen
-    - Cycle 4+: Filter aktiv, 0 wird gefiltert
-    """
-    reset_filter()
-    mock_modbus = MockHuaweiSolar()
-    mock_modbus.load_scenario("modbus_errors")
-    mock_mqtt = MockMQTTBroker()
-    mock_mqtt.connect("localhost", 1883)
-    filter_instance = get_filter(warmup_cycles=3)
-
-    # ✅ Warmup berücksichtigen: 0 wird NICHT gefiltert in Cycle 2!
-    expected_values = [5432.1, 0, 5432.8]  # Cycle 2 = 0 durchgelassen (Warmup!)
-
-    for i, expected in enumerate(expected_values):
-        register = await mock_modbus.get("energy_grid_exported")
-        raw_value = register.value
-
-        transformed = {"energy_grid_exported": raw_value}
-        filtered = filter_instance.filter(transformed)
-
-        payload = json.dumps(filtered)
-        mock_mqtt.publish("huawei-solar", payload)
-
-        # ✅ FIX
-        latest = get_latest_safe(mock_mqtt, "huawei-solar")
-        actual = latest["payload"]["energy_grid_exported"]
-        assert actual == expected, f"Cycle {i+1}: Expected {expected}, got {actual}"
-
-        mock_modbus.next_cycle()
-
-    # Sicherstellen, dass 0 in Cycle 2 durchkam (Warmup!)
-    all_messages = mock_mqtt.get_messages("huawei-solar")
-    cycle2_value = all_messages[1].as_dict()["payload"]["energy_grid_exported"]
-    assert cycle2_value == 0, "Zero should pass during warmup!"
-
-    print("✅ E2E Test passed: Zero passed during warmup, filter active after")
 
 
 @pytest.mark.asyncio
@@ -166,119 +126,6 @@ async def test_e2e_mqtt_topic_structure():
     assert status_msg["retain"] is True
 
     print("✅ E2E Test passed: MQTT topic structure correct")
-
-
-@pytest.mark.asyncio
-async def test_e2e_warmup_prevents_false_filtering():
-    """
-    E2E Warmup: Verhindert falsche Filterung bei Startup
-    """
-    reset_filter()
-    mock_modbus = MockHuaweiSolar()
-    mock_modbus.load_scenario("addon_restart")
-    mock_mqtt = MockMQTTBroker()
-    mock_mqtt.connect("localhost", 1883)
-    filter_instance = get_filter(warmup_cycles=3)
-
-    # Cycle 0-2: Normaler Betrieb + Restart
-    for _ in range(3):
-        register = await mock_modbus.get("energy_grid_exported")
-        transformed = {"energy_grid_exported": register.value}
-        filtered = filter_instance.filter(transformed)
-
-        payload = json.dumps(filtered)
-        mock_mqtt.publish("huawei-solar", payload)
-
-        mock_modbus.next_cycle()
-
-    # Check: Warmup sollte abgeschlossen sein
-    assert filter_instance._warmup_active is False
-
-
-@pytest.mark.asyncio
-async def test_e2e_filter_active_after_warmup():
-    """E2E: Filter wird nach Warmup aktiv und filtert korrekt"""
-    reset_filter()
-    mock_mqtt = MockMQTTBroker()
-    mock_mqtt.connect("localhost", 1883)
-    filter_instance = get_filter(warmup_cycles=3)
-
-    values_to_send = [5432.1, 5432.8, 5433.5, 0]
-    expected_mqtt = [5432.1, 5432.8, 5433.5, 5433.5]
-
-    for i, value in enumerate(values_to_send):
-        transformed = {"energy_grid_exported": value}
-        filtered = filter_instance.filter(transformed)
-
-        payload = json.dumps(filtered)
-        mock_mqtt.publish("huawei-solar", payload)
-
-        # ✅ FIX
-        latest = get_latest_safe(mock_mqtt, "huawei-solar")
-        actual = latest["payload"]["energy_grid_exported"]
-        assert (
-            actual == expected_mqtt[i]
-        ), f"Cycle {i+1}: Expected {expected_mqtt[i]}, got {actual}"
-
-    stats = filter_instance.get_stats()
-    assert stats.get("energy_grid_exported", 0) == 1
-
-    print("✅ E2E: Filter became active after warmup")
-
-
-@pytest.mark.asyncio
-async def test_e2e_multiple_restarts():
-    """E2E: Multiple Add-on Restarts mit Warmup"""
-    import modbus_energy_meter.total_increasing_filter as filter_module
-
-    mock_mqtt = MockMQTTBroker()
-    mock_mqtt.connect("localhost", 1883)
-
-    for restart_num in range(3):
-        # ✅ Singleton komplett clearen!
-        filter_module._filter_instance = None
-
-        # Neue Instanz mit warmup_cycles=2
-        filter_instance = filter_module.get_filter(warmup_cycles=2)
-
-        for cycle in range(2):
-            data = {"energy_grid_exported": 5432.1 + restart_num * 10}
-            filtered = filter_instance.filter(data)
-            mock_mqtt.publish("huawei-solar", json.dumps(filtered))
-
-        # Nach 2 Cycles: Warmup complete
-        assert filter_instance._warmup_counter == 2
-        assert filter_instance._warmup_active is False
-
-
-@pytest.mark.asyncio
-async def test_e2e_tolerance_edge_with_warmup():
-    """E2E: Toleranz-Grenze (5%) mit Warmup-Phase"""
-    reset_filter()
-    mock_modbus = MockHuaweiSolar()
-    mock_modbus.load_scenario("tolerance_edge")
-    mock_mqtt = MockMQTTBroker()
-    mock_mqtt.connect("localhost", 1883)
-    filter_instance = get_filter(warmup_cycles=3)
-
-    expected_values = [10000.0, 9510.0, 10000.0, 10000.0]
-
-    for i, expected in enumerate(expected_values):
-        register = await mock_modbus.get("energy_grid_exported")
-        transformed = {"energy_grid_exported": register.value}
-        filtered = filter_instance.filter(transformed)
-
-        payload = json.dumps(filtered)
-        mock_mqtt.publish("huawei-solar", payload)
-
-        # ✅ FIX
-        latest = get_latest_safe(mock_mqtt, "huawei-solar")
-        actual = latest["payload"]["energy_grid_exported"]
-        assert actual == expected, f"Cycle {i+1}: Expected {expected}, got {actual}"
-
-        mock_modbus.next_cycle()
-
-    print("✅ E2E: Tolerance edge cases with warmup work correctly")
 
 
 @pytest.mark.asyncio
@@ -364,7 +211,6 @@ async def test_e2e_performance_filter_overhead():
     durations = []
 
     for i in range(100):
-
         start = time.perf_counter()
         duration = time.perf_counter() - start
 

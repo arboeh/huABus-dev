@@ -2,6 +2,117 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.7.0] - 2026-01-31
+
+### Changed
+
+- **TotalIncreasingFilter Simplification**: Removed warmup period and tolerance configuration for more predictable behavior
+  - **No more warmup phase**: First value is immediately accepted as valid baseline (no 60-second learning period)
+  - **No more tolerance**: ANY drop in counter values is filtered (previously allowed 5% tolerance)
+  - **Simpler configuration**: Removed `HUAWEI_FILTER_TOLERANCE` environment variable
+  - **Reduced complexity**: Code reduced from ~300 to ~120 lines (-60%)
+  - **All protection remains**: Negative values, zero-drops, and counter drops still filtered
+  - **Improved logging**: Filter statistics now show exactly which values were filtered
+  - **Result**: More strict but more predictable filtering - suitable for stable Modbus connections
+
+### Removed
+
+- **Warmup Period**: No longer necessary - filter starts immediately with first valid value
+  - Removes 60-second startup delay
+  - Removes warmup status indicators (`🔥 Warmup active`)
+  - First read establishes baseline immediately
+- **Tolerance Configuration**: Filter behavior now consistent and non-configurable
+  - No more `HUAWEI_FILTER_TOLERANCE` environment variable
+  - Previous 5% tolerance removed - all drops filtered equally
+  - Eliminates configuration confusion
+
+### Fixed
+
+- **Test Suite**: Reduced from 72 to 48 tests (-33%)
+  - Removed 15 warmup tests (`test_warmup.py` deleted)
+  - Removed 9 tolerance-related tests
+  - Split `test_hant_issue.py` into `test_hant_missing_keys.py` and `test_hant_zero_drops.py`
+  - All remaining tests passing ✅
+
+### Added
+
+- **Development Tools**: Pre-commit hooks with ruff linter and formatter
+  - Automatic code quality checks before each commit
+  - Ensures consistent code style across project
+  - Configured in `.pre-commit-config.yaml`
+
+### Technical Details
+
+**Filter Behavior Changes:**
+
+Before (1.6.x):
+
+```python
+# Warmup: First 60 seconds accepted all values
+# Tolerance: Drops < 5% accepted
+10000 → 9510  # 4.9% drop → ACCEPTED ✅
+10000 → 9490  # 5.1% drop → FILTERED ❌
+```
+
+Now (1.7.0):
+
+```python
+# No warmup: First value = baseline
+# No tolerance: All drops filtered
+10000 → 9999  # ANY drop → FILTERED ❌
+10000 → 9510  # ANY drop → FILTERED ❌
+```
+
+**Filter Protection Still Active:**
+
+- ✅ Negative values filtered
+- ✅ Zero-drops filtered (e.g., 9799.5 → 0)
+- ✅ Counter decreases filtered
+- ✅ Missing keys handled (filled with last valid value)
+- ✅ First value always accepted
+
+**When to Upgrade:**
+
+- ✅ **Stable Modbus connection**: Stricter filtering improves data quality
+- ⚠️ **Unstable connection**: Monitor logs after upgrade - may need poll_interval increase
+
+**Breaking Changes:**
+
+- `HUAWEI_FILTER_TOLERANCE` environment variable no longer has effect (silently ignored)
+- Filter now rejects small drops that were previously accepted (< 5% of previous value)
+- Log messages changed:
+  - Removed: `🔥 Warmup active (X/60s)` and `✅ Warmup complete`
+  - Removed: `TotalIncreasingFilter initialized with X% tolerance`
+  - New: Simpler `TotalIncreasingFilter initialized` message
+
+**Migration Guide:**
+
+1. No configuration changes needed - filter works out of the box
+2. After upgrade, monitor filter summaries in logs:
+   ```
+   INFO - 🔍 Filter summary (last 20 cycles): X values filtered
+   ```
+3. If you see frequent filtering (every cycle), consider:
+   - Increasing `poll_interval` from 30s to 60s
+   - Checking Modbus connection stability
+   - Reviewing network latency to inverter
+
+**Upgrade Notes:**
+
+- Existing configurations continue to work without changes
+- `HUAWEI_FILTER_TOLERANCE` in config silently ignored (backward compatible)
+- First cycle after upgrade establishes new baseline immediately
+- No data loss - filter continues protecting energy statistics
+
+**Hauptänderungen:**
+
+- Code-Blöcke mit ` ```python ` für Syntax-Highlighting
+- Listen mit `-` statt unformatierten Zeilen
+- Nummerierte Liste für Migration Guide
+- Inline-Code mit Backticks: `` `HUAWEI_FILTER_TOLERANCE` ``
+- Konsistente Einrückungen (2 Spaces)
+- Leerzeilen zwischen Sections für bessere Lesbarkeit
+
 ## [1.6.2] - 2026-01-29
 
 ### Added
@@ -264,10 +375,10 @@ All notable changes to this project will be documented in this file.
 
 - **Startup Information**: Enhanced system info display with actual library versions
 
-  [18:01:44] INFO: >> System Info:  
-  [18:01:44] INFO: - Python: 3.12.12  
-  [18:01:44] INFO: - huawei-solar: 2.5.0  
-  [18:01:44] INFO: - pymodbus: 3.11.4  
+  [18:01:44] INFO: >> System Info:
+  [18:01:44] INFO: - Python: 3.12.12
+  [18:01:44] INFO: - huawei-solar: 2.5.0
+  [18:01:44] INFO: - pymodbus: 3.11.4
   [18:01:44] INFO: - paho-mqtt: 2.1.0
 
 ### Technical Details
@@ -370,3 +481,7 @@ All notable changes to this project will be documented in this file.
 - Recommended settings table adjusted: Standard scenario now 30s instead of 60s
 
 **Breaking Changes:** None - fully backwards-compatible with existing configurations
+
+```
+
+```

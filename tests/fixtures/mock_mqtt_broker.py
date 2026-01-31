@@ -1,3 +1,5 @@
+# tests\fixtures\mock_mqtt_broker.py
+
 """Mock MQTT-Broker für End-to-End-Tests"""
 
 import json

@@ -24,7 +24,7 @@
 >
 > Mehrere gleichzeitige Modbus-Verbindungen führen zu **Connection-Timeouts und Datenverlust** für alle Clients!
 
-**Version 1.6.2** – 58 Essential Registers, 69+ entities, ~2–5 s cycle time  
+**Version 1.7.0** – 58 Essential Registers, 69+ entities, ~2–5 s cycle time  
 **Changelog** - [CHANGELOG.md](huawei-solar-modbus-mqtt/CHANGELOG.md)
 
 ## Features
@@ -168,40 +168,35 @@ _Komplettbeispiel mit allen 58+ Datenpunkten: siehe [examples/mqtt_payload.json]
 
 _\* Sensoren mit Sternchen sind durch total_increasing Filter vor falschen Counter-Resets geschützt_
 
-## Was ist neu in 1.6.2?
+## Was ist neu in 1.7.0?
 
-**TRACE Log Level, Tests & Filter-Verbesserungen**
+**Vereinfachte Filter-Logik - Keine Warmup-Phase oder Toleranz mehr**
 
-- **Neu**: Ultra-detailliertes TRACE Logging für maximales Debugging
-  - Zeigt alle Modbus-Bytes, Register-Mappings, Library-Internals
-  - Perfekt für Protokoll-Level Debugging und Verbindungsanalyse
-  - pymodbus und huawei_solar Bibliotheken auf DEBUG bei TRACE
+- **Entfernt**: Warmup-Period (60s Lernphase)
+  - Erster Wert wird sofort als Basis akzeptiert
+  - Keine Startverzögerung mehr
+  - Einfacheres, vorhersehbareres Verhalten
+- **Entfernt**: Toleranz-Konfiguration (5% Schwellwert)
+  - ALLE Counter-Rückgänge werden jetzt gefiltert (nicht nur >5%)
+  - Strengerer Schutz vor Lesefehlern
+  - Keine Konfiguration nötig - funktioniert sofort
+- **Verbessert**: Filter-Code um 60% reduziert (~300 → ~120 Zeilen)
+  - Einfacher zu warten und zu verstehen
+  - Schnellere Initialisierung
+  - Alle Schutzfunktionen erhalten
 
-- **Neu**: Umfassende Test-Suite mit 43 Tests
-  - Unit Tests für Filter-Logik (17 Tests)
-  - Integration Tests für Komponenten (10 Tests)
-  - E2E Tests für komplette Workflows (7 Tests)
-  - Warmup Tests für Startup-Szenarien (6 Tests)
-  - Regression Tests für Issue #7 (3 Tests)
-  - Automatisierte CI/CD Pipeline mit GitHub Actions
-- **Verbessert**: Filter mit Warmup-Period (60s)
-  - Filter lernt gültige Basis-Werte nach Neustart
-  - Verhindert falsche Filter-Aktivierung bei unbekanntem Zustand
-  - Visueller Indikator: `🔥 Warmup active (42/60s)`
-  - Bessere Stabilität nach Inverter-Restart
+- **Neu**: Pre-commit Hooks mit ruff
+  - Automatische Code-Qualitätsprüfung
+  - Konsistente Formatierung im Projekt
 
-- **Verbessert**: Deutsche und englische UI-Übersetzungen
-  - Konkrete Beispiele (IP-Adressen, Hostnames)
-  - Hilfreiche Tipps ("Use core-mosquitto for Mosquitto add-on")
-  - Alle Log-Level mit Anwendungsfällen erklärt
-  - Bessere Anfänger-Unterstützung
+**Breaking Changes:**
 
-- **Behoben**: Dokumentations-Lokalisierung
-  - `DOCS_de.md` → `DOCS.de.md` (korrektes Home Assistant Format)
-  - Deutsche Nutzer sehen jetzt automatisch deutsche Dokumentation
+- `HUAWEI_FILTER_TOLERANCE` Umgebungsvariable wird nicht mehr verwendet (wird ignoriert)
+- Filter jetzt strenger: Alle Drops werden gefiltert (vorher bis 5% erlaubt)
 
+**Vorher (1.6.2):** TRACE Log Level, umfassende Tests, Warmup-Period  
 **Vorher (1.6.1):** Kritischer Filter-Timing-Bugfix  
-**Vorher (1.6.0):** `total_increasing` Filter für Energie-Statistiken
+**Vorher (1.6.0):** Einführung des `total_increasing` Filters
 
 ## Fehlerbehebung
 

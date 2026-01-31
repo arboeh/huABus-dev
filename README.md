@@ -24,7 +24,7 @@
 >
 > Running multiple Modbus connections simultaneously will cause **connection timeouts and data loss** for all clients!
 
-**Version 1.6.2** – 58 Essential Registers, 69+ entities, ~2–5 s cycle time  
+**Version 1.7.0** – 58 Essential Registers, 69+ entities, ~2–5 s cycle time  
 **Changelog** - [CHANGELOG.md](huawei-solar-modbus-mqtt/CHANGELOG.md)
 
 ## Features
@@ -168,40 +168,35 @@ _Complete example with all 58+ data points: [examples/mqtt_payload.json](example
 
 _\* Sensors marked with asterisk are protected by total_increasing filter against false counter resets_
 
-## What's new in 1.6.2?
+## What's new in 1.7.0?
 
-**TRACE Log Level, Tests & Filter Improvements**
+**Simplified Filter Logic - No More Warmup or Tolerance**
 
-- **New**: Ultra-detailed TRACE logging for maximum debugging
-  - Shows all Modbus bytes, register mappings, library internals
-  - Perfect for protocol-level debugging and connection analysis
-  - pymodbus and huawei_solar libraries set to DEBUG when TRACE is active
+- **Removed**: Warmup period (60s learning phase)
+  - First value immediately accepted as baseline
+  - No more startup delay
+  - Simpler, more predictable behavior
+- **Removed**: Tolerance configuration (5% threshold)
+  - ALL counter drops now filtered (not just >5%)
+  - More strict protection against read errors
+  - No configuration needed - works out of the box
+- **Improved**: Filter code reduced by 60% (~300 → ~120 lines)
+  - Easier to maintain and understand
+  - Faster initialization
+  - All protection features retained
 
-- **New**: Comprehensive test suite with 43 tests
-  - Unit tests for filter logic (17 tests)
-  - Integration tests for components (10 tests)
-  - E2E tests for complete workflows (7 tests)
-  - Warmup tests for startup scenarios (6 tests)
-  - Regression tests for Issue #7 (3 tests)
-  - Automated CI/CD pipeline with GitHub Actions
-- **Improved**: Filter with warmup period (60s)
-  - Filter learns valid baseline values after restart
-  - Prevents false filtering with unknown state
-  - Visual indicator: `🔥 Warmup active (42/60s)`
-  - Better stability after inverter restart
+- **Added**: Pre-commit hooks with ruff
+  - Automatic code quality checks
+  - Consistent formatting across project
 
-- **Improved**: German and English UI translations
-  - Concrete examples (IP addresses, hostnames)
-  - Helpful hints ("Use core-mosquitto for Mosquitto add-on")
-  - All log levels explained with use cases
-  - Better beginner support
+**Breaking Changes:**
 
-- **Fixed**: Documentation localization
-  - `DOCS_de.md` → `DOCS.de.md` (correct Home Assistant format)
-  - German users now automatically see German documentation
+- `HUAWEI_FILTER_TOLERANCE` env var no longer used (silently ignored)
+- Filter now more strict: all drops filtered (previously allowed up to 5%)
 
+**Previous (1.6.2):** TRACE Log Level, comprehensive tests, warmup period  
 **Previous (1.6.1):** Critical filter timing bug fix  
-**Previous (1.6.0):** `total_increasing` filter for energy statistics
+**Previous (1.6.0):** `total_increasing` filter introduction
 
 ## Troubleshooting
 

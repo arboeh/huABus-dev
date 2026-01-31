@@ -108,13 +108,13 @@ slave_id: 0 # oder 1, oder 16
   - 58 Essential Registers (kritische Werte + erweiterte Daten)
   - Typische Cycle-Time: 2-5 Sekunden
   - Empfohlenes Poll-Interval: 30-60 Sekunden
-- **total_increasing Filter (NEU in 1.6.0):** Verhindert falsche Counter-Resets in Home Assistant
-  - Filtert negative Werte und Drops > 5% (konfigurierbar)
-  - Schützt Energie-Statistiken vor Modbus-Lesefehlern
+- **total_increasing Filter (Aktualisiert in 1.7.0):** Verhindert falsche Counter-Resets in Home Assistant
+  - Filtert negative Werte und ALLE Counter-Rückgänge
+  - Keine Warmup-Phase - erster Wert wird sofort als Basis verwendet
+  - Keine Konfiguration nötig - funktioniert sofort
   - Automatischer Reset bei Verbindungsfehlern
   - Filter-Status sichtbar in Logs mit 20-Cycle-Zusammenfassungen
-- Veröffentlichung der Messwerte auf einem MQTT-Topic als JSON
-- Automatische Erstellung von Home Assistant Entitäten via MQTT Discovery
+
 - **Error Tracking:** Intelligente Fehler-Aggregation mit Downtime-Tracking
 - Unterstützung für:
   - PV-Leistungen (PV1-4 mit Spannung und Strom)
@@ -203,13 +203,13 @@ poll_interval: 30
   Abfrageintervall in Sekunden zwischen zwei Modbus-Reads.  
   **Empfehlung:** 30-60 Sekunden für optimale Balance zwischen Aktualität und Netzwerklast.
 
-#### Filter-Einstellungen (ENV-Variablen, optional)
+**total_increasing Filter (Aktualisiert in 1.7.0):**
 
-- **HUAWEI_FILTER_TOLERANCE** (Standard: `0.05`)  
-  Toleranz für total_increasing Filter in Prozent (0.05 = 5%).  
-  Werte die um mehr als diesen Prozentsatz fallen, werden als Lesefehler gefiltert.  
-  **Empfehlung:** 5% (Standard) ist optimal für die meisten Installationen.  
-  **Beispiel:** Bei 0.10 werden erst Drops > 10% gefiltert (weniger streng).
+- Automatischer Schutz vor falschen Counter-Resets
+- Filtert ALLE Rückgänge (keine Toleranz-Schwelle)
+- Ersetzt ungültige Werte durch letzten gültigen Wert
+- Keine Warmup-Phase - sofortiger Schutz ab erstem Cycle
+- Sichtbar in Logs mit 20-Cycle-Zusammenfassungen
 
 ## MQTT Topics
 
@@ -295,7 +295,7 @@ Diese Entitäten können in Home Assistant manuell aktiviert werden:
 
 ## Performance & Optimierung
 
-### Version 1.6.x - Aktuelle Features
+### Version 1.7.0 - Aktuelle Features
 
 **58 Essential Registers:**
 
@@ -384,7 +384,7 @@ INFO - Connection restored after 47s (3 failed attempts, 2 error types)
 2026-01-25T12:51:23+0100 - huawei.main - INFO - 🚀 Huawei Solar → MQTT starting
 2026-01-25T12:51:25+0100 - huawei.main - INFO - 🔌 Connected (Slave ID: 1)
 2026-01-25T12:51:31+0100 - huawei.main - INFO - Essential read: 6.1s (57/57)
-2026-01-25T12:51:31+0100 - huawei.filter - INFO - TotalIncreasingFilter initialized with 5% tolerance
+2026-01-25T12:51:31+0100 - huawei.filter - INFO - TotalIncreasingFilter initialized
 2026-01-25T12:51:31+0100 - huawei.main - INFO - 📊 Published - PV: 744W | AC Out: 218W | Grid: -29W | Battery: 520W
 2026-01-25T13:11:31+0100 - huawei.main - INFO - 🔍 Filter summary (last 20 cycles): 0 values filtered - all data valid ✓
 ```

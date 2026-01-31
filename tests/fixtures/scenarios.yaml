@@ -1,3 +1,5 @@
+# tests\fixtures\scenarios.yaml
+
 # Szenario 1: Neuer Meter installiert
 meter_change:
   description: "New meter installed - first values should be accepted"
@@ -149,3 +151,53 @@ utility_meter_reset_simulation:
     - # Tag 2, 06:00 Uhr (nach Add-on Restart)
       energy_grid_exported: 5435.8
       timestamp: "2026-01-29T06:00:00"
+
+# ========================================
+# HANT Issue #7: Register Timeouts
+# ========================================
+register_timeouts:
+  cycles:
+    - # Cycle 0: Alle Keys vorhanden
+      energy_grid_exported: 9799.50
+      energy_yield_accumulated: 18052.68
+      battery_charge_total: 1234.56
+
+    - # Cycle 1: Register timeout (key fehlt komplett)
+      energy_yield_accumulated: 18053.20
+      battery_charge_total: 1234.60
+      errors:
+        - energy_grid_exported # Timeout!
+
+    - # Cycle 2: Alle Keys wieder da
+      energy_grid_exported: 9800.20
+      energy_yield_accumulated: 18054.00
+      battery_charge_total: 1234.70
+
+# ========================================
+# HANT Issue #7: Zero Drop Errors
+# ========================================
+zero_drop_errors:
+  cycles:
+    - # Cycle 0: Normal
+      energy_grid_exported: 9799.50
+      energy_yield_accumulated: 18052.68
+
+    - # Cycle 1: Normal (+0.7 kWh)
+      energy_grid_exported: 9800.20
+      energy_yield_accumulated: 18053.20
+
+    - # Cycle 2: Zero drop! (Modbus error returns 0)
+      energy_grid_exported: 0
+      energy_yield_accumulated: 18054.00
+
+    - # Cycle 3: Recovery (+0.8 kWh from 9800.20)
+      energy_grid_exported: 9801.00
+      energy_yield_accumulated: 18055.00
+
+    - # Cycle 4: Nochmal zero drop!
+      energy_grid_exported: 0
+      energy_yield_accumulated: 18056.00
+
+    - # Cycle 5: Final recovery (+0.5 kWh from 9801.00)
+      energy_grid_exported: 9801.50
+      energy_yield_accumulated: 18057.00

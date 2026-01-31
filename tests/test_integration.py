@@ -1,12 +1,8 @@
+# tests\test_integration.py
+
 """Integration-Tests mit Mock-Inverter"""
 
-import sys
-from pathlib import Path
-
 import pytest  # type: ignore
-
-sys.path.insert(0, str(Path(__file__).parent.parent / "huawei-solar-modbus-mqtt"))
-
 from modbus_energy_meter.total_increasing_filter import (
     get_filter,
     reset_filter,
@@ -17,8 +13,7 @@ from tests.fixtures.mock_inverter import MockHuaweiSolar
 
 @pytest.mark.asyncio
 async def test_meter_change_scenario():
-    """Test: HANT's Szenario - Meter-Wechsel, 0.03 kWh muss durchkommen"""
-    # Setup
+    """Test: Meter-Wechsel - kleine Werte (0.03 kWh) müssen durchkommen"""
     reset_filter()
     mock = MockHuaweiSolar()
     mock.load_scenario("meter_change")
@@ -32,17 +27,15 @@ async def test_meter_change_scenario():
         value = register.value
 
         # Filter anwenden
-        if not filter_instance.should_filter("energy_grid_exported", value):
-            results.append(value)
-        else:
-            last = filter_instance.get_last_value("energy_grid_exported")
-            results.append(last)
+        data = {"energy_grid_exported": value}
+        filtered = filter_instance.filter(data)
+        results.append(filtered["energy_grid_exported"])
 
         mock.next_cycle()
 
     # Assertions
     assert results[0] == 0, "Installation: 0 sollte akzeptiert werden"
-    assert results[1] == 0.03, "KRITISCH: 0.03 kWh muss durchkommen (HANT's Szenario)!"
+    assert results[1] == 0.03, "KRITISCH: 0.03 kWh muss durchkommen!"
     assert results[2] == 0.15, "Normale Werte sollten durchkommen"
 
 
@@ -60,11 +53,10 @@ async def test_modbus_errors_filtered():
         register = await mock.get("energy_grid_exported")
         value = register.value
 
-        if not filter_instance.should_filter("energy_grid_exported", value):
-            results.append(value)
-        else:
-            last = filter_instance.get_last_value("energy_grid_exported")
-            results.append(last)
+        # Filter anwenden
+        data = {"energy_grid_exported": value}
+        filtered = filter_instance.filter(data)
+        results.append(filtered["energy_grid_exported"])
 
         mock.next_cycle()
 
@@ -72,35 +64,6 @@ async def test_modbus_errors_filtered():
     assert results[0] == 5432.1, "Normaler Wert"
     assert results[1] == 5432.1, "Drop auf 0 gefiltert → letzter Wert bleibt"
     assert results[2] == 5432.8, "Nach Fehler wieder normal"
-
-
-@pytest.mark.asyncio
-async def test_tolerance_edge_cases():
-    """Test: 5% Toleranz-Grenze korrekt"""
-    reset_filter()
-    mock = MockHuaweiSolar()
-    mock.load_scenario("tolerance_edge")
-    filter_instance = get_filter()
-
-    results = []
-
-    for _ in range(4):
-        register = await mock.get("energy_grid_exported")
-        value = register.value
-
-        if not filter_instance.should_filter("energy_grid_exported", value):
-            results.append(value)
-        else:
-            last = filter_instance.get_last_value("energy_grid_exported")
-            results.append(last)
-
-        mock.next_cycle()
-
-    # Assertions
-    assert results[0] == 10000.0, "Baseline"
-    assert results[1] == 9510.0, "4.9% Drop → akzeptiert (innerhalb Toleranz)"
-    assert results[2] == 10000.0, "Zurück zu Baseline"
-    assert results[3] == 10000.0, "5.1% Drop → gefiltert (außerhalb Toleranz)"
 
 
 @pytest.mark.asyncio
@@ -117,11 +80,10 @@ async def test_negative_values_scenario():
         register = await mock.get("energy_grid_exported")
         value = register.value
 
-        if not filter_instance.should_filter("energy_grid_exported", value):
-            results.append(value)
-        else:
-            last = filter_instance.get_last_value("energy_grid_exported")
-            results.append(last)
+        # Filter anwenden
+        data = {"energy_grid_exported": value}
+        filtered = filter_instance.filter(data)
+        results.append(filtered["energy_grid_exported"])
 
         mock.next_cycle()
 
@@ -129,3 +91,37 @@ async def test_negative_values_scenario():
     assert results[0] == 5432.1, "Normaler Wert"
     assert results[1] == 5432.1, "Negativer Wert gefiltert"
     assert results[2] == 5432.8, "Wieder positiv"
+
+
+@pytest.mark.asyncio
+async def test_multiple_sensors_filtered_independently():
+    """Test: Mehrere Sensoren werden unabhängig gefiltert"""
+    reset_filter()
+    filter_instance = get_filter()
+
+    # Cycle 1: Beide Sensoren normal
+    data1 = {
+        "energy_grid_exported": 5432.1,
+        "battery_charge_total": 1234.5,
+    }
+    result1 = filter_instance.filter(data1)
+    assert result1["energy_grid_exported"] == 5432.1
+    assert result1["battery_charge_total"] == 1234.5
+
+    # Cycle 2: Ein Sensor droppt auf 0, anderer steigt
+    data2 = {
+        "energy_grid_exported": 0,  # Drop!
+        "battery_charge_total": 1235.0,  # Steigt
+    }
+    result2 = filter_instance.filter(data2)
+    assert result2["energy_grid_exported"] == 5432.1  # Gefiltert
+    assert result2["battery_charge_total"] == 1235.0  # Akzeptiert
+
+    # Cycle 3: Beide wieder normal
+    data3 = {
+        "energy_grid_exported": 5432.8,
+        "battery_charge_total": 1235.5,
+    }
+    result3 = filter_instance.filter(data3)
+    assert result3["energy_grid_exported"] == 5432.8
+    assert result3["battery_charge_total"] == 1235.5

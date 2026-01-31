@@ -1,3 +1,5 @@
+# tests\fixtures\mock_inverter.py
+
 """Mock für AsyncHuaweiSolar mit Test-Szenarien"""
 
 from pathlib import Path
@@ -55,12 +57,20 @@ class MockHuaweiSolar:
         cycles = self.current_scenario["cycles"]
         cycle_data = cycles[min(self.cycle, len(cycles) - 1)]
 
-        # Simuliere Modbus-Fehler
+        # NEU: Simuliere Modbus-Fehler (errors-Liste)
         if register_name in cycle_data.get("errors", []):
-            raise ModbusException(f"Simulated error for {register_name}")
+            raise ModbusException(f"Simulated timeout for {register_name}")
+
+        # NEU: Simuliere Register-Timeout (Key fehlt komplett im Payload)
+        if register_name not in cycle_data:
+            # Option A: Exception werfen (realistisch)
+            raise TimeoutError(f"Register {register_name} not available (timeout)")
+
+            # Option B: None zurückgeben (caller muss behandeln)
+            # return None
 
         # Gebe konfigurierten Wert zurück
-        value = cycle_data.get(register_name, 0)
+        value = cycle_data[register_name]
         return MockRegisterValue(value)
 
     def next_cycle(self):

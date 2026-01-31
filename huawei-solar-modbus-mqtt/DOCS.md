@@ -108,13 +108,12 @@ slave_id: 0 # or 1, or 16
   - 58 Essential Registers (critical values + extended data)
   - Typical cycle time: 2-5 seconds
   - Recommended poll interval: 30-60 seconds
-- **total_increasing Filter (NEW in 1.6.0):** Prevents false counter resets in Home Assistant
-  - Filters negative values and drops > 5% (configurable)
-  - Protects energy statistics from Modbus read errors
+- **total_increasing Filter (Updated in 1.7.0):** Prevents false counter resets in Home Assistant
+  - Filters negative values and ANY counter decreases
+  - No warmup phase - first value establishes baseline immediately
+  - No configuration needed - works out of the box
   - Automatic reset on connection errors
   - Filter status visible in logs with 20-cycle summaries
-- Publishing sensor data to MQTT topic as JSON
-- Automatic Home Assistant entity creation via MQTT Discovery
 - **Error Tracking:** Intelligent error aggregation with downtime tracking
 - Support for:
   - PV power (PV1-4 with voltage and current)
@@ -203,13 +202,13 @@ poll_interval: 30
   Query interval in seconds between two Modbus reads.  
   **Recommendation:** 30-60 seconds for optimal balance between freshness and network load.
 
-#### Filter Settings (ENV variables, optional)
+**total_increasing Filter (Updated in 1.7.0):**
 
-- **HUAWEI_FILTER_TOLERANCE** (default: `0.05`)  
-  Tolerance for total_increasing filter as percentage (0.05 = 5%).  
-  Values dropping more than this percentage are filtered as read errors.  
-  **Recommendation:** 5% (default) is optimal for most installations.  
-  **Example:** At 0.10, only drops > 10% are filtered (less strict).
+- Automatic protection against false counter resets
+- Filters ALL drops (no tolerance threshold)
+- Replaces invalid values with last valid value
+- No warmup phase - immediate protection from first cycle
+- Visible in logs with 20-cycle summaries
 
 ## MQTT Topics
 
@@ -295,7 +294,7 @@ These entities can be manually enabled in Home Assistant:
 
 ## Performance & Optimization
 
-### Version 1.6.x - Current Features
+### Version 1.7.0 - Current Features
 
 **58 Essential Registers:**
 
@@ -384,7 +383,7 @@ INFO - Connection restored after 47s (3 failed attempts, 2 error types)
 2026-01-25T12:51:23+0100 - huawei.main - INFO - 🚀 Huawei Solar → MQTT starting
 2026-01-25T12:51:25+0100 - huawei.main - INFO - 🔌 Connected (Slave ID: 1)
 2026-01-25T12:51:31+0100 - huawei.main - INFO - Essential read: 6.1s (57/57)
-2026-01-25T12:51:31+0100 - huawei.filter - INFO - TotalIncreasingFilter initialized with 5% tolerance
+2026-01-25T12:51:31+0100 - huawei.filter - INFO - TotalIncreasingFilter initialized
 2026-01-25T12:51:31+0100 - huawei.main - INFO - 📊 Published - PV: 744W | AC Out: 218W | Grid: -29W | Battery: 520W
 2026-01-25T13:11:31+0100 - huawei.main - INFO - 🔍 Filter summary (last 20 cycles): 0 values filtered - all data valid ✓
 ```
