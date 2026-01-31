@@ -1,3 +1,5 @@
+# requirements-dev.txt
+
 # Testing
 pytest>=8.0.0
 pytest-asyncio>=0.23.0
@@ -12,5 +14,5 @@ mypy>=1.8.0
 # YAML Support
 pyyaml>=6.0
 
-# Production Dependencies (aus requirements.txt)
--r huawei-solar-modbus-mqtt/requirements.txt
+# NOTE: Production dependencies (huawei-solar, pymodbus, paho-mqtt)
+# are installed separately in CI/CD to avoid version conflicts
