@@ -32,7 +32,6 @@ class TotalIncreasingFilter:
         """Initialisiert den Filter - simpel!"""
         self._last_values: Dict[str, float] = {}
         self._filter_stats: Dict[str, int] = {}
-        logger.info("TotalIncreasingFilter initialized (simplified)")
 
     def filter(self, data: Dict[str, Any]) -> Dict[str, Any]:
         """
