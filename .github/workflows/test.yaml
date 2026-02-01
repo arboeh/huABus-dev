@@ -28,11 +28,16 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install pytest pytest-asyncio pytest-cov pytest-mock pyyaml
-          pip install huawei-solar>=2.5.0 paho-mqtt>=2.1.0
+          pip install huawei-solar>=2.5.0 paho-mqtt>=2.1.0 pymodbus>=3.7.0
+
+      - name: Add module to Python path
+        run: |
+          echo "$GITHUB_WORKSPACE/huawei-solar-modbus-mqtt" >> $GITHUB_PATH
+          echo "PYTHONPATH=$GITHUB_WORKSPACE/huawei-solar-modbus-mqtt:$PYTHONPATH" >> $GITHUB_ENV
 
       - name: Run tests with coverage
         run: |
-          pytest tests/ -v --cov=huawei-solar-modbus-mqtt/modbus_energy_meter --cov-report=xml --cov-report=term
+          pytest tests/ -v --cov=modbus_energy_meter --cov-report=xml --cov-report=term
 
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v4
@@ -56,14 +61,14 @@ jobs:
 
       - name: Install linting tools
         run: |
-          pip install flake8 black
+          pip install ruff
 
-      - name: Run flake8
+      - name: Run ruff check
         run: |
-          flake8 huawei-solar-modbus-mqtt/modbus_energy_meter --count --select=E9,F63,F7,F82 --show-source --statistics
+          ruff check huawei-solar-modbus-mqtt/modbus_energy_meter tests/
         continue-on-error: true
 
-      - name: Check code formatting with black
+      - name: Run ruff format check
         run: |
-          black --check huawei-solar-modbus-mqtt/modbus_energy_meter tests/
+          ruff format --check huawei-solar-modbus-mqtt/modbus_energy_meter tests/
         continue-on-error: true
