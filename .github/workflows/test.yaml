@@ -32,14 +32,12 @@ jobs:
 
       - name: Debug Python path
         run: |
-          python -c "import sys; print('Python paths:'); [print(p) for p in sys.path]"
+          echo "=== Workspace: $GITHUB_WORKSPACE ==="
+          ls -la
+          echo "=== huawei-solar-modbus-mqtt/ ==="
           ls -la huawei-solar-modbus-mqtt/
-          ls -la huawei-solar-modbus-mqtt/modbus_energy_meter/
-
-      - name: Add module to Python path
-        run: |
-          echo "$GITHUB_WORKSPACE/huawei-solar-modbus-mqtt" >> $GITHUB_PATH
-          echo "PYTHONPATH=$GITHUB_WORKSPACE/huawei-solar-modbus-mqtt:$PYTHONPATH" >> $GITHUB_ENV
+          echo "=== Python sys.path ==="
+          python -c "import sys; [print(p) for p in sys.path]"
 
       - name: Run tests with coverage
         run: |
