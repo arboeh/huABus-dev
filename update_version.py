@@ -31,7 +31,7 @@ def update_pyproject_toml(version):
     """Update version in pyproject.toml - only in [project] section"""
     pyproject_path = Path("pyproject.toml")
     if not pyproject_path.exists():
-        print("WARNING: pyproject.toml not found, skipping")
+        print("⚠️  WARNING: pyproject.toml not found, skipping")
         return
 
     content = pyproject_path.read_text(encoding="utf-8")
@@ -46,65 +46,54 @@ def update_pyproject_toml(version):
 
     if content != new_content:
         pyproject_path.write_text(new_content, encoding="utf-8")
-        print(f"UPDATED: pyproject.toml to version {version}")
+        print(f"✅ UPDATED: pyproject.toml to version {version}")
     else:
-        print(f"INFO: pyproject.toml already at version {version}")
+        print(f"ℹ️  INFO: pyproject.toml already at version {version}")
 
 
-def update_dockerfile(version):
-    """Update version label in Dockerfile"""
-    dockerfile_path = Path("huawei-solar-modbus-mqtt/Dockerfile")
-    if not dockerfile_path.exists():
-        print("WARNING: Dockerfile not found, skipping")
+def update_version_py(version):
+    """Update __version__.py"""
+    version_file = Path("huawei-solar-modbus-mqtt/modbus_energy_meter/__version__.py")
+    if not version_file.exists():
+        print("⚠️  WARNING: __version__.py not found, skipping")
         return
 
-    content = dockerfile_path.read_text(encoding="utf-8")
-
-    # Update LABEL version
+    content = version_file.read_text(encoding="utf-8")
     new_content = re.sub(
-        r'(LABEL\s+.*version\s*=\s*")[^"]+(")',
+        r'(__version__\s*=\s*")[^"]+(")',
         rf"\g<1>{version}\g<2>",
         content,
-        flags=re.IGNORECASE,
-    )
-
-    # Update ENV VERSION if exists
-    new_content = re.sub(
-        r'(ENV\s+VERSION\s*=?\s*")[^"]+(")',
-        rf"\g<1>{version}\g<2>",
-        new_content,
-        flags=re.IGNORECASE,
     )
 
     if content != new_content:
-        dockerfile_path.write_text(new_content, encoding="utf-8")
-        print(f"UPDATED: Dockerfile to version {version}")
+        version_file.write_text(new_content, encoding="utf-8")
+        print(f"✅ UPDATED: __version__.py to version {version}")
     else:
-        print(f"INFO: Dockerfile already at version {version}")
+        print(f"ℹ️  INFO: __version__.py already at version {version}")
 
 
 def main():
     print("=" * 60)
-    print("Version Synchronization")
+    print("📦 Version Synchronization")
     print("=" * 60)
-    print("Source: huawei-solar-modbus-mqtt/config.yaml")
+    print("📍 Source: huawei-solar-modbus-mqtt/config.yaml")
     print()
 
     try:
         version = get_version_from_config()
-        print(f"Found version: {version}")
+        print(f"🔍 Found version: {version}")
         print()
 
         update_pyproject_toml(version)
-        update_dockerfile(version)
+        update_version_py(version)
 
         print()
         print("=" * 60)
-        print(f"Version synchronization complete: {version}")
+        print(f"✅ Version synchronization complete: {version}")
         print("=" * 60)
 
     except Exception as e:
-        print(f"ERROR: {e}")
+        print(f"❌ ERROR: {e}")
         return 1
 
     return 0
