@@ -24,8 +24,15 @@ dependencies = [
     "paho-mqtt==2.1.0",
 ]
 
+[tool.setuptools]
+package-dir = {"" = "huawei-solar-modbus-mqtt"}
+
 [tool.setuptools.dynamic]
 version = {attr = "modbus_energy_meter.__version__.__version__"}
+
+[tool.setuptools.packages.find]
+where = ["huawei-solar-modbus-mqtt"]
+include = ["modbus_energy_meter*"]
 
 [project.optional-dependencies]
 dev = [
@@ -42,26 +49,24 @@ Homepage = "https://github.com/arboeh/huABus"
 Repository = "https://github.com/arboeh/huABus"
 Issues = "https://github.com/arboeh/huABus/issues"
 
-# Package location für lokale Entwicklung
-[tool.setuptools.packages.find]
-where = ["huawei-solar-modbus-mqtt"]
-
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 asyncio_mode = "auto"
 addopts = "-v"
 
 [tool.coverage.run]
-source = ["huawei-solar-modbus-mqtt/modbus_energy_meter"]
-omit = ["*/tests/*", "*/venv/*"]
+source = ["modbus_energy_meter"]
+omit = ["*/tests/*", "*/venv/*", "*/__version__.py"]
 
 [tool.coverage.report]
+fail_under = 70
 exclude_lines = [
     "pragma: no cover",
     "def __repr__",
     "raise AssertionError",
     "raise NotImplementedError",
     "if __name__ == .__main__.:",
+    "if TYPE_CHECKING:",
 ]
 
 [tool.mypy]
