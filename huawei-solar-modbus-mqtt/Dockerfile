@@ -1,3 +1,4 @@
+# Dockerfile
 ARG BUILD_FROM=ghcr.io/home-assistant/amd64-base:latest
 FROM ${BUILD_FROM}
 
@@ -13,8 +14,9 @@ COPY run.sh /
 RUN chmod a+x /run.sh
 
 LABEL \
-    io.hass.name="huABus | Huawei Solar Modbus to MQTT" \
+    io.hass.name="Huawei Solar Modbus to MQTT" \
     io.hass.description="Huawei Solar Inverter - Modbus to MQTT with auto discovery" \
+    io.hass.version="1.7.2" \
     io.hass.type="addon" \
     io.hass.arch="aarch64|amd64|armhf|armv7|i386"
 
