@@ -3,6 +3,7 @@
 """Tests für MQTT Client Manager."""
 
 import json
+import logging
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -304,6 +305,57 @@ class TestPublishing:
         # Sollte keine Exception werfen, nur Warning loggen
         publish_status("online", "test/topic")
         mock_mqtt_client.publish.assert_not_called()
+
+    def test_publish_data_publish_exception(self, mock_mqtt_client, mqtt_env_vars):
+        import modbus_energy_meter.mqtt_client as mqtt_module
+
+        mqtt_module._mqtt_client = mock_mqtt_client
+        mqtt_module._is_connected = True
+
+        mock_mqtt_client.publish.side_effect = Exception("Test error")
+
+        with pytest.raises(Exception, match="Test error"):
+            publish_data({"test": 123}, "test/topic")
+
+    def test_publish_status_publish_exception(
+        self, mock_mqtt_client, mqtt_env_vars, caplog
+    ):
+        """Test Exception-Handling bei Status-Publish-Fehler."""
+        import modbus_energy_meter.mqtt_client as mqtt_module
+
+        mqtt_module._mqtt_client = mock_mqtt_client
+        mqtt_module._is_connected = True
+
+        # Mock publish wirft Exception
+        mock_mqtt_client.publish.side_effect = Exception("Network timeout")
+
+        # Exception wird gefangen und geloggt (nicht geworfen)
+        publish_status("online", "test/topic")
+
+        # Prüfe dass Error geloggt wurde
+        assert "Status publish failed" in caplog.text
+        assert "Network timeout" in caplog.text
+
+    def test_publish_data_with_debug_logging(
+        self, mock_mqtt_client, mqtt_env_vars, caplog
+    ):
+        """Test Debug-Logging bei publish_data."""
+        import modbus_energy_meter.mqtt_client as mqtt_module
+
+        mqtt_module._mqtt_client = mock_mqtt_client
+        mqtt_module._is_connected = True
+
+        # DEBUG-Level aktivieren
+        caplog.set_level(logging.DEBUG, logger="huawei.mqtt")
+
+        data = {"power_active": 4500, "meter_power_active": -200, "battery_power": 800}
+
+        publish_data(data, "test/topic")
+
+        # Prüfe dass DEBUG-Log ausgegeben wurde
+        assert "Publishing: Solar=4500W" in caplog.text
+        assert "Grid=-200W" in caplog.text
+        assert "Battery=800W" in caplog.text
 
 
 class TestDiscovery:
