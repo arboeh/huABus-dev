@@ -123,9 +123,7 @@ class TestClientCreation:
             mock_client.return_value = mock_mqtt_client
             _get_mqtt_client()
 
-            mock_mqtt_client.username_pw_set.assert_called_once_with(
-                "testuser", "testpass"
-            )
+            mock_mqtt_client.username_pw_set.assert_called_once_with("testuser", "testpass")
 
     def test_get_mqtt_client_with_lwt(self, mock_mqtt_client, mqtt_env_vars):
         """Test Client-Erstellung mit Last Will Testament."""
@@ -133,9 +131,7 @@ class TestClientCreation:
             mock_client.return_value = mock_mqtt_client
             _get_mqtt_client()
 
-            mock_mqtt_client.will_set.assert_called_once_with(
-                "test/huawei/status", "offline", qos=1, retain=True
-            )
+            mock_mqtt_client.will_set.assert_called_once_with("test/huawei/status", "offline", qos=1, retain=True)
 
 
 class TestConnect:
@@ -292,9 +288,7 @@ class TestPublishing:
 
         publish_status("online", "test/topic")
 
-        mock_mqtt_client.publish.assert_called_once_with(
-            "test/topic/status", "online", qos=1, retain=True
-        )
+        mock_mqtt_client.publish.assert_called_once_with("test/topic/status", "online", qos=1, retain=True)
 
     def test_publish_status_not_connected(self, mock_mqtt_client):
         """Test Status-Publishing wenn nicht verbunden."""
@@ -317,9 +311,7 @@ class TestPublishing:
         with pytest.raises(Exception, match="Test error"):
             publish_data({"test": 123}, "test/topic")
 
-    def test_publish_status_publish_exception(
-        self, mock_mqtt_client, mqtt_env_vars, caplog
-    ):
+    def test_publish_status_publish_exception(self, mock_mqtt_client, mqtt_env_vars, caplog):
         """Test Exception-Handling bei Status-Publish-Fehler."""
         import modbus_energy_meter.mqtt_client as mqtt_module
 
@@ -336,9 +328,7 @@ class TestPublishing:
         assert "Status publish failed" in caplog.text
         assert "Network timeout" in caplog.text
 
-    def test_publish_data_with_debug_logging(
-        self, mock_mqtt_client, mqtt_env_vars, caplog
-    ):
+    def test_publish_data_with_debug_logging(self, mock_mqtt_client, mqtt_env_vars, caplog):
         """Test Debug-Logging bei publish_data."""
         import modbus_energy_meter.mqtt_client as mqtt_module
 
@@ -368,12 +358,8 @@ class TestDiscovery:
         mqtt_module._mqtt_client = mock_mqtt_client
         mqtt_module._is_connected = True
 
-        with patch(
-            "modbus_energy_meter.mqtt_client._load_numeric_sensors"
-        ) as mock_numeric:
-            with patch(
-                "modbus_energy_meter.mqtt_client._load_text_sensors"
-            ) as mock_text:
+        with patch("modbus_energy_meter.mqtt_client._load_numeric_sensors") as mock_numeric:
+            with patch("modbus_energy_meter.mqtt_client._load_text_sensors") as mock_text:
                 mock_numeric.return_value = [{"name": "Test", "key": "test"}]
                 mock_text.return_value = []
 

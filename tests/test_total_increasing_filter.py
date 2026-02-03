@@ -4,7 +4,6 @@ from modbus_energy_meter.total_increasing_filter import TotalIncreasingFilter
 
 
 class TestBasicFiltering:
-
     def test_first_value_accepted(self):
         """Erster Wert wird immer akzeptiert (auch 0)"""
         filter_instance = TotalIncreasingFilter()
@@ -103,7 +102,6 @@ class TestNegativeValues:
 
 
 class TestFilterStatistics:
-
     def test_filter_statistics(self):
         """Filter-Statistik wird korrekt gezählt"""
         filter_instance = TotalIncreasingFilter()

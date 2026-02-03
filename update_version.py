@@ -3,6 +3,7 @@
 Update version across all project files.
 Single source of truth: huawei-solar-modbus-mqtt/config.yaml
 """
+
 import re
 import sys
 from pathlib import Path

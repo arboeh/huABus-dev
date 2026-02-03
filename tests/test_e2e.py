@@ -171,9 +171,7 @@ async def test_e2e_mqtt_payload_structure():
     payload_dict = latest["payload"]
 
     # Struktur-Checks
-    assert isinstance(
-        payload_dict, dict
-    ), f"Payload is not a dict: {type(payload_dict)}"
+    assert isinstance(payload_dict, dict), f"Payload is not a dict: {type(payload_dict)}"
     assert len(payload_dict) > 0, "Payload is empty!"
 
     # Energy-Sensoren müssen vorhanden sein
@@ -185,9 +183,7 @@ async def test_e2e_mqtt_payload_structure():
         "battery_discharge_total",
     ]:
         assert key in payload_dict, f"Missing key: {key}"
-        assert isinstance(
-            payload_dict[key], (int, float)
-        ), f"Wrong type for {key}: {type(payload_dict[key])}"
+        assert isinstance(payload_dict[key], (int, float)), f"Wrong type for {key}: {type(payload_dict[key])}"
 
     # Andere Sensoren auch vorhanden
     assert "power_active" in payload_dict, "Missing key: power_active"
@@ -220,16 +216,10 @@ async def test_e2e_performance_filter_overhead():
     avg_duration = sum(durations) / len(durations)
     max_duration = max(durations)
 
-    assert (
-        avg_duration < 0.001
-    ), f"Average filter duration too high: {avg_duration*1000:.2f}ms"
-    assert (
-        max_duration < 0.005
-    ), f"Max filter duration too high: {max_duration*1000:.2f}ms"
+    assert avg_duration < 0.001, f"Average filter duration too high: {avg_duration * 1000:.2f}ms"
+    assert max_duration < 0.005, f"Max filter duration too high: {max_duration * 1000:.2f}ms"
 
-    print(
-        f"✅ E2E Performance: Avg {avg_duration*1000:.3f}ms, Max {max_duration*1000:.3f}ms"
-    )
+    print(f"✅ E2E Performance: Avg {avg_duration * 1000:.3f}ms, Max {max_duration * 1000:.3f}ms")
 
 
 @pytest.mark.asyncio
@@ -338,9 +328,7 @@ async def test_e2e_data_integrity_across_cycles():
     all_messages = mock_mqtt.get_messages("huawei-solar")
     assert len(all_messages) == 10
 
-    actual_values = [
-        msg.as_dict()["payload"]["energy_grid_exported"] for msg in all_messages
-    ]
+    actual_values = [msg.as_dict()["payload"]["energy_grid_exported"] for msg in all_messages]
     assert actual_values == expected_values
 
     print("✅ E2E: Data integrity maintained across 10 cycles")

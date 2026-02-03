@@ -86,10 +86,7 @@ def transform_data(data: Dict[str, Any]) -> Dict[str, Any]:
     # - register_key: Modbus-Register-Name (aus huawei_solar Library)
     # - mqtt_key: MQTT-Key-Name (für Home Assistant)
     # get_value() extrahiert .value und filtert ungültige Modbus-Werte
-    result = {
-        mqtt_key: get_value(data.get(register_key))
-        for register_key, mqtt_key in REGISTER_MAPPING.items()
-    }
+    result = {mqtt_key: get_value(data.get(register_key)) for register_key, mqtt_key in REGISTER_MAPPING.items()}
 
     # === PHASE 2: Critical Defaults ===
     # Stellt sicher dass wichtige Keys existieren, auch wenn Modbus fehlt

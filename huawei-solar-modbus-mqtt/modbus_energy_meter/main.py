@@ -163,9 +163,7 @@ def _setup_root_logger(level: int) -> None:
 
     # StreamHandler für stdout (Docker/Hassio Logging)
     handler = logging.StreamHandler(sys.stdout)
-    handler.setFormatter(
-        logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
-    )
+    handler.setFormatter(logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s"))
     root.addHandler(handler)
 
 
@@ -272,9 +270,7 @@ def heartbeat(topic: str) -> None:
         logger.debug(f"Heartbeat OK: {offline_duration:.1f}s since last success")
 
 
-def log_cycle_summary(
-    cycle_num: float, timings: Dict[str, float], data: Dict[str, Any]
-) -> None:
+def log_cycle_summary(cycle_num: float, timings: Dict[str, float], data: Dict[str, Any]) -> None:
     """
     Loggt Cycle-Zusammenfassung - human-readable oder JSON für Monitoring-Tools.
 
@@ -339,9 +335,7 @@ def log_cycle_summary(
                     f"Details: {dict(filter_stats)}"
                 )
             else:
-                logger.info(
-                    "└─> 🔍 Filter summary (last 20 cycles): 0 values filtered - all data valid ✓"
-                )
+                logger.info("└─> 🔍 Filter summary (last 20 cycles): 0 values filtered - all data valid ✓")
 
             get_filter().reset_stats()
 
@@ -569,9 +563,7 @@ async def main_once(client: AsyncHuaweiSolar, cycle_num: float) -> None:
     # Grund: Nächster Cycle wird verzögert, Daten kommen nicht rechtzeitig
     poll_interval: float = int(os.environ.get("HUAWEI_POLL_INTERVAL", "30"))
     if cycle_duration > poll_interval * 0.8:
-        logger.warning(
-            "Cycle %.1fs > 80%% poll_interval (%ds)", cycle_duration, poll_interval
-        )
+        logger.warning("Cycle %.1fs > 80%% poll_interval (%ds)", cycle_duration, poll_interval)
 
 
 async def main() -> None:

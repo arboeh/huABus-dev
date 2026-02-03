@@ -251,7 +251,7 @@ async def test_hant_addon_restart_scenario():
 
     for i in range(1, len(results)):
         diff = abs(results[i] - results[i - 1])
-        assert diff < 10.0, f"Unrealistic jump: {results[i-1]} → {results[i]} (+{diff})"
+        assert diff < 10.0, f"Unrealistic jump: {results[i - 1]} → {results[i]} (+{diff})"
 
     print("✅ HANT Test: No spikes after restart")
 
@@ -368,8 +368,6 @@ async def test_hant_utility_meter_simulation():
 
     # Werte müssen monoton steigend sein
     for i in range(1, len(mqtt_values)):
-        assert (
-            mqtt_values[i] >= mqtt_values[i - 1]
-        ), f"❌ Value dropped: {mqtt_values[i-1]} → {mqtt_values[i]}"
+        assert mqtt_values[i] >= mqtt_values[i - 1], f"❌ Value dropped: {mqtt_values[i - 1]} → {mqtt_values[i]}"
 
     print(f"✅ HANT Test: Utility Meter simulation OK, values: {mqtt_values}")

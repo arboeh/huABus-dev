@@ -42,9 +42,7 @@ class MockHuaweiSolar:
     def load_scenario(self, name: str):
         """Aktiviert ein Test-Szenario"""
         if name not in self.scenarios:
-            raise ValueError(
-                f"Scenario '{name}' not found. Available: {list(self.scenarios.keys())}"
-            )
+            raise ValueError(f"Scenario '{name}' not found. Available: {list(self.scenarios.keys())}")
 
         self.current_scenario = self.scenarios[name]
         self.cycle = 0

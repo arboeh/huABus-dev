@@ -122,9 +122,7 @@ async def test_main_timeout_exception_triggers_reconnect(mock_env):
         assert mock_reset_filter.call_count >= 1
 
         # Verify status was published as offline after timeout
-        offline_calls = [
-            call for call in mock_status.call_args_list if call[0][0] == "offline"
-        ]
+        offline_calls = [call for call in mock_status.call_args_list if call[0][0] == "offline"]
         assert len(offline_calls) >= 1
 
         # Verify sleep was called (retry delay)
@@ -163,9 +161,7 @@ async def test_main_modbus_exception_handling(mock_env):
         assert mock_reset_filter.call_count >= 1
 
         # Verify offline status
-        offline_calls = [
-            call for call in mock_status.call_args_list if call[0][0] == "offline"
-        ]
+        offline_calls = [call for call in mock_status.call_args_list if call[0][0] == "offline"]
         assert len(offline_calls) >= 1
 
 
@@ -222,9 +218,7 @@ def test_heartbeat_online_within_timeout():
     ):
         heartbeat("test-topic")
         # Should not publish offline status
-        offline_calls = [
-            call for call in mock_status.call_args_list if call[0][0] == "offline"
-        ]
+        offline_calls = [call for call in mock_status.call_args_list if call[0][0] == "offline"]
         assert len(offline_calls) == 0
 
 

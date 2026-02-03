@@ -166,10 +166,7 @@ class ConnectionErrorTracker:
             # Interval abgelaufen → Aggregiertes Update loggen
             duration = now - error_info["first_seen"]
             # WARNING statt ERROR (wir wissen bereits dass es ein Problem gibt)
-            logger.warning(
-                f"Still failing: {error_type} "
-                f"({error_info['count']} attempts in {int(duration)}s)"
-            )
+            logger.warning(f"Still failing: {error_type} ({error_info['count']} attempts in {int(duration)}s)")
             error_info["last_logged"] = now  # Timestamp aktualisieren
             return True
 

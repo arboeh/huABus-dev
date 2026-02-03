@@ -248,9 +248,7 @@ def disconnect_mqtt() -> None:
         # Abschiedsgruß: Status auf offline setzen
         topic = os.environ.get("HUAWEI_MODBUS_MQTT_TOPIC")
         if topic and _is_connected:
-            result = _mqtt_client.publish(
-                f"{topic}/status", "offline", qos=1, retain=True
-            )
+            result = _mqtt_client.publish(f"{topic}/status", "offline", qos=1, retain=True)
             # Warten bis publiziert (max 1s)
             result.wait_for_publish(timeout=1.0)
         # Background-Loop stoppen (beendet MQTT-Thread)
@@ -267,9 +265,7 @@ def disconnect_mqtt() -> None:
         _is_connected = False
 
 
-def _build_sensor_config(
-    sensor: Dict[str, Any], base_topic: str, device_config: Dict[str, Any]
-) -> Dict[str, Any]:
+def _build_sensor_config(sensor: Dict[str, Any], base_topic: str, device_config: Dict[str, Any]) -> Dict[str, Any]:
     """
     Erstellt MQTT Discovery Config für einzelnen Sensor.
 
@@ -483,9 +479,7 @@ def publish_discovery_configs(base_topic: str) -> None:
 
     # Text-Sensoren publizieren (Modellname, Status, ...)
     text_sensors = _load_text_sensors()
-    text_count = _publish_sensor_configs(
-        client, base_topic, text_sensors, device_config
-    )
+    text_count = _publish_sensor_configs(client, base_topic, text_sensors, device_config)
     logger.debug(f"Published {text_count} text sensors")
 
     # Binary Sensor für Connectivity-Status
@@ -494,9 +488,7 @@ def publish_discovery_configs(base_topic: str) -> None:
     logger.info(f"✅ Discovery complete: {count + text_count + 1} entities")
 
 
-def _publish_status_sensor(
-    client: mqtt.Client, base_topic: str, device_config: Dict[str, Any]
-) -> None:
+def _publish_status_sensor(client: mqtt.Client, base_topic: str, device_config: Dict[str, Any]) -> None:
     """
     Publiziert Binary Sensor für Connectivity-Status (online/offline).
 
