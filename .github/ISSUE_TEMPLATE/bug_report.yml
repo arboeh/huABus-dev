@@ -16,7 +16,7 @@ body:
       label: Prerequisites
       description: Please confirm the following before submitting
       options:
-        - label: I have read the [documentation](blob/main/huawei-solar-modbus-mqtt/DOCS.md)
+        - label: I have read the [documentation](blob/main/huawei_solar_modbus_mqtt/DOCS.md)
           required: true
         - label: I have searched existing issues to avoid duplicates
           required: true

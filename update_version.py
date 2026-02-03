@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Update version across all project files.
-Single source of truth: huawei-solar-modbus-mqtt/config.yaml
+Single source of truth: huawei_solar_modbus_mqtt/config.yaml
 """
 
 import re
@@ -12,10 +12,9 @@ from pathlib import Path
 if sys.platform == "win32":
     sys.stdout.reconfigure(encoding="utf-8")  # type: ignore[attr-defined]
 
-
 def get_version_from_config():
     """Read version from config.yaml"""
-    config_path = Path("huawei-solar-modbus-mqtt/config.yaml")
+    config_path = Path("huawei_solar_modbus_mqtt/config.yaml")
     if not config_path.exists():
         raise FileNotFoundError(f"Could not find {config_path}")
 
@@ -26,7 +25,6 @@ def get_version_from_config():
         raise ValueError("Could not extract version from config.yaml")
 
     return match.group(1)
-
 
 def update_pyproject_toml(version):
     """Update version in pyproject.toml - only in [project] section"""
@@ -51,10 +49,9 @@ def update_pyproject_toml(version):
     else:
         print(f"ℹ️  INFO: pyproject.toml already at version {version}")
 
-
 def update_version_py(version):
     """Update __version__.py"""
-    version_file = Path("huawei-solar-modbus-mqtt/modbus_energy_meter/__version__.py")
+    version_file = Path("huawei_solar_modbus_mqtt/modbus_energy_meter/__version__.py")
     if not version_file.exists():
         print("⚠️  WARNING: __version__.py not found, skipping")
         return
@@ -72,12 +69,11 @@ def update_version_py(version):
     else:
         print(f"ℹ️  INFO: __version__.py already at version {version}")
 
-
 def main():
     print("=" * 60)
     print("📦 Version Synchronization")
     print("=" * 60)
-    print("📍 Source: huawei-solar-modbus-mqtt/config.yaml")
+    print("📍 Source: huawei_solar_modbus_mqtt/config.yaml")
     print()
 
     try:
@@ -98,7 +94,6 @@ def main():
         return 1
 
     return 0
-
 
 if __name__ == "__main__":
     exit(main())

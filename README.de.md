@@ -27,7 +27,7 @@
 > Mehrere Verbindungen führen zu **Timeouts und Datenverlust**!
 
 **58 Essenzielle Registers, 69+ Entitäten, ~2–5s Laufzeit**
-**Changelog:** [CHANGELOG.md](huawei-solar-modbus-mqtt/CHANGELOG.md)
+**Changelog:** [CHANGELOG.md](huawei_solar_modbus_mqtt/CHANGELOG.md)
 
 ## Features
 
@@ -46,7 +46,7 @@
 
 ## 🚀 Schnellstart
 
-**Neu bei huABus?** Schau dir unseren [5-Minuten-Schnellstart-Guide](huawei-solar-modbus-mqtt/DOCS.de.md#-schnellstart) an:
+**Neu bei huABus?** Schau dir unseren [5-Minuten-Schnellstart-Guide](huawei_solar_modbus_mqtt/DOCS.de.md#-schnellstart) an:
 
 - ✅ Schritt-für-Schritt Installation mit erwarteten Ausgaben
 - ✅ Verbindungsprobleme lösen (Slave ID, Timeouts)
@@ -78,13 +78,13 @@ Beide nutzen die gleiche `huawei-solar` Library, haben aber unterschiedliche Anw
 
 ### Home Assistant Integration
 
-![Diagnostic Entities](screenshots/diagnostics.png)
+![Diagnostic Entities](images/diagnostics.png)
 _Diagnose-Entitäten mit Inverter-Status, Temperatur und Batterie-Informationen_
 
-![Sensor Overview](screenshots/sensors.png)
+![Sensor Overview](images/sensors.png)
 _Vollständige Sensorübersicht mit Echtzeit-Leistung, Energie und Netzdaten_
 
-![MQTT Device Info](screenshots/mqtt-info.png)
+![MQTT Device Info](images/mqtt_info.png)
 _MQTT-Geräteintegrations-Details_
 
 ## Installation
@@ -150,7 +150,7 @@ _* Durch total_increasing Filter vor falschen Counter-Resets geschützt_
 
 ## Aktuelle Updates
 
-Siehe [CHANGELOG.md](huawei-solar-modbus-mqtt/CHANGELOG.md) für detaillierte Release-Notes.
+Siehe [CHANGELOG.md](huawei_solar_modbus_mqtt/CHANGELOG.md) für detaillierte Release-Notes.
 
 **Letzte Highlights:**
 - ✅ Restart Zero-Drop Fix (Filter vor erstem Cycle initialisiert)
@@ -189,8 +189,8 @@ Bug gefunden oder Feature-Wunsch? Nutze unsere [GitHub Issue Templates](https://
 
 ## Dokumentation
 
-- 🇩🇪 **[DOCS.de.md](huawei-solar-modbus-mqtt/DOCS.de.md)** - Vollständige Dokumentation
-- 🇬🇧 **[DOCS.md](huawei-solar-modbus-mqtt/DOCS.md)** - Complete Documentation
+- 🇩🇪 **[DOCS.de.md](huawei_solar_modbus_mqtt/DOCS.de.md)** - Vollständige Dokumentation
+- 🇬🇧 **[DOCS.md](huawei_solar_modbus_mqtt/DOCS.md)** - Complete Documentation
 
 ## Credits
 

@@ -6,10 +6,10 @@ repos:
       # Linter (mit Auto-Fix)
       - id: ruff-check
         args: [--fix]
-        files: ^(huawei-solar-modbus-mqtt/modbus_energy_meter|tests)/
+        files: ^(huawei_solar_modbus_mqtt/modbus_energy_meter|tests)/
       # Formatter
       - id: ruff-format
-        files: ^(huawei-solar-modbus-mqtt/modbus_energy_meter|tests)/
+        files: ^(huawei_solar_modbus_mqtt/modbus_energy_meter|tests)/
 
   # MyPy - Type Checking
   - repo: https://github.com/pre-commit/mirrors-mypy
@@ -18,7 +18,7 @@ repos:
       - id: mypy
         args: [--ignore-missing-imports, --check-untyped-defs]
         additional_dependencies: [types-paho-mqtt]
-        files: ^huawei-solar-modbus-mqtt/modbus_energy_meter/
+        files: ^huawei_solar_modbus_mqtt/modbus_energy_meter/
 
   # Pre-Commit Hooks - Standard Checks
   - repo: https://github.com/pre-commit/pre-commit-hooks
@@ -28,7 +28,7 @@ repos:
       - id: end-of-file-fixer
       - id: check-yaml
       - id: check-added-large-files
-        args: ['--maxkb=1000']
+        args: ["--maxkb=1000"]
       - id: check-merge-conflict
       - id: check-toml
       - id: mixed-line-ending
@@ -36,9 +36,19 @@ repos:
   # Local Hooks
   - repo: local
     hooks:
-      # Version Sync
+      # Version Consistency Check (läuft ZUERST)
+      - id: check-version-sync
+        name: Check version synchronization
+        entry: python check_version_sync.py
+        language: system
+        pass_filenames: false
+        always_run: true
+        stages: [pre-commit]
+
+      # Version Sync (nur bei Manual-Run)
       - id: sync-version
         name: Sync version from config.yaml
         entry: python update_version.py
         language: system
         pass_filenames: false
+        stages: [manual]

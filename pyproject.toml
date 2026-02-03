@@ -3,7 +3,7 @@ requires = ["setuptools>=61.0"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "huawei-solar-modbus-mqtt"
+name = "huabus"
 dynamic = ["version"]
 description = "Huawei Solar Modbus → MQTT + Auto-Discovery"
 authors = [{ name = "arboeh", email = "arend.boehmer@web.de" }]
@@ -19,14 +19,11 @@ classifiers = [
 ]
 dependencies = ["huawei-solar>=2.5.0", "pymodbus>=3.11.4", "paho-mqtt>=2.1.0"]
 
-[tool.setuptools]
-package-dir = { "" = "huawei-solar-modbus-mqtt" }
-
 [tool.setuptools.dynamic]
 version = { attr = "modbus_energy_meter.__version__.__version__" }
 
 [tool.setuptools.packages.find]
-where = ["huawei-solar-modbus-mqtt"]
+where = ["huawei_solar_modbus_mqtt"]
 include = ["modbus_energy_meter*"]
 
 [project.optional-dependencies]
@@ -48,10 +45,11 @@ Issues = "https://github.com/arboeh/huABus/issues"
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"
 addopts = "-v"
 
 [tool.coverage.run]
-source = ["modbus_energy_meter"]
+source = ["huawei_solar_modbus_mqtt/modbus_energy_meter"]
 omit = ["*/tests/*", "*/venv/*", "*/__version__.py"]
 
 [tool.coverage.report]
@@ -66,10 +64,11 @@ exclude_lines = [
 ]
 
 [tool.mypy]
-python_version = "py311"
+python_version = "3.11"
 warn_return_any = true
 warn_unused_configs = true
 disallow_untyped_defs = false
+check_untyped_defs = true
 
 [tool.ruff]
 line-length = 120
