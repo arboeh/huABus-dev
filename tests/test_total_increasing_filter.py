@@ -1,6 +1,5 @@
 # tests/test_filter.py
 
-import pytest  # type: ignore
 from modbus_energy_meter.total_increasing_filter import TotalIncreasingFilter
 
 
