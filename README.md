@@ -4,11 +4,12 @@
 
 🇬🇧 **English** | [🇩🇪 Deutsch](README.de.md)
 
+[![Home Assistant](https://img.shields.io/badge/Home%20Assistant-Add--on-41BDF5?logo=home-assistant)](https://www.home-assistant.io/)
 [![release](https://img.shields.io/github/v/release/arboeh/huABus?display_name=tag)](https://github.com/arboeh/huABus/releases/latest)
 [![Tests](https://github.com/arboeh/huABus/workflows/Tests/badge.svg)](https://github.com/arboeh/huABus/actions)
 [![codecov](https://codecov.io/gh/arboeh/huABus/branch/main/graph/badge.svg)](https://codecov.io/gh/arboeh/huABus)
+[![maintained](https://img.shields.io/maintenance/yes/2026)](https://github.com/arboeh/huABus/graphs/commit-activity)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://github.com/arboeh/huABus/blob/main/LICENSE)
-[![Home Assistant](https://img.shields.io/badge/Home%20Assistant-Add--on-41BDF5?logo=home-assistant)](https://www.home-assistant.io/)
 [![aarch64](https://img.shields.io/badge/aarch64-yes-green.svg)](https://github.com/arboeh/huABus)
 [![amd64](https://img.shields.io/badge/amd64-yes-green.svg)](https://github.com/arboeh/huABus)
 [![armhf](https://img.shields.io/badge/armhf-yes-green.svg)](https://github.com/arboeh/huABus)
@@ -57,22 +58,25 @@ Perfect for beginners! Experienced users: jump to [Configuration](#configuration
 
 ## Comparison: wlcrs/huawei_solar vs. This Add-on
 
-Both use the same `huawei-solar` library but target different use cases:
+The `wlcrs/huawei_solar` is a **native Home Assistant integration**, while this is a **Home Assistant add-on**. Both use the same `huawei-solar` library but target different use cases:
 
-| Feature | wlcrs/huawei_solar | This Add-on |
-|---------|-------------------|-------------|
-| Battery control | ✅ | ❌ (read-only) |
-| MQTT-native | ❌ | ✅ |
-| total_increasing filter | ❌ | ✅ |
-| External integrations | Limited | ✅ (EVCC, Node-RED, Grafana) |
-| Cycle time | Variable | 2-5s |
-| Error tracking | Basic | Advanced |
+| Feature                 | wlcrs/huawei_solar<br>(Integration) | This Add-on<br>(MQTT Bridge) |
+| ----------------------- | ----------------------------------- | ---------------------------- |
+| Installation            | Via HACS or manual                  | Via Add-on Store             |
+| Battery control         | ✅                                  | ❌ (read-only)               |
+| MQTT-native             | ❌                                  | ✅                           |
+| total_increasing filter | ❌                                  | ✅                           |
+| External integrations   | Limited                             | ✅ (EVCC, Node-RED, Grafana) |
+| Cycle time              | Variable                            | 2-5s                         |
+| Error tracking          | Basic                               | Advanced                     |
+| Configuration           | UI or YAML                          | Add-on UI                    |
 
 **Important:** Both share the same limitation - only **ONE Modbus connection**. To use both simultaneously, you need a Modbus Proxy.
 
 **When to use which?**
-- **wlcrs:** Battery control + native HA integration
-- **This add-on:** MQTT monitoring + external system integration
+
+- **wlcrs (Integration):** Battery control + native HA integration + direct entity access
+- **This add-on (MQTT Bridge):** MQTT monitoring + external system integration + better error tracking
 
 ## Screenshots
 
@@ -136,23 +140,26 @@ _Complete example: [examples/mqtt_payload.json](examples/mqtt_payload.json)_
 
 ## Important Entities
 
-| Category | Sensors |
-|----------|---------|
-| **Power** | `solar_power`, `input_power`, `grid_power`, `battery_power`, `pv1-4_power` |
-| **Energy** | `daily_yield`, `total_yield`*, `grid_exported/imported`* |
-| **Battery** | `battery_soc`, `charge/discharge_today`, `total_charge/discharge`*, `bus_voltage/current` |
-| **Grid** | `voltage_phase_a/b/c`, `line_voltage_ab/bc/ca`, `frequency` |
-| **Meter** | `meter_power_phase_a/b/c`, `meter_current_a/b/c`, `meter_reactive_power` |
-| **Device** | `model_name`, `serial_number`, `efficiency`, `temperature`, `rated_power` |
-| **Status** | `inverter_status`, `battery_status`, `meter_status` |
+| Category    | Sensors                                                                                    |
+| ----------- | ------------------------------------------------------------------------------------------ |
+| **Power**   | `solar_power`, `input_power`, `grid_power`, `battery_power`, `pv1-4_power`                 |
+| **Energy**  | `daily_yield`, `total_yield`\*, `grid_exported/imported`\*                                 |
+| **Battery** | `battery_soc`, `charge/discharge_today`, `total_charge/discharge`\*, `bus_voltage/current` |
+| **Grid**    | `voltage_phase_a/b/c`, `line_voltage_ab/bc/ca`, `frequency`                                |
+| **Meter**   | `meter_power_phase_a/b/c`, `meter_current_a/b/c`, `meter_reactive_power`                   |
+| **Device**  | `model_name`, `serial_number`, `efficiency`, `temperature`, `rated_power`                  |
+| **Status**  | `inverter_status`, `battery_status`, `meter_status`                                        |
 
-_* Protected by total_increasing filter against false counter resets_
+_\* Protected by total_increasing filter against false counter resets_
 
 ## Latest Updates
 
 See [CHANGELOG.md](huawei_solar_modbus_mqtt/CHANGELOG.md) for detailed release notes.
 
 **Recent highlights:**
+
+- ✅ AppArmor security profile for container isolation
+- ✅ Automatic requirements.txt generation from pyproject.toml
 - ✅ Restart zero-drop fix (filter initialized before first cycle)
 - ✅ 86% code coverage with comprehensive test suite
 - ✅ Filter simplification (no warmup, no tolerance)
@@ -166,6 +173,7 @@ See [CHANGELOG.md](huawei_solar_modbus_mqtt/CHANGELOG.md) for detailed release n
 **Symptom:** Timeouts, "No response received", intermittent data loss
 
 **Solution:**
+
 1. Check **Settings → Devices & Services** for other Huawei integrations
 2. Remove official `wlcrs/huawei_solar` and HACS integrations
 3. Disable third-party monitoring software
@@ -173,13 +181,13 @@ See [CHANGELOG.md](huawei_solar_modbus_mqtt/CHANGELOG.md) for detailed release n
 
 ### Other Common Issues
 
-| Issue | Solution |
-|-------|----------|
-| **No Connection** | Enable Modbus TCP, verify IP/Slave-ID (try 0/1/16), set `log_level: DEBUG` |
-| **Connection Timeouts** | Try different Slave IDs; increase poll_interval to 60s |
-| **MQTT Errors** | Set broker to `core-mosquitto`, leave credentials empty |
-| **Performance Warnings** | Increase poll_interval if cycle time > 80% of interval |
-| **Filter Activity** | Occasional filtering (1-2/hour) is normal; frequent = connection issues |
+| Issue                    | Solution                                                                   |
+| ------------------------ | -------------------------------------------------------------------------- |
+| **No Connection**        | Enable Modbus TCP, verify IP/Slave-ID (try 0/1/16), set `log_level: DEBUG` |
+| **Connection Timeouts**  | Try different Slave IDs; increase poll_interval to 60s                     |
+| **MQTT Errors**          | Set broker to `core-mosquitto`, leave credentials empty                    |
+| **Performance Warnings** | Increase poll_interval if cycle time > 80% of interval                     |
+| **Filter Activity**      | Occasional filtering (1-2/hour) is normal; frequent = connection issues    |
 
 **Logs:** Add-ons → Huawei Solar Modbus to MQTT → Log Tab
 

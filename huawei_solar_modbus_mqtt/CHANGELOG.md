@@ -2,6 +2,54 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.7.3] - 2026-02-03
+
+### Infrastructure & Build System
+
+- **Docker Build Compatibility**: Added `requirements.txt` for improved build reliability
+  - Explicit dependency file for Docker image building
+  - Contains: `huawei-solar>=2.5.0`, `pymodbus>=3.11.4`, `paho-mqtt>=2.1.0`
+  - Ensures consistent builds across all architectures
+
+### Security
+
+- **AppArmor Profile**: Added container security profile for better isolation
+  - Restricts container access to essential system resources only
+  - Allows necessary network operations (Modbus TCP + MQTT)
+  - Protects against unauthorized file system access
+  - Maintains compatibility with S6-Overlay init system
+- **Network Configuration**: Changed `host_network: false` for improved security rating
+  - Addon no longer requires host network access
+  - Still maintains full Modbus and MQTT connectivity
+  - Improves container isolation without functionality loss
+
+### Documentation
+
+- **README.md**: Added addon information display for Home Assistant UI
+  - "About" section now visible in Add-on Info tab
+  - Enhanced addon presentation with feature overview
+  - Links to GitHub repository for additional resources
+- **Maintenance Badge**: Added to repository badges for transparency
+  - Shows active development status
+  - Links to commit activity graph
+
+### Technical Details
+
+**Docker Image:**
+
+- Base image: `ghcr.io/home-assistant/amd64-base:latest`
+- Python dependencies now managed via `requirements.txt`
+- Compatible with Home Assistant Supervisor build system
+
+**Security Improvements:**
+
+- AppArmor profile permits only required capabilities
+- Denies writes to critical kernel interfaces
+- Network access limited to TCP/UDP only
+- File access restricted to `/app`, `/data`, and essential system files
+
+**No functional changes** - This release focuses on build system, security, and documentation improvements.
+
 ## [1.7.2] - 2026-02-02
 
 ### Testing & Quality

@@ -12,6 +12,7 @@ from pathlib import Path
 if sys.platform == "win32":
     sys.stdout.reconfigure(encoding="utf-8")  # type: ignore[attr-defined]
 
+
 def get_version_from_config():
     """Read version from config.yaml"""
     config_path = Path("huawei_solar_modbus_mqtt/config.yaml")
@@ -25,6 +26,7 @@ def get_version_from_config():
         raise ValueError("Could not extract version from config.yaml")
 
     return match.group(1)
+
 
 def update_pyproject_toml(version):
     """Update version in pyproject.toml - only in [project] section"""
@@ -49,6 +51,7 @@ def update_pyproject_toml(version):
     else:
         print(f"ℹ️  INFO: pyproject.toml already at version {version}")
 
+
 def update_version_py(version):
     """Update __version__.py"""
     version_file = Path("huawei_solar_modbus_mqtt/modbus_energy_meter/__version__.py")
@@ -69,6 +72,24 @@ def update_version_py(version):
     else:
         print(f"ℹ️  INFO: __version__.py already at version {version}")
 
+
+def update_requirements():
+    """Generate requirements.txt from pyproject.toml."""
+    import tomllib
+    from pathlib import Path
+
+    with open("pyproject.toml", "rb") as f:
+        data = tomllib.load(f)
+
+    deps = data["project"]["dependencies"]
+    addon_path = Path("huawei_solar_modbus_mqtt/requirements.txt")
+
+    with open(addon_path, "w") as f:
+        f.write("\n".join(deps) + "\n")
+
+    print(f"✅ Updated requirements.txt with {len(deps)} dependencies")
+
+
 def main():
     print("=" * 60)
     print("📦 Version Synchronization")
@@ -83,6 +104,7 @@ def main():
 
         update_pyproject_toml(version)
         update_version_py(version)
+        update_requirements()
 
         print()
         print("=" * 60)
@@ -94,6 +116,7 @@ def main():
         return 1
 
     return 0
+
 
 if __name__ == "__main__":
     exit(main())
