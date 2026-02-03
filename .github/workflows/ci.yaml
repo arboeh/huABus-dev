@@ -23,15 +23,19 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install -r requirements-dev.txt
+          pip install -e .[dev]
 
       - name: Run tests
         run: |
           pytest tests/ -v --cov=modbus_energy_meter --cov-report=term-missing
 
-      - name: Lint
+      - name: Lint with ruff
         run: |
-          flake8 huawei-solar-modbus-mqtt/modbus_energy_meter --max-line-length=100
+          ruff check huawei-solar-modbus-mqtt/modbus_energy_meter tests/
+
+      - name: Format check with ruff
+        run: |
+          ruff format --check huawei-solar-modbus-mqtt/modbus_energy_meter tests/
 
       - name: Type check
         run: |
