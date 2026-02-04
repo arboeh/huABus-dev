@@ -3,20 +3,20 @@
 profile huawei_solar_modbus_mqtt flags=(attach_disconnected,mediate_deleted) {
   #include <abstractions/base>
 
-  # Capabilities
-  capability,
+  # Capabilities (restrict to what's actually needed)
+  capability net_bind_service,
+  capability setuid,
+  capability setgid,
   file,
   signal (send) set=(kill,term,int,hup,cont),
 
-  # Network
+  # Network (Modbus TCP + MQTT only)
   network inet stream,
   network inet dgram,
   network inet6 stream,
   network inet6 dgram,
-  network tcp,
-  network udp,
 
-  # S6-Overlay
+  # S6-Overlay init system
   /init ix,
   /bin/** ix,
   /usr/bin/** ix,
@@ -31,30 +31,53 @@ profile huawei_solar_modbus_mqtt flags=(attach_disconnected,mediate_deleted) {
   /etc/cont-init.d/** rwix,
   /etc/cont-finish.d/** rwix,
   /run/{,**} rwk,
+
+  # Standard devices
   /dev/tty rw,
   /dev/null rw,
   /dev/zero rw,
+  /dev/random r,
+  /dev/urandom r,
+
+  # Bashio (Home Assistant helper library)
+  /usr/lib/bashio/** ix,
 
   # Run script
   /run.sh rix,
 
-  # Bashio
-  /usr/lib/bashio/** ix,
-  /tmp/** rwk,
-
-  # Data directory
-  /data/** rw,
-
-  # Application
-  /app/** r,
+  # Python runtime
   /usr/bin/python3* ix,
 
-  # System files
+  # Application code (read-only is correct!)
+  /app/** r,
+
+  # Data directory (persistent storage)
+  /data/** rw,
+
+  # Temporary files
+  /tmp/** rwk,
+  /var/tmp/** rwk,
+
+  # System files (read-only)
   /etc/** r,
   /proc/** r,
-  /sys/** r,
+  /sys/class/** r,
+  /sys/devices/** r,
+
+  # Python standard library and site-packages
+  /usr/lib/python3*/** r,
+  /usr/local/lib/python3*/** r,
+
+  # Supervisor communication (WICHTIG für Backups!)
+  /run/supervisor.sock rw,
+  owner /data/.backup.lock rwk,
+
+  # Allow supervisor to snapshot our data
+  /data/.snapshot/** rw,
 
   # Deny dangerous writes
   deny /proc/sys/kernel/** w,
   deny /sys/firmware/** w,
+  deny /sys/kernel/** w,
+  deny /proc/kcore r,
 }

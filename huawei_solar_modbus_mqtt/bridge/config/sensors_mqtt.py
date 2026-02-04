@@ -582,6 +582,82 @@ NUMERIC_SENSORS: List[Dict[str, Any]] = [
         "enabled": True,
         "entity_category": "diagnostic",
     },
+    # === Battery Limits ===
+    {
+        "name": "Battery Max Charge Power",
+        "key": "battery_max_charge_power",
+        "unit_of_measurement": "W",
+        "device_class": "power",
+        "state_class": "measurement",
+        "icon": "mdi:battery-plus",
+        "value_template": "{{ value_json.battery_max_charge_power | default(0) }}",
+        "enabled": True,
+    },
+    {
+        "name": "Battery Max Discharge Power",
+        "key": "battery_max_discharge_power",
+        "unit_of_measurement": "W",
+        "device_class": "power",
+        "state_class": "measurement",
+        "icon": "mdi:battery-minus",
+        "value_template": "{{ value_json.battery_max_discharge_power | default(0) }}",
+        "enabled": True,
+    },
+    # === Multi-Module Battery ===
+    {
+        "name": "Battery Unit 1 SOC",
+        "key": "battery_unit1_soc",
+        "unit_of_measurement": "%",
+        "device_class": "battery",
+        "state_class": "measurement",
+        "icon": "mdi:battery-70",
+        "value_template": "{{ value_json.battery_unit1_soc | default(0) }}",
+        "enabled": False,  # Nur bei Multi-Modul
+        "entity_category": "diagnostic",
+    },
+    {
+        "name": "Battery Unit 2 SOC",
+        "key": "battery_unit2_soc",
+        "unit_of_measurement": "%",
+        "device_class": "battery",
+        "state_class": "measurement",
+        "icon": "mdi:battery-70",
+        "value_template": "{{ value_json.battery_unit2_soc | default(0) }}",
+        "enabled": False,
+        "entity_category": "diagnostic",
+    },
+    {
+        "name": "Battery Unit 3 SOC",
+        "key": "battery_unit3_soc",
+        "unit_of_measurement": "%",
+        "device_class": "battery",
+        "state_class": "measurement",
+        "icon": "mdi:battery-70",
+        "value_template": "{{ value_json.battery_unit3_soc | default(0) }}",
+        "enabled": False,
+        "entity_category": "diagnostic",
+    },
+    # === Optimizer Monitoring ===
+    {
+        "name": "Optimizers Total",
+        "key": "optimizers_total",
+        "unit_of_measurement": "",
+        "state_class": "measurement",
+        "icon": "mdi:chip",
+        "value_template": "{{ value_json.optimizers_total | default(0) }}",
+        "enabled": False,  # Nur bei Optimizer-Setup
+        "entity_category": "diagnostic",
+    },
+    {
+        "name": "Optimizers Online",
+        "key": "optimizers_online",
+        "unit_of_measurement": "",
+        "state_class": "measurement",
+        "icon": "mdi:check-network",
+        "value_template": "{{ value_json.optimizers_online | default(0) }}",
+        "enabled": False,
+        "entity_category": "diagnostic",
+    },
 ]
 
 # Text-Sensoren ohne unit_of_measurement
@@ -647,6 +723,31 @@ TEXT_SENSORS: List[Dict[str, Any]] = [
         "device_class": "timestamp",
         "value_template": "{{ value_json.startup_time | default(None) }}",
         "enabled": False,  # Meist nicht relevant
+        "entity_category": "diagnostic",
+    },
+    # === Alarm Registers ===
+    {
+        "name": "Alarm 1",
+        "key": "alarm1",
+        "icon": "mdi:alert-circle",
+        "value_template": "{{ value_json.alarm1 | default('0') }}",
+        "enabled": False,  # Experten-Feature
+        "entity_category": "diagnostic",
+    },
+    {
+        "name": "Alarm 2",
+        "key": "alarm2",
+        "icon": "mdi:alert-circle",
+        "value_template": "{{ value_json.alarm2 | default('0') }}",
+        "enabled": False,
+        "entity_category": "diagnostic",
+    },
+    {
+        "name": "Alarm 3",
+        "key": "alarm3",
+        "icon": "mdi:alert-circle",
+        "value_template": "{{ value_json.alarm3 | default('0') }}",
+        "enabled": False,
         "entity_category": "diagnostic",
     },
 ]

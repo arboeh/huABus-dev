@@ -16,7 +16,7 @@ if sys.platform == "win32":
 
 def get_version_from_config():
     """Read version from config.yaml"""
-    config_path = Path("huawei_solar_modbus_mqtt/config.yaml")
+    config_path = Path("../huawei_solar_modbus_mqtt/config.yaml")
     if not config_path.exists():
         return None
 
@@ -27,7 +27,7 @@ def get_version_from_config():
 
 def get_version_from_pyproject():
     """Read version from pyproject.toml"""
-    pyproject_path = Path("pyproject.toml")
+    pyproject_path = Path("../pyproject.toml")
     if not pyproject_path.exists():
         return None
 
@@ -49,7 +49,7 @@ def get_version_from_pyproject():
 
 def get_version_from_version_py():
     """Read version from __version__.py"""
-    version_file = Path("huawei_solar_modbus_mqtt/bridge/__version__.py")
+    version_file = Path("../huawei_solar_modbus_mqtt/bridge/__version__.py")
     if not version_file.exists():
         return None
 

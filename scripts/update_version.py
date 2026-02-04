@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Update version across all project files.
-Single source of truth: huawei_solar_modbus_mqtt/config.yaml
+Single source of truth: ../huawei_solar_modbus_mqtt/config.yaml
 """
 
 import re
@@ -15,7 +15,7 @@ if sys.platform == "win32":
 
 def get_version_from_config():
     """Read version from config.yaml"""
-    config_path = Path("huawei_solar_modbus_mqtt/config.yaml")
+    config_path = Path("../huawei_solar_modbus_mqtt/config.yaml")
     if not config_path.exists():
         raise FileNotFoundError(f"Could not find {config_path}")
 
@@ -30,7 +30,7 @@ def get_version_from_config():
 
 def update_pyproject_toml(version):
     """Update version in pyproject.toml - only in [project] section"""
-    pyproject_path = Path("pyproject.toml")
+    pyproject_path = Path("../pyproject.toml")
     if not pyproject_path.exists():
         print("⚠️  WARNING: pyproject.toml not found, skipping")
         return
@@ -54,7 +54,7 @@ def update_pyproject_toml(version):
 
 def update_version_py(version):
     """Update __version__.py"""
-    version_file = Path("huawei_solar_modbus_mqtt/bridge/__version__.py")
+    version_file = Path("../huawei_solar_modbus_mqtt/bridge/__version__.py")
     if not version_file.exists():
         print("⚠️  WARNING: __version__.py not found, skipping")
         return
@@ -78,11 +78,11 @@ def update_requirements():
     import tomllib
     from pathlib import Path
 
-    with open("pyproject.toml", "rb") as f:
+    with open("../pyproject.toml", "rb") as f:
         data = tomllib.load(f)
 
     deps = data["project"]["dependencies"]
-    addon_path = Path("huawei_solar_modbus_mqtt/requirements.txt")
+    addon_path = Path("../huawei_solar_modbus_mqtt/requirements.txt")
 
     with open(addon_path, "w") as f:
         f.write("\n".join(deps) + "\n")

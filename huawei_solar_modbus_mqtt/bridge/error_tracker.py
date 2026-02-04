@@ -31,7 +31,7 @@ Verwendung:
     >>>
     >>> # In Error-Handler:
     >>> if tracker.track_error("timeout", str(exc)):
-    >>>     # Fehler wurde geloggt (erster Auftritt oder Interval abgelaufen)
+    >>> # Fehler wurde geloggt (erster Auftritt oder Interval abgelaufen)
     >>>     pass
     >>>
     >>> # Nach erfolgreichem Cycle:

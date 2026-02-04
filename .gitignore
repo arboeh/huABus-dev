@@ -4,92 +4,36 @@ __pycache__/
 *$py.class
 *.so
 .Python
-*.pyc
+*.egg-info/
+dist/
+build/
 
 # Virtual Environments
 venv/
+.venv/
 env/
 ENV/
-.venv
 
-# Environment Variables
-.env
-.env.*
-*.env
-.env.local
-.env.production
-
-# IDE - VS Code
+# IDE
 .vscode/
-*.code-workspace
-.history/
-
-# IDE - Other
 .idea/
-*.iml
 *.swp
+*.swo
 *~
-
-# OS
-.DS_Store
-Thumbs.db
-.Spotlight-V100
-.Trashes
-
-# Build artifacts
-build/
-develop-eggs/
-downloads/
-eggs/
-.eggs/
-lib/
-lib64/
-parts/
-sdist/
-var/
-wheels/
-dist/
-*.egg-info/
-MANIFEST
-
-# Logs
-*.log
-
-# Home Assistant specific
-secrets.yaml
-home-assistant.log
-home-assistant_v2.db
 
 # Testing
 .pytest_cache/
 .coverage
 htmlcov/
 .tox/
-.nox/
-coverage.xml
-*.cover
-.hypothesis/
-test-results/
-tests/fixtures/local_*.yaml
 
-# Ruff & Pre-commit
-.ruff_cache/
-.pre-commit-config.yaml.backup
+# Environment
+.env
+.env.local
 
-# Docker
-.dockerignore.backup
+# OS
+.DS_Store
+Thumbs.db
 
-# Temporary files
-*.tmp
-*.bak
-*.orig
-\#*\#
-.\#*
-
-# Type checking
-.mypy_cache/
-.dmypy.json
-dmypy.json
-
-# Old/backup directories
-venv_old/
+# Logs
+*.log

@@ -300,7 +300,7 @@ def _build_sensor_config(sensor: Dict[str, Any], base_topic: str, device_config:
         ...     "name": "Solar Power",
         ...     "key": "power_input",
         ...     "unit_of_measurement": "W",
-        ...     "device_class": "power"
+        ...     "device_class": "power",
         ... }
         >>> config = _build_sensor_config(sensor, "huawei-solar", device_config)
         >>> config["state_topic"]

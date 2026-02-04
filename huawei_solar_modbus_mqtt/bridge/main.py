@@ -432,7 +432,7 @@ def is_modbus_exception(exc: Exception) -> bool:
         ...     if is_modbus_exception(e):
         ...         logger.warning("Modbus read failed")  # Erwartbar
         ...     else:
-        ...         logger.error("Unexpected error")      # Unerwartete
+        ...         logger.error("Unexpected error")  # Unerwartete
 
     Hinweis:
         Falls pymodbus nicht importiert werden konnte (MODBUS_EXCEPTIONS = ()),
