@@ -225,7 +225,7 @@ Siehe [CHANGELOG.md](huawei_solar_modbus_mqtt/CHANGELOG.md) für detaillierte Re
 
 Bug gefunden oder Feature-Wunsch? Nutze unsere [GitHub Issue Templates](https://github.com/arboeh/huABus/issues/new/choose).
 
-**Andere Wechselrichter-Modelle testen?** Bitte melde Kompatibilität via [Compatibility Report Template](https://github.com/arboeh/huABus/issues/new?template=compatibility-report.md).
+**Andere Wechselrichter-Modelle testen?** Bitte melde Kompatibilität via [Compatibility Report](https://github.com/arboeh/huABus/issues/new?assignees=&labels=compatibility%2Cenhancement&template=compatibility_report.yaml&title=%5BCompatibility%5D+).
 
 ## Dokumentation
 

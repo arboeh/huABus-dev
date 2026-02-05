@@ -227,7 +227,7 @@ See [CHANGELOG.md](huawei_solar_modbus_mqtt/CHANGELOG.md) for detailed release n
 
 Found a bug or have a feature request? Use our [GitHub Issue Templates](https://github.com/arboeh/huABus/issues/new/choose).
 
-**Testing other inverter models?** Please report compatibility via [Compatibility Report Template](https://github.com/arboeh/huABus/issues/new?template=compatibility-report.md).
+**Testing other inverter models?** Please report compatibility via [Compatibility Report](https://github.com/arboeh/huABus/issues/new?assignees=&labels=compatibility%2Cenhancement&template=compatibility_report.yaml&title=%5BCompatibility%5D+).
 
 ## Documentation
 
