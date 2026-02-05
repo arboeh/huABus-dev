@@ -49,7 +49,7 @@
 
 ### 🧪 Kompatibilitäts-Status
 
-Hast du einen **SUN3000** oder **SUN5000** Wechselrichter? [Hilf uns beim Testen!](https://github.com/arboeh/huABus/issues/new?template=compatibility-report.md)
+Hast du einen **SUN3000** oder **SUN5000** Wechselrichter? [Hilf uns beim Testen!](https://github.com/arboeh/huABus/issues/new?assignees=&labels=compatibility%2Cenhancement&template=compatibility_report.yaml&title=%5BCompatibility%5D+)
 
 **Community-Reports:**
 

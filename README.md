@@ -49,7 +49,7 @@
 
 ### 🧪 Compatibility Status
 
-Have a **SUN3000** or **SUN5000** inverter? [Help us test!](https://github.com/arboeh/huABus/issues/new?template=compatibility-report.md)
+Have a **SUN3000** or **SUN5000** inverter? [Help us test!](https://github.com/arboeh/huABus/issues/new?assignees=&labels=compatibility%2Cenhancement&template=compatibility_report.yaml&title=%5BCompatibility%5D+)
 
 **Community reports:**
 
