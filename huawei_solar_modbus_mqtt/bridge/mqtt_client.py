@@ -20,7 +20,7 @@ import os
 import time
 from typing import Any, Dict, List, Optional
 
-import paho.mqtt.client as mqtt  # type: ignore
+import paho.mqtt.client as mqtt
 
 from .config.sensors_mqtt import NUMERIC_SENSORS, TEXT_SENSORS
 

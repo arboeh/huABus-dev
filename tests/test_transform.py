@@ -5,7 +5,7 @@
 import time
 from unittest.mock import Mock
 
-import pytest  # type: ignore
+import pytest
 from bridge.transform import _cleanup_result, get_value, transform_data
 
 

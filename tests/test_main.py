@@ -5,7 +5,7 @@ import time
 from unittest.mock import AsyncMock, Mock, patch
 
 import bridge.main as main_module
-import pytest  # type: ignore
+import pytest
 from bridge.main import (
     heartbeat,
     init_logging,

@@ -26,7 +26,7 @@ import sys
 import time
 from typing import Any, Dict
 
-from huawei_solar import AsyncHuaweiSolar  # type: ignore
+from huawei_solar import AsyncHuaweiSolar
 
 from .config.registers import ESSENTIAL_REGISTERS
 from .error_tracker import ConnectionErrorTracker

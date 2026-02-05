@@ -5,7 +5,7 @@ Tests für HANTs gemeldetes Problem: Missing Keys bei Register-Timeouts
 GitHub Issue: #7 - Root Cause: Missing keys from register timeouts
 """
 
-import pytest  # type: ignore
+import pytest
 from bridge.total_increasing_filter import (
     get_filter,
     reset_filter,

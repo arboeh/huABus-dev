@@ -97,20 +97,20 @@ try {
     if (Test-Path $versionPath) {
         $versionContent = Get-Content $versionPath | Select-String '__version__\s*=\s*"([^"]+)"'
         if ($versionContent) {
-            $addonVersion = $versionContent.Matches.Groups[1].Value
+            $appVersion = $versionContent.Matches.Groups[1].Value
         } else {
-            $addonVersion = "dev"
+            $appVersion = "dev"
         }
     } else {
-        $addonVersion = "dev"
+        $appVersion = "dev"
         Write-Host "   [DEBUG] __version__.py not found at: $versionPath" -ForegroundColor DarkYellow
     }
 } catch {
-    $addonVersion = "dev"
+    $appVersion = "dev"
     Write-Host "   [DEBUG] Error reading __version__.py: $_" -ForegroundColor Red
 }
 
-Write-Host "   - Addon Version: $addonVersion" -ForegroundColor Cyan
+Write-Host "   - App-Version: $appVersion" -ForegroundColor Cyan
 
 # Package versions
 try {

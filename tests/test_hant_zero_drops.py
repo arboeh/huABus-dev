@@ -5,7 +5,7 @@ Tests für HANTs gemeldetes Problem: Zero Drops (Secondary Issue)
 GitHub Issue: #7 - Secondary: Zero values from Modbus errors
 """
 
-import pytest  # type: ignore
+import pytest
 from bridge.total_increasing_filter import get_filter, reset_filter
 
 from tests.fixtures.mock_inverter import MockHuaweiSolar

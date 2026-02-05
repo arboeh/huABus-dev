@@ -4,7 +4,7 @@
 
 import json
 
-import pytest  # type: ignore
+import pytest
 from bridge.total_increasing_filter import (
     get_filter,
     reset_filter,

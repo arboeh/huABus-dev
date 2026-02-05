@@ -70,6 +70,10 @@ warn_unused_configs = true
 disallow_untyped_defs = false
 check_untyped_defs = true
 
+[[tool.mypy.overrides]]
+module = ["pymodbus.*", "huaweisolar.*"]
+ignore_missing_imports = true
+
 [tool.ruff]
 line-length = 120
 target-version = "py311"

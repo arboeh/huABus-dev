@@ -5,7 +5,7 @@
 from pathlib import Path
 from typing import Dict, Optional
 
-import yaml  # type: ignore
+import yaml
 
 
 class MockRegisterValue:

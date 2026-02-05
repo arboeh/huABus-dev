@@ -1,4 +1,3 @@
-// pyrightconfig.json
 {
   "include": [
     "huawei_solar_modbus_mqtt",
@@ -11,11 +10,12 @@
     "**/*.egg-info"
   ],
   "extraPaths": [
-    "huawei_solar_modbus_mqtt"
+    "huawei_solar_modbus_mqtt",
+    "scripts/venv/Lib/site-packages"
   ],
   "pythonVersion": "3.11",
   "pythonPlatform": "Windows",
   "typeCheckingMode": "basic",
-  "reportMissingImports": true,
+  "reportMissingImports": "none",
   "reportMissingTypeStubs": false
 }
