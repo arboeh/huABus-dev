@@ -223,11 +223,21 @@ See [CHANGELOG.md](huawei_solar_modbus_mqtt/CHANGELOG.md) for detailed release n
 
 **Logs:** huABus | Apps → Huawei Solar Modbus to MQTT → Log Tab
 
-## Support & Issues
+## 💬 Community & Support
 
-Found a bug or have a feature request? Use our [GitHub Issue Templates](https://github.com/arboeh/huABus/issues/new/choose).
+### Get Help
 
-**Testing other inverter models?** Please report compatibility via [Compatibility Report](https://github.com/arboeh/huABus/issues/new?assignees=&labels=compatibility%2Cenhancement&template=compatibility_report.yaml&title=%5BCompatibility%5D+).
+- 💬 **[GitHub Discussions](https://github.com/arboeh/huABus/discussions)** - Ask questions, share experiences, get community support
+- 🐛 **[GitHub Issues](https://github.com/arboeh/huABus/issues/new/choose)** - Report bugs or request features
+- 🧪 **[Compatibility Report](https://github.com/arboeh/huABus/issues/new?template=compatibility_report.yaml)** - Help test SUN3000/5000 models
+
+### Community Discussions
+
+Users also discuss huABus in these communities:
+
+- [Home Assistant Community Forum](https://community.home-assistant.io/)
+
+_These are independent communities - for official support, please use GitHub._
 
 ## Documentation
 
