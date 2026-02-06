@@ -1,0 +1,30 @@
+# .github/dependabot.yml
+version: 2
+updates:
+  # Python dependencies (requirements.txt)
+  - package-ecosystem: 'pip'
+    directory: '/'
+    schedule:
+      interval: 'weekly'
+      day: 'monday'
+      time: '06:00'
+    open-pull-requests-limit: 3
+    labels:
+      - 'dependencies'
+      - 'python'
+    commit-message:
+      prefix: 'chore(deps)'
+
+  # GitHub Actions
+  - package-ecosystem: 'github-actions'
+    directory: '/'
+    schedule:
+      interval: 'weekly'
+      day: 'monday'
+      time: '06:00'
+    open-pull-requests-limit: 3
+    labels:
+      - 'dependencies'
+      - 'github-actions'
+    commit-message:
+      prefix: 'chore(ci)'
