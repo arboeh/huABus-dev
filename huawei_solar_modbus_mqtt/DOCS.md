@@ -1,4 +1,4 @@
-# huABus | Huawei Solar Modbus to MQTT
+# huABus - Huawei Solar Modbus via MQTT + Auto-Discovery
 
 Reads data from your Huawei inverter via Modbus TCP and publishes it via MQTT with automatic Home Assistant discovery.
 
