@@ -94,7 +94,7 @@ def transform_data(data: Dict[str, Any]) -> Dict[str, Any]:
     # Verhindert Template-Errors in Home Assistant
     for key, default in CRITICAL_DEFAULTS.items():
         if result.get(key) is None:
-            logger.warning(f"Critical '{key}' missing, using {default}")
+            logger.warning(f"⚠️ Critical '{key}' missing, using {default}")
             result[key] = default
 
     # === PHASE 3: Cleanup ===

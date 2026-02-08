@@ -1,44 +1,73 @@
 configuration:
-  modbus_host:
+  # === Modbus Section ===
+  modbus:
+    name: Modbus Configuration
+    description: Connection settings for the Huawei Solar Inverter
+
+  modbus.host:
     name: Inverter IP Address
     description: IP address of your Huawei inverter (e.g. 192.168.1.100)
 
-  modbus_port:
+  modbus.port:
     name: Modbus Port
     description: Modbus TCP port (default 502)
 
-  slave_id:
-    name: Slave ID
-    description: Modbus Slave ID of the inverter. Usually 1, sometimes 0 or 16. Try different values if you get connection timeouts!
+  modbus.auto_detect_slave_id:
+    name: Auto-detect Slave ID
+    description: |
+      Automatically detect the correct Slave ID.
+      Tries common values (1, 0, 2, 100) and uses the first working one.
+      If disabled or detection fails, the manual Slave ID below is used.
 
-  mqtt_host:
+  modbus.slave_id:
+    name: Slave ID (manual)
+    description: |
+      Modbus Slave ID (0-247).
+      Common values: 0 (SmartLogger), 1 (most inverters), 2 (alternative configs), 100 (some SDongles).
+      Only used when auto-detection is disabled.
+
+  # === MQTT Section ===
+  mqtt:
+    name: MQTT Configuration
+    description: Connection settings for the MQTT Broker
+
+  mqtt.broker:
     name: MQTT Broker
     description: Hostname of MQTT broker (default core-mosquitto for Home Assistant add-on)
 
-  mqtt_port:
+  mqtt.port:
     name: MQTT Port
     description: Port of MQTT broker (default 1883)
 
-  mqtt_user:
+  mqtt.username:
     name: MQTT Username
     description: Optional - Leave empty to use credentials from Home Assistant MQTT service
 
-  mqtt_password:
+  mqtt.password:
     name: MQTT Password
     description: Optional - Leave empty to use credentials from Home Assistant MQTT service
 
-  mqtt_topic:
-    name: MQTT Topic
+  mqtt.topic_prefix:
+    name: MQTT Topic Prefix
     description: Base topic under which sensor data is published (e.g. huawei-solar)
 
-  log_level:
-    name: Log Level
-    description: "TRACE: Everything incl. Modbus bytes | DEBUG: Detailed performance metrics | INFO: Important events (recommended) | WARNING/ERROR: Problems only"
+  mqtt.discovery:
+    name: Home Assistant MQTT Discovery
+    description: Enable automatic device discovery in Home Assistant (recommended)
 
-  status_timeout:
+  # === Advanced Section ===
+  advanced:
+    name: Advanced Settings
+    description: Settings for advanced users
+
+  advanced.log_level:
+    name: Log Level
+    description: 'TRACE: Everything incl. Modbus bytes | DEBUG: Detailed performance metrics | INFO: Important events (recommended) | WARNING/ERROR: Problems only'
+
+  advanced.status_timeout:
     name: Status Timeout
     description: Time in seconds after which the inverter is marked as offline if no data is received (default 180s)
 
-  poll_interval:
+  advanced.poll_interval:
     name: Poll Interval
     description: Interval in seconds between Modbus queries to the inverter. Recommended 30-60s for optimal balance between freshness and network load
