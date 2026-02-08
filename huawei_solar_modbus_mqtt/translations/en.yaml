@@ -1,32 +1,27 @@
 configuration:
-  # === Modbus Section ===
-  modbus:
-    name: Modbus Configuration
-    description: Connection settings for the Huawei Solar Inverter
-
-  modbus.host:
+  # === MODBUS (always visible) ===
+  modbus_host:
     name: Inverter IP Address
     description: IP address of your Huawei inverter (e.g. 192.168.1.100)
 
-  modbus.port:
+  modbus_port:
     name: Modbus Port
     description: Modbus TCP port (default 502)
 
-  modbus.auto_detect_slave_id:
+  modbus_auto_detect_slave_id:
     name: Auto-detect Slave ID
     description: |
       Automatically detect the correct Slave ID.
       Tries common values (1, 0, 2, 100) and uses the first working one.
-      If disabled or detection fails, the manual Slave ID below is used.
 
-  modbus.slave_id:
+  modbus_slave_id:
     name: Slave ID (manual)
     description: |
       Modbus Slave ID (0-247).
       Common values: 0 (SmartLogger), 1 (most inverters), 2 (alternative configs), 100 (some SDongles).
       Only used when auto-detection is disabled.
 
-  # === MQTT Section ===
+  # === MQTT (collapsible) ===
   mqtt:
     name: MQTT Configuration
     description: Connection settings for the MQTT Broker
@@ -51,11 +46,7 @@ configuration:
     name: MQTT Topic Prefix
     description: Base topic under which sensor data is published (e.g. huawei-solar)
 
-  mqtt.discovery:
-    name: Home Assistant MQTT Discovery
-    description: Enable automatic device discovery in Home Assistant (recommended)
-
-  # === Advanced Section ===
+  # === ADVANCED (collapsible) ===
   advanced:
     name: Advanced Settings
     description: Settings for advanced users

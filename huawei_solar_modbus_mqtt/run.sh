@@ -9,15 +9,14 @@ echo "[$(date +'%T')] INFO:  📦 https://github.com/arboeh/huABus"
 echo "[$(date +'%T')] INFO: ========================================================"
 echo "[$(date +'%T')] INFO: >> Starting huABus - Huawei Solar Modbus MQTT Add-on..."
 
-# === Modbus Configuration ===
-export HUAWEI_MODBUS_HOST=$(bashio::config 'modbus.host')
-export HUAWEI_MODBUS_PORT=$(bashio::config 'modbus.port')
-export HUAWEI_SLAVEID_AUTO=$(bashio::config 'modbus.auto_detect_slave_id')
-export HUAWEI_SLAVE_ID=$(bashio::config 'modbus.slave_id')
+# === Modbus Configuration (top-level with prefix) ===
+export HUAWEI_MODBUS_HOST=$(bashio::config 'modbus_host')
+export HUAWEI_MODBUS_PORT=$(bashio::config 'modbus_port')
+export HUAWEI_SLAVEID_AUTO=$(bashio::config 'modbus_auto_detect_slave_id')
+export HUAWEI_SLAVE_ID=$(bashio::config 'modbus_slave_id')
 
 # === MQTT Topic & Discovery ===
 export HUAWEI_MODBUS_MQTT_TOPIC=$(bashio::config 'mqtt.topic_prefix')
-export HUAWEI_MQTT_DISCOVERY=$(bashio::config 'mqtt.discovery')
 
 # === Advanced Configuration ===
 export HUAWEI_STATUS_TIMEOUT=$(bashio::config 'advanced.status_timeout')
@@ -97,13 +96,6 @@ else
 fi
 
 echo "[$(date +'%T')] INFO:  📍 Topic: ${HUAWEI_MODBUS_MQTT_TOPIC}"
-
-# Discovery Status
-if [ "${HUAWEI_MQTT_DISCOVERY}" = "true" ]; then
-	echo "[$(date +'%T')] INFO:  🔍 Discovery: enabled"
-else
-	echo "[$(date +'%T')] INFO:  🔍 Discovery: disabled"
-fi
 
 echo "[$(date +'%T')] INFO:  ⏱️  Poll: ${HUAWEI_POLL_INTERVAL}s | Timeout: ${HUAWEI_STATUS_TIMEOUT}s"
 

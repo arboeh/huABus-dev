@@ -24,36 +24,32 @@ apparmor: true
 codenotary: notary@home-assistant.io
 
 options:
-  modbus:
-    host: '192.168.1.100'
-    port: 502
-    auto_detect_slave_id: true
-    slave_id: 1
+  modbus_host: '192.168.1.100'
+  modbus_port: 502
+  modbus_auto_detect_slave_id: true
+  modbus_slave_id: 1
   mqtt:
     broker: 'core-mosquitto'
     port: 1883
     username: ''
     password: ''
     topic_prefix: 'huawei-solar'
-    discovery: true
   advanced:
     log_level: 'INFO'
     status_timeout: 180
     poll_interval: 30
 
 schema:
-  modbus:
-    host: str
-    port: port
-    auto_detect_slave_id: bool
-    slave_id: int(0,247)?
+  modbus_host: str
+  modbus_port: port
+  modbus_auto_detect_slave_id: bool
+  modbus_slave_id: int(0,247)?
   mqtt:
     broker: str
     port: port
     username: str?
     password: password?
     topic_prefix: str
-    discovery: bool
   advanced:
     log_level: list(TRACE|DEBUG|INFO|WARNING|ERROR)
     status_timeout: int(30,600)

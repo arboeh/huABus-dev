@@ -52,7 +52,6 @@ class TestConfigManagerLoading:
         assert config.mqtt_username == "testuser"
         assert config.mqtt_password == "testpass"
         assert config.mqtt_topic_prefix == "test-topic"
-        assert config.mqtt_discovery is True
 
         # Advanced
         assert config.log_level == "DEBUG"
@@ -235,7 +234,6 @@ class TestConfigManagerProperties:
         assert config.mqtt_username == "user"
         assert config.mqtt_password == "pass"
         assert config.mqtt_topic_prefix == "test"
-        assert config.mqtt_discovery is False
 
     def test_advanced_properties(self, config):
         """Test advanced property accessors."""

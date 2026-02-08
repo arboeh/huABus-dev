@@ -74,7 +74,6 @@ class ConfigManager:
                 "username": config.get("mqtt_user"),
                 "password": config.get("mqtt_password"),
                 "topic_prefix": config.get("mqtt_topic", "huawei-solar"),
-                "discovery": config.get("mqtt_discovery", True),
             },
             "advanced": {
                 "log_level": config.get("log_level", "INFO"),
@@ -200,11 +199,6 @@ class ConfigManager:
         return cast(str, self._config["mqtt"].get("topic_prefix", "huawei-solar"))
 
     @property
-    def mqtt_discovery(self) -> bool:
-        """Get MQTT discovery flag."""
-        return cast(bool, self._config["mqtt"].get("discovery", True))
-
-    @property
     def log_level(self) -> str:
         """Get log level."""
         return cast(str, self._config["advanced"].get("log_level", "INFO"))
@@ -248,7 +242,6 @@ class ConfigManager:
             logger.info("    Auth: none")
 
         logger.info(f"    Topic: {self.mqtt_topic_prefix}")
-        logger.info(f"    Discovery: {'enabled' if self.mqtt_discovery else 'disabled'}")
 
         logger.info("  Advanced:")
         logger.info(f"    Log Level: {self.log_level}")
