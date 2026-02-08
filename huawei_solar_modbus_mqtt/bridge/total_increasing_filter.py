@@ -55,7 +55,7 @@ class TotalIncreasingFilter:
                 if last is not None:
                     result[key] = last
                     missing_count += 1
-                    logger.warning(f"MISSING: {key} filled with {last:.2f}")
+                    logger.warning(f"⚠️ MISSING: {key} filled with {last:.2f}")
                 continue  # Nächster Key
 
             # 2. Key ist da → Prüfen ob filtern
@@ -70,7 +70,7 @@ class TotalIncreasingFilter:
                     result[key] = last
                     filtered_count += 1
                     self._filter_stats[key] = self._filter_stats.get(key, 0) + 1
-                    logger.warning(f"FILTERED: {key} {value:.2f} → {last:.2f}")
+                    logger.warning(f"⚠️ FILTERED: {key} {value:.2f} → {last:.2f}")
                 else:
                     # Kein last_value vorhanden (z.B. erster Wert ist negativ)
                     # → Key komplett aus result entfernen!
@@ -84,7 +84,7 @@ class TotalIncreasingFilter:
 
         # Zusammenfassung
         if filtered_count > 0 or missing_count > 0:
-            logger.info(f"Filter: {filtered_count} filtered, {missing_count} missing")
+            logger.info(f"✨ Filter: {filtered_count} filtered, {missing_count} missing")
 
         return result
 
@@ -141,7 +141,7 @@ class TotalIncreasingFilter:
         """Kompletter Reset - bei Connection-Fehler."""
         self._last_values.clear()
         self._filter_stats.clear()
-        logger.info("Filter reset")
+        logger.info("🔄 Filter reset")
 
 
 # Singleton-Instanz

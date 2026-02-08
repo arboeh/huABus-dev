@@ -1,2 +1,2 @@
 # huawei_solar_modbus_mqtt/bridge/__version__.py
-__version__ = "1.7.4"
+__version__ = "1.8.0"

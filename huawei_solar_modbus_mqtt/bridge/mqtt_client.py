@@ -63,7 +63,7 @@ def _on_connect(client, userdata, flags, rc, properties=None):
         _is_connected = True
         logger.info("📡 MQTT connected")
     else:
-        logger.error(f"MQTT connection failed: {rc}")
+        logger.error(f"❌ MQTT connection failed: {rc}")
 
 
 def _on_disconnect(client, userdata, flags, rc=0, properties=None):
@@ -89,7 +89,7 @@ def _on_disconnect(client, userdata, flags, rc=0, properties=None):
     _is_connected = False
     if rc != 0:
         # Unerwarteter Disconnect (nicht vom Client initiiert)
-        logger.warning(f"MQTT unexpected disconnect: {rc}")
+        logger.warning(f"⚠️ MQTT unexpected disconnect: {rc}")
 
 
 def _get_mqtt_client() -> mqtt.Client:
@@ -192,7 +192,7 @@ def connect_mqtt() -> None:
     port = int(os.environ.get("HUAWEI_MODBUS_MQTT_PORT", "1883"))
 
     if not broker:
-        logger.error("MQTT broker not configured")
+        logger.error("🚨 MQTT broker not configured")
         raise RuntimeError("MQTT broker not configured")
 
     logger.debug(f"Connecting MQTT to {broker}:{port}")
@@ -255,10 +255,10 @@ def disconnect_mqtt() -> None:
         _mqtt_client.loop_stop()
         # Verbindung sauber trennen
         _mqtt_client.disconnect()
-        logger.info("MQTT disconnected")
+        logger.info("🔌 MQTT disconnected")
     except Exception as e:
         # Fehler beim Disconnect nicht fatal (wir beenden eh)
-        logger.error(f"MQTT disconnect error: {e}")
+        logger.error(f"❌ MQTT disconnect error: {e}")
     finally:
         # Globals zurücksetzen für sauberen State
         _mqtt_client = None
@@ -457,7 +457,7 @@ def publish_discovery_configs(base_topic: str) -> None:
         (kann später manuell mit HA MQTT Reload nachgeholt werden).
     """
     if not _is_connected:
-        logger.warning("MQTT not connected, skipping discovery")
+        logger.warning("⚠️ MQTT not connected, skipping discovery")
         return
 
     logger.info("🔍 Publishing MQTT Discovery")
@@ -574,8 +574,8 @@ def publish_data(data: Dict[str, Any], topic: str) -> None:
         # → HA: Alle Sensoren aktualisieren sich
     """
     if not _is_connected:
-        logger.warning("MQTT not connected, cannot publish data")
-        raise ConnectionError("MQTT not connected")
+        logger.warning("⚠️ MQTT not connected, cannot publish data")
+        raise ConnectionError("🚨 MQTT not connected")
 
     client = _get_mqtt_client()
     # Timestamp hinzufügen (Unix-Zeit in Sekunden)
@@ -598,7 +598,7 @@ def publish_data(data: Dict[str, Any], topic: str) -> None:
         logger.debug(f"Data published: {len(data)} keys")
     except Exception as e:
         # Publish-Fehler durchreichen zu main.py (dort Error-Handling)
-        logger.error(f"MQTT publish failed: {e}")
+        logger.error(f"❌ MQTT publish failed: {e}")
         raise
 
 
@@ -656,4 +656,4 @@ def publish_status(status: str, topic: str) -> None:
         logger.debug(f"Status: '{status}' → {status_topic}")
     except Exception as e:
         # Status-Publish-Fehler nicht fatal (wird weiter versucht)
-        logger.error(f"Status publish failed: {e}")
+        logger.error(f"❌ Status publish failed: {e}")

@@ -21,27 +21,36 @@ icon: icon.png
 services:
   - mqtt:need
 apparmor: true
+codenotary: notary@home-assistant.io
+
 options:
   modbus_host: '192.168.1.100'
   modbus_port: 502
-  slave_id: 1
-  mqtt_host: 'core-mosquitto'
-  mqtt_port: 1883
-  mqtt_user: ''
-  mqtt_password: ''
-  mqtt_topic: 'huawei-solar'
-  log_level: 'INFO'
-  status_timeout: 180
-  poll_interval: 30
+  modbus_auto_detect_slave_id: true
+  modbus_slave_id: 1
+  mqtt:
+    broker: 'core-mosquitto'
+    port: 1883
+    username: ''
+    password: ''
+    topic_prefix: 'huawei-solar'
+  advanced:
+    log_level: 'INFO'
+    status_timeout: 180
+    poll_interval: 30
+
 schema:
   modbus_host: str
   modbus_port: port
-  slave_id: int(1,247)
-  mqtt_host: str
-  mqtt_port: port
-  mqtt_user: str?
-  mqtt_password: password?
-  mqtt_topic: str
-  log_level: list(TRACE|DEBUG|INFO|WARNING|ERROR)
-  status_timeout: int(30,600)
-  poll_interval: int(10,300)
+  modbus_auto_detect_slave_id: bool
+  modbus_slave_id: int(0,247)?
+  mqtt:
+    broker: str
+    port: port
+    username: str?
+    password: password?
+    topic_prefix: str
+  advanced:
+    log_level: list(TRACE|DEBUG|INFO|WARNING|ERROR)
+    status_timeout: int(30,600)
+    poll_interval: int(10,300)
