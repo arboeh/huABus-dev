@@ -1,5 +1,5 @@
 configuration:
-  # === MODBUS (immer sichtbar) ===
+  # === MODBUS Einstellungen ===
   modbus_host:
     name: Inverter IP-Adresse
     description: IP-Adresse des Huawei Wechselrichters (z.B. 192.168.1.100)
@@ -21,44 +21,44 @@ configuration:
       Häufige Werte: 0 (SmartLogger), 1 (meiste Wechselrichter), 2 (alternative Konfigurationen), 100 (manche SDongles).
       Wird nur verwendet wenn Auto-Erkennung deaktiviert ist.
 
-  # === MQTT (ausklappbar) ===
+  # === MQTT Konfiguration (Gruppenüberschrift) ===
   mqtt:
     name: MQTT Konfiguration
     description: Verbindungseinstellungen für den MQTT Broker
 
-  mqtt.broker:
+  mqtt_broker:
     name: MQTT Broker
     description: Hostname des MQTT Brokers (Standard core-mosquitto für Home Assistant Add-on)
 
-  mqtt.port:
+  mqtt_port:
     name: MQTT Port
     description: Port des MQTT Brokers (Standard 1883)
 
-  mqtt.username:
+  mqtt_username:
     name: MQTT Benutzername
     description: Optional - Leer lassen, um Zugangsdaten aus Home Assistant MQTT Service zu verwenden
 
-  mqtt.password:
+  mqtt_password:
     name: MQTT Passwort
     description: Optional - Leer lassen, um Zugangsdaten aus Home Assistant MQTT Service zu verwenden
 
-  mqtt.topic_prefix:
+  mqtt_topic_prefix:
     name: MQTT Topic Präfix
     description: Basis-Topic unter dem die Sensordaten veröffentlicht werden (z.B. huawei-solar)
 
-  # === ADVANCED (ausklappbar) ===
+  # === Erweiterte Einstellungen (Gruppenüberschrift) ===
   advanced:
     name: Erweiterte Einstellungen
     description: Einstellungen für fortgeschrittene Benutzer
 
-  advanced.log_level:
+  log_level:
     name: Log-Level
     description: 'TRACE: Alles inkl. Modbus-Bytes | DEBUG: Detaillierte Performance-Metriken | INFO: Wichtige Ereignisse (empfohlen) | WARNING/ERROR: Nur Probleme'
 
-  advanced.status_timeout:
+  status_timeout:
     name: Status Timeout
     description: Zeit in Sekunden, nach der der Wechselrichter als offline markiert wird wenn keine Daten empfangen werden (Standard 180s)
 
-  advanced.poll_interval:
+  poll_interval:
     name: Abfrageintervall
     description: Intervall in Sekunden zwischen Modbus-Abfragen vom Wechselrichter. Empfohlen 30-60s für optimale Balance zwischen Aktualität und Netzwerklast

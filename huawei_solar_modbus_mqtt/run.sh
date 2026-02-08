@@ -16,12 +16,12 @@ export HUAWEI_SLAVEID_AUTO=$(bashio::config 'modbus_auto_detect_slave_id')
 export HUAWEI_SLAVE_ID=$(bashio::config 'modbus_slave_id')
 
 # === MQTT Topic & Discovery ===
-export HUAWEI_MODBUS_MQTT_TOPIC=$(bashio::config 'mqtt.topic_prefix')
+export HUAWEI_MODBUS_MQTT_TOPIC=$(bashio::config 'mqtt_topic_prefix')
 
 # === Advanced Configuration ===
-export HUAWEI_STATUS_TIMEOUT=$(bashio::config 'advanced.status_timeout')
-export HUAWEI_POLL_INTERVAL=$(bashio::config 'advanced.poll_interval')
-export HUAWEI_LOG_LEVEL=$(bashio::config 'advanced.log_level')
+export HUAWEI_STATUS_TIMEOUT=$(bashio::config 'status_timeout')
+export HUAWEI_POLL_INTERVAL=$(bashio::config 'poll_interval')
+export HUAWEI_LOG_LEVEL=$(bashio::config 'log_level')
 
 echo "[$(date +'%T')] INFO: >> Log level: ${HUAWEI_LOG_LEVEL}"
 
@@ -45,8 +45,8 @@ ERROR)
 esac
 
 # === MQTT Broker (Custom or HA Service) ===
-if bashio::config.has_value 'mqtt.broker' && [ -n "$(bashio::config 'mqtt.broker')" ]; then
-	export HUAWEI_MODBUS_MQTT_BROKER=$(bashio::config 'mqtt.broker')
+if bashio::config.has_value 'mqtt_broker' && [ -n "$(bashio::config 'mqtt_broker')" ]; then
+	export HUAWEI_MODBUS_MQTT_BROKER=$(bashio::config 'mqtt_broker')
 	MQTT_SOURCE="custom"
 else
 	export HUAWEI_MODBUS_MQTT_BROKER=$(bashio::services mqtt "host")
@@ -54,15 +54,15 @@ else
 fi
 
 # === MQTT Port ===
-if bashio::config.has_value 'mqtt.port' && [ -n "$(bashio::config 'mqtt.port')" ]; then
-	export HUAWEI_MODBUS_MQTT_PORT=$(bashio::config 'mqtt.port')
+if bashio::config.has_value 'mqtt_port' && [ -n "$(bashio::config 'mqtt_port')" ]; then
+	export HUAWEI_MODBUS_MQTT_PORT=$(bashio::config 'mqtt_port')
 else
 	export HUAWEI_MODBUS_MQTT_PORT=$(bashio::services mqtt "port")
 fi
 
 # === MQTT User ===
-if bashio::config.has_value 'mqtt.username' && [ -n "$(bashio::config 'mqtt.username')" ]; then
-	export HUAWEI_MODBUS_MQTT_USER=$(bashio::config 'mqtt.username')
+if bashio::config.has_value 'mqtt_username' && [ -n "$(bashio::config 'mqtt_username')" ]; then
+	export HUAWEI_MODBUS_MQTT_USER=$(bashio::config 'mqtt_username')
 	MQTT_AUTH="custom"
 else
 	export HUAWEI_MODBUS_MQTT_USER=$(bashio::services mqtt "username")
@@ -70,8 +70,8 @@ else
 fi
 
 # === MQTT Password ===
-if bashio::config.has_value 'mqtt.password' && [ -n "$(bashio::config 'mqtt.password')" ]; then
-	export HUAWEI_MODBUS_MQTT_PASSWORD=$(bashio::config 'mqtt.password')
+if bashio::config.has_value 'mqtt_password' && [ -n "$(bashio::config 'mqtt_password')" ]; then
+	export HUAWEI_MODBUS_MQTT_PASSWORD=$(bashio::config 'mqtt_password')
 else
 	export HUAWEI_MODBUS_MQTT_PASSWORD=$(bashio::services mqtt "password")
 fi

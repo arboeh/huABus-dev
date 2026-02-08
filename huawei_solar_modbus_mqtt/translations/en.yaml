@@ -1,8 +1,8 @@
 configuration:
-  # === MODBUS (always visible) ===
+  # === MODBUS Settings ===
   modbus_host:
     name: Inverter IP Address
-    description: IP address of your Huawei inverter (e.g. 192.168.1.100)
+    description: IP address of the Huawei inverter (e.g. 192.168.1.100)
 
   modbus_port:
     name: Modbus Port
@@ -11,54 +11,54 @@ configuration:
   modbus_auto_detect_slave_id:
     name: Auto-detect Slave ID
     description: |
-      Automatically detect the correct Slave ID.
+      Automatically detects the correct Slave ID.
       Tries common values (1, 0, 2, 100) and uses the first working one.
 
   modbus_slave_id:
     name: Slave ID (manual)
     description: |
       Modbus Slave ID (0-247).
-      Common values: 0 (SmartLogger), 1 (most inverters), 2 (alternative configs), 100 (some SDongles).
+      Common values: 0 (SmartLogger), 1 (most inverters), 2 (alternative configurations), 100 (some SDongles).
       Only used when auto-detection is disabled.
 
-  # === MQTT (collapsible) ===
+  # === MQTT Configuration (Group Header) ===
   mqtt:
     name: MQTT Configuration
-    description: Connection settings for the MQTT Broker
+    description: Connection settings for the MQTT broker
 
-  mqtt.broker:
+  mqtt_broker:
     name: MQTT Broker
-    description: Hostname of MQTT broker (default core-mosquitto for Home Assistant add-on)
+    description: Hostname of the MQTT broker (default core-mosquitto for Home Assistant add-on)
 
-  mqtt.port:
+  mqtt_port:
     name: MQTT Port
-    description: Port of MQTT broker (default 1883)
+    description: Port of the MQTT broker (default 1883)
 
-  mqtt.username:
+  mqtt_username:
     name: MQTT Username
     description: Optional - Leave empty to use credentials from Home Assistant MQTT service
 
-  mqtt.password:
+  mqtt_password:
     name: MQTT Password
     description: Optional - Leave empty to use credentials from Home Assistant MQTT service
 
-  mqtt.topic_prefix:
+  mqtt_topic_prefix:
     name: MQTT Topic Prefix
     description: Base topic under which sensor data is published (e.g. huawei-solar)
 
-  # === ADVANCED (collapsible) ===
+  # === Advanced Settings (Group Header) ===
   advanced:
     name: Advanced Settings
     description: Settings for advanced users
 
-  advanced.log_level:
+  log_level:
     name: Log Level
     description: 'TRACE: Everything incl. Modbus bytes | DEBUG: Detailed performance metrics | INFO: Important events (recommended) | WARNING/ERROR: Problems only'
 
-  advanced.status_timeout:
+  status_timeout:
     name: Status Timeout
-    description: Time in seconds after which the inverter is marked as offline if no data is received (default 180s)
+    description: Time in seconds after which the inverter is marked as offline when no data is received (default 180s)
 
-  advanced.poll_interval:
+  poll_interval:
     name: Poll Interval
-    description: Interval in seconds between Modbus queries to the inverter. Recommended 30-60s for optimal balance between freshness and network load
+    description: Interval in seconds between Modbus queries from the inverter. Recommended 30-60s for optimal balance between freshness and network load
