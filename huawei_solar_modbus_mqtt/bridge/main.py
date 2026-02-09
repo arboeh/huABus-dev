@@ -405,9 +405,7 @@ async def main() -> None:
     # Initialize logging
     init_logging(config.log_level)
 
-    logger.info("=" * 60)
     logger.info("🚀 Huawei Solar → MQTT starting")
-    logger.info("=" * 60)
 
     # Log configuration
     config.log_config()

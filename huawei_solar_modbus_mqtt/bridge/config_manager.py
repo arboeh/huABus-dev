@@ -230,9 +230,6 @@ class ConfigManager:
         Args:
             hide_passwords: Mask password in logs (default: True)
         """
-        logger.info("=" * 60)
-        logger.info("Configuration:")
-        logger.info("=" * 60)
 
         # Modbus
         logger.info("Modbus:")
@@ -262,4 +259,3 @@ class ConfigManager:
         logger.info(f"  Log Level: {self.log_level}")
         logger.info(f"  Status Timeout: {self.status_timeout}s")
         logger.info(f"  Poll Interval: {self.poll_interval}s")
-        logger.info("=" * 60)

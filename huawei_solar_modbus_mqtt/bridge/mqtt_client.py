@@ -111,9 +111,9 @@ def _get_mqtt_client() -> mqtt.Client:
         Konfigurierter MQTT Client (noch nicht verbunden)
 
     ENV-Konfiguration:
-        HUAWEI_MODBUS_MQTT_USER: MQTT Username (optional)
-        HUAWEI_MODBUS_MQTT_PASSWORD: MQTT Password (optional)
-        HUAWEI_MODBUS_MQTT_TOPIC: Basis-Topic für LWT
+        HUAWEI_MQTT_USER: MQTT Username (optional)
+        HUAWEI_MQTT_PASSWORD: MQTT Password (optional)
+        HUAWEI_MQTT_TOPIC: Basis-Topic für LWT
 
     Hinweis:
         Bei paho-mqtt >= 2.0 muss CallbackAPIVersion.VERSION2 angegeben
@@ -133,8 +133,8 @@ def _get_mqtt_client() -> mqtt.Client:
     client.on_disconnect = _on_disconnect
 
     # Optionale Authentifizierung konfigurieren
-    user = os.environ.get("HUAWEI_MODBUS_MQTT_USER")
-    password = os.environ.get("HUAWEI_MODBUS_MQTT_PASSWORD")
+    user = os.environ.get("HUAWEI_MQTT_USER")
+    password = os.environ.get("HUAWEI_MQTT_PASSWORD")
 
     if user and password:
         client.username_pw_set(user, password)
@@ -142,7 +142,7 @@ def _get_mqtt_client() -> mqtt.Client:
 
     # Last Will Testament (LWT) konfigurieren
     # Wird vom Broker automatisch publiziert bei unerwartetem Disconnect
-    topic = os.environ.get("HUAWEI_MODBUS_MQTT_TOPIC")
+    topic = os.environ.get("HUAWEI_MQTT_TOPIC")
     if topic:
         # QoS=1: Mindestens einmal zugestellt
         # retain=True: Letzter Wert bleibt gespeichert (wichtig für Status)
@@ -173,8 +173,8 @@ def connect_mqtt() -> None:
         ConnectionError: Wenn Verbindung nach 10s Timeout nicht steht
 
     ENV-Konfiguration:
-        HUAWEI_MODBUS_MQTT_BROKER: IP/Hostname des MQTT Brokers (required)
-        HUAWEI_MODBUS_MQTT_PORT: MQTT Port (default: 1883)
+        HUAWEI_MQTT_HOST: IP/Hostname des MQTT Brokers (required)
+        HUAWEI_MQTT_PORT: MQTT Port (default: 1883)
 
     Beispiel:
         >>> connect_mqtt()
@@ -188,8 +188,8 @@ def connect_mqtt() -> None:
     """
     client = _get_mqtt_client()
 
-    broker = os.environ.get("HUAWEI_MODBUS_MQTT_BROKER")
-    port = int(os.environ.get("HUAWEI_MODBUS_MQTT_PORT", "1883"))
+    broker = os.environ.get("HUAWEI_MQTT_HOST")
+    port = int(os.environ.get("HUAWEI_MQTT_PORT", "1883"))
 
     if not broker:
         logger.error("🚨 MQTT broker not configured")
@@ -246,7 +246,7 @@ def disconnect_mqtt() -> None:
 
     try:
         # Abschiedsgruß: Status auf offline setzen
-        topic = os.environ.get("HUAWEI_MODBUS_MQTT_TOPIC")
+        topic = os.environ.get("HUAWEI_MQTT_TOPIC")
         if topic and _is_connected:
             result = _mqtt_client.publish(f"{topic}/status", "offline", qos=1, retain=True)
             # Warten bis publiziert (max 1s)
