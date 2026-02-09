@@ -76,7 +76,7 @@ async def test_main_connection_retry_on_failure():
         mock_config.modbus_auto_detect_slave_id = True  # Auto-detect
         mock_config.mqtt_broker = "192.168.0.140"
         mock_config.mqtt_port = 1883
-        mock_config.mqtt_topic_prefix = "test-topic"
+        mock_config.mqtt_topic = "test-topic"
         mock_config.log_level = "INFO"
         mock_config.status_timeout = 180
         mock_config.poll_interval = 30
@@ -100,7 +100,7 @@ async def test_determine_slave_id_manual_mode():
     """Should use manual Slave ID when auto-detect disabled."""
     mock_config = Mock()
     mock_config.modbus_auto_detect_slave_id = False
-    mock_config.modbus_slave_id = 42
+    mock_config.slave_id = 42
 
     # Kein patch nötig - detect_slave_id wird nicht aufgerufen
     result = await determine_slave_id(mock_config)
@@ -128,7 +128,7 @@ async def test_main_graceful_shutdown():
         mock_config.slave_id = 1
         mock_config.mqtt_broker = "192.168.0.140"
         mock_config.mqtt_port = 1883
-        mock_config.mqtt_topic_prefix = "test-topic"
+        mock_config.mqtt_topic = "test-topic"
         mock_config.log_level = "INFO"
         mock_config.status_timeout = 180
         mock_config.poll_interval = 30
@@ -175,7 +175,7 @@ async def test_main_timeout_exception_triggers_reconnect():
         mock_config.slave_id = 1
         mock_config.mqtt_broker = "192.168.0.140"
         mock_config.mqtt_port = 1883
-        mock_config.mqtt_topic_prefix = "test-topic"
+        mock_config.mqtt_topic = "test-topic"
         mock_config.log_level = "INFO"
         mock_config.status_timeout = 180
         mock_config.poll_interval = 30
@@ -230,7 +230,7 @@ async def test_main_modbus_exception_handling():
         mock_config.slave_id = 1
         mock_config.mqtt_broker = "192.168.0.140"
         mock_config.mqtt_port = 1883
-        mock_config.mqtt_topic_prefix = "test-topic"
+        mock_config.mqtt_topic = "test-topic"
         mock_config.log_level = "INFO"
         mock_config.status_timeout = 180
         mock_config.poll_interval = 30
@@ -278,7 +278,7 @@ async def test_main_mqtt_connection_failure():
         mock_config.mqtt_port = 1883
         mock_config.mqtt_username = None
         mock_config.mqtt_password = None
-        mock_config.mqtt_topic_prefix = "test-topic"
+        mock_config.mqtt_topic = "test-topic"
         mock_config.status_timeout = 180
         mock_config.poll_interval = 30
         mock_config.log_config = Mock()  # ← Wichtig!
@@ -294,7 +294,7 @@ def test_heartbeat_startup_no_check():
     main_module.LAST_SUCCESS = 0
 
     mock_config = Mock()
-    mock_config.mqtt_topic_prefix = "test-topic"
+    mock_config.mqtt_topic = "test-topic"
     mock_config.status_timeout = 180
 
     with patch("bridge.main.publish_status") as mock_status:
@@ -309,7 +309,7 @@ def test_heartbeat_online_within_timeout():
     main_module.LAST_SUCCESS = time.time() - 50
 
     mock_config = Mock()
-    mock_config.mqtt_topic_prefix = "test-topic"
+    mock_config.mqtt_topic = "test-topic"
     mock_config.status_timeout = 180
 
     with patch("bridge.main.publish_status") as mock_status:
@@ -325,7 +325,7 @@ def test_heartbeat_offline_timeout_exceeded():
     main_module.LAST_SUCCESS = time.time() - 200
 
     mock_config = Mock()
-    mock_config.mqtt_topic_prefix = "test-topic"
+    mock_config.mqtt_topic = "test-topic"
     mock_config.status_timeout = 180
 
     with patch("bridge.main.publish_status") as mock_status:
@@ -358,7 +358,7 @@ async def test_main_once_successful_cycle():
     """Test main_once executes complete cycle successfully."""
     mock_client = AsyncMock()
     mock_config = Mock()
-    mock_config.mqtt_topic_prefix = "test-topic"
+    mock_config.mqtt_topic = "test-topic"
     mock_config.poll_interval = 30
 
     with (
@@ -389,7 +389,7 @@ async def test_main_once_empty_data_handling():
     """Test main_once handles empty data gracefully."""
     mock_client = AsyncMock()
     mock_config = Mock()
-    mock_config.mqtt_topic_prefix = "test-topic"
+    mock_config.mqtt_topic = "test-topic"
     mock_config.poll_interval = 30
 
     with (
@@ -410,7 +410,7 @@ async def test_main_once_updates_last_success():
     """Test main_once updates LAST_SUCCESS timestamp on success."""
     mock_client = AsyncMock()
     mock_config = Mock()
-    mock_config.mqtt_topic_prefix = "test-topic"
+    mock_config.mqtt_topic = "test-topic"
     mock_config.poll_interval = 30
 
     # Reset LAST_SUCCESS
