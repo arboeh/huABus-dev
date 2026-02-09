@@ -58,24 +58,30 @@ class TestConfigManagerLoading:
         """Should load from ENV when options.json doesn't exist."""
         config_file = tmp_path / "nonexistent.json"
 
+        # Modbus
         monkeypatch.setenv("HUAWEI_MODBUS_HOST", "10.0.0.5")
         monkeypatch.setenv("HUAWEI_MODBUS_PORT", "5020")
-        monkeypatch.setenv("HUAWEI_SLAVEID_AUTO", "false")
-        monkeypatch.setenv("HUAWEI_SLAVE_ID", "2")
-        monkeypatch.setenv("HUAWEI_MODBUS_MQTT_BROKER", "mqtt.local")
-        monkeypatch.setenv("HUAWEI_MODBUS_MQTT_PORT", "1884")
-        monkeypatch.setenv("HUAWEI_MODBUS_MQTT_USER", "envuser")
-        monkeypatch.setenv("HUAWEI_MODBUS_MQTT_PASSWORD", "envpass")
-        monkeypatch.setenv("HUAWEI_MODBUS_MQTT_TOPIC", "env-topic")
+        monkeypatch.setenv("HUAWEI_MODBUS_AUTO_DETECT_SLAVE_ID", "false")
+        monkeypatch.setenv("HUAWEI_MODBUS_SLAVE_ID", "2")
+
+        # MQTT
+        monkeypatch.setenv("HUAWEI_MQTT_BROKER", "mqtt.local")
+        monkeypatch.setenv("HUAWEI_MQTT_PORT", "1884")
+        monkeypatch.setenv("HUAWEI_MQTT_USERNAME", "envuser")
+        monkeypatch.setenv("HUAWEI_MQTT_PASSWORD", "envpass")
+        monkeypatch.setenv("HUAWEI_MQTT_TOPIC_PREFIX", "env-topic")
+
+        # Advanced
         monkeypatch.setenv("HUAWEI_LOG_LEVEL", "ERROR")
         monkeypatch.setenv("HUAWEI_STATUS_TIMEOUT", "90")
         monkeypatch.setenv("HUAWEI_POLL_INTERVAL", "60")
 
         config = ConfigManager(config_path=config_file)
 
+        # Assertions bleiben gleich
         assert config.modbus_host == "10.0.0.5"
         assert config.modbus_port == 5020
-        assert config.modbus_auto_detect_slave_id is False
+        assert config.modbus_auto_detect_slave_id is False  # Dieser Test würde jetzt funktionieren!
         assert config.modbus_slave_id == 2
         assert config.mqtt_broker == "mqtt.local"
         assert config.mqtt_port == 1884
@@ -287,15 +293,18 @@ class TestConfigManagerEdgeCases:
 
         # Clear all relevant ENV vars
         for key in [
+            # Modbus
             "HUAWEI_MODBUS_HOST",
             "HUAWEI_MODBUS_PORT",
-            "HUAWEI_SLAVEID_AUTO",
-            "HUAWEI_SLAVE_ID",
-            "HUAWEI_MODBUS_MQTT_BROKER",
-            "HUAWEI_MODBUS_MQTT_PORT",
-            "HUAWEI_MODBUS_MQTT_USER",
-            "HUAWEI_MODBUS_MQTT_PASSWORD",
-            "HUAWEI_MODBUS_MQTT_TOPIC",
+            "HUAWEI_MODBUS_AUTO_DETECT_SLAVE_ID",
+            "HUAWEI_MODBUS_SLAVE_ID",
+            # MQTT
+            "HUAWEI_MQTT_BROKER",
+            "HUAWEI_MQTT_PORT",
+            "HUAWEI_MQTT_USERNAME",
+            "HUAWEI_MQTT_PASSWORD",
+            "HUAWEI_MQTT_TOPIC_PREFIX",
+            # Advanced
             "HUAWEI_LOG_LEVEL",
             "HUAWEI_STATUS_TIMEOUT",
             "HUAWEI_POLL_INTERVAL",
@@ -495,3 +504,125 @@ class TestConfigManagerLogConfig:
         config.log_config()
 
         assert "Auth: None" in caplog.text
+
+
+class TestConfigManagerConsistency:
+    """Test consistency between different configuration sources."""
+
+    def test_env_and_file_produce_same_result(self, tmp_path, monkeypatch):
+        """ENV variables should map to same keys as options.json.
+
+        This test ensures that the mapping between ENV variable names
+        and dictionary keys is consistent, preventing bugs where
+        config from file works but config from ENV doesn't.
+        """
+        # Test-Werte
+        test_values = {
+            "modbus_host": "192.168.1.50",
+            "modbus_port": 5020,
+            "modbus_auto_detect_slave_id": False,
+            "modbus_slave_id": 42,
+            "mqtt_broker": "mqtt.test.local",
+            "mqtt_port": 1884,
+            "mqtt_username": "testuser",
+            "mqtt_password": "testpass",
+            "mqtt_topic_prefix": "test-prefix",
+            "log_level": "DEBUG",
+            "status_timeout": 120,
+            "poll_interval": 45,
+        }
+
+        # 1. Config aus options.json laden
+        config_file = tmp_path / "options.json"
+        config_file.write_text(json.dumps(test_values))
+        config_from_file = ConfigManager(config_path=config_file)
+
+        # 2. Config aus ENV laden
+        env_mapping = {
+            "HUAWEI_MODBUS_HOST": "192.168.1.50",
+            "HUAWEI_MODBUS_PORT": "5020",
+            "HUAWEI_MODBUS_AUTO_DETECT_SLAVE_ID": "false",
+            "HUAWEI_MODBUS_SLAVE_ID": "42",
+            "HUAWEI_MQTT_BROKER": "mqtt.test.local",
+            "HUAWEI_MQTT_PORT": "1884",
+            "HUAWEI_MQTT_USERNAME": "testuser",
+            "HUAWEI_MQTT_PASSWORD": "testpass",
+            "HUAWEI_MQTT_TOPIC_PREFIX": "test-prefix",
+            "HUAWEI_LOG_LEVEL": "DEBUG",
+            "HUAWEI_STATUS_TIMEOUT": "120",
+            "HUAWEI_POLL_INTERVAL": "45",
+        }
+
+        for key, value in env_mapping.items():
+            monkeypatch.setenv(key, value)
+
+        config_from_env = ConfigManager(config_path=tmp_path / "nonexistent.json")
+
+        # 3. Beide müssen identisch sein!
+        assert config_from_file.modbus_host == config_from_env.modbus_host
+        assert config_from_file.modbus_port == config_from_env.modbus_port
+        assert config_from_file.modbus_auto_detect_slave_id == config_from_env.modbus_auto_detect_slave_id
+        assert config_from_file.modbus_slave_id == config_from_env.modbus_slave_id
+        assert config_from_file.mqtt_broker == config_from_env.mqtt_broker
+        assert config_from_file.mqtt_port == config_from_env.mqtt_port
+        assert config_from_file.mqtt_username == config_from_env.mqtt_username
+        assert config_from_file.mqtt_password == config_from_env.mqtt_password
+        assert config_from_file.mqtt_topic_prefix == config_from_env.mqtt_topic_prefix
+        assert config_from_file.log_level == config_from_env.log_level
+        assert config_from_file.status_timeout == config_from_env.status_timeout
+        assert config_from_file.poll_interval == config_from_env.poll_interval
+
+    def test_modbus_auto_detect_slave_id_boolean_logic(self, tmp_path):
+        """Specifically test that modbus_auto_detect_slave_id works correctly.
+
+        This was the original bug - auto_detect was always True regardless
+        of configuration due to incorrect ENV variable name mapping.
+        """
+        # Test 1: auto_detect = True (default)
+        config_file_true = tmp_path / "options_true.json"
+        config_file_true.write_text(json.dumps({"modbus_auto_detect_slave_id": True, "modbus_slave_id": 1}))
+        config_true = ConfigManager(config_path=config_file_true)
+        assert config_true.modbus_auto_detect_slave_id is True
+
+        # Test 2: auto_detect = False (manual slave ID)
+        config_file_false = tmp_path / "options_false.json"
+        config_file_false.write_text(json.dumps({"modbus_auto_detect_slave_id": False, "modbus_slave_id": 42}))
+        config_false = ConfigManager(config_path=config_file_false)
+        assert config_false.modbus_auto_detect_slave_id is False
+        assert config_false.modbus_slave_id == 42
+
+    @pytest.mark.parametrize(
+        "env_var,dict_key,test_value,expected",
+        [
+            ("HUAWEI_MODBUS_HOST", "modbus_host", "192.168.1.1", "192.168.1.1"),
+            ("HUAWEI_MODBUS_PORT", "modbus_port", "5020", 5020),
+            ("HUAWEI_MODBUS_AUTO_DETECT_SLAVE_ID", "modbus_auto_detect_slave_id", "false", False),
+            ("HUAWEI_MODBUS_AUTO_DETECT_SLAVE_ID", "modbus_auto_detect_slave_id", "true", True),
+            ("HUAWEI_MODBUS_SLAVE_ID", "modbus_slave_id", "42", 42),
+            ("HUAWEI_MQTT_BROKER", "mqtt_broker", "mqtt.test", "mqtt.test"),
+            ("HUAWEI_MQTT_PORT", "mqtt_port", "1884", 1884),
+            ("HUAWEI_MQTT_USERNAME", "mqtt_username", "testuser", "testuser"),
+            ("HUAWEI_MQTT_PASSWORD", "mqtt_password", "testpass", "testpass"),
+            ("HUAWEI_MQTT_TOPIC_PREFIX", "mqtt_topic_prefix", "test", "test"),
+            ("HUAWEI_LOG_LEVEL", "log_level", "DEBUG", "DEBUG"),
+            ("HUAWEI_STATUS_TIMEOUT", "status_timeout", "120", 120),
+            ("HUAWEI_POLL_INTERVAL", "poll_interval", "45", 45),
+        ],
+    )
+    def test_individual_env_mapping(self, monkeypatch, tmp_path, env_var, dict_key, test_value, expected):
+        """Test each ENV variable individually maps to correct dict key.
+
+        This parametrized test validates every single ENV→dict mapping,
+        making it impossible for inconsistencies to slip through.
+        """
+        # Setze nur diese eine ENV-Variable
+        monkeypatch.setenv(env_var, test_value)
+
+        config = ConfigManager(config_path=tmp_path / "nonexistent.json")
+
+        # Prüfe dass der dict_key im internen Config existiert
+        assert dict_key in config._config, f"Key '{dict_key}' not found in config"
+
+        # Prüfe dass der Wert korrekt gemappt wurde
+        actual = config._config[dict_key]
+        assert actual == expected, f"ENV {env_var}={test_value} → expected {expected}, got {actual}"

@@ -44,23 +44,18 @@ class ConfigManager:
             self._config = self._load_from_env()
 
     def _load_from_env(self) -> dict[str, Any]:
-        """Load configuration from environment variables.
-
-        Returns:
-            Configuration dictionary with flat structure
-        """
         return {
             # Modbus settings
             "modbus_host": os.getenv("HUAWEI_MODBUS_HOST", "192.168.1.100"),
             "modbus_port": self._parse_int_env("HUAWEI_MODBUS_PORT", default=502),
-            "modbus_auto_detect_slave_id": self._parse_bool_env("HUAWEI_SLAVEID_AUTO", default=True),
-            "modbus_slave_id": self._parse_int_env("HUAWEI_SLAVE_ID", default=1),
+            "modbus_auto_detect_slave_id": self._parse_bool_env("HUAWEI_MODBUS_AUTO_DETECT_SLAVE_ID", default=True),
+            "modbus_slave_id": self._parse_int_env("HUAWEI_MODBUS_SLAVE_ID", default=1),
             # MQTT settings
-            "mqtt_broker": os.getenv("HUAWEI_MODBUS_MQTT_BROKER", "core-mosquitto"),
-            "mqtt_port": self._parse_int_env("HUAWEI_MODBUS_MQTT_PORT", default=1883),
-            "mqtt_username": os.getenv("HUAWEI_MODBUS_MQTT_USER", ""),
-            "mqtt_password": os.getenv("HUAWEI_MODBUS_MQTT_PASSWORD", ""),
-            "mqtt_topic_prefix": os.getenv("HUAWEI_MODBUS_MQTT_TOPIC", "huawei-solar"),
+            "mqtt_broker": os.getenv("HUAWEI_MQTT_BROKER", "core-mosquitto"),
+            "mqtt_port": self._parse_int_env("HUAWEI_MQTT_PORT", default=1883),
+            "mqtt_username": os.getenv("HUAWEI_MQTT_USERNAME", ""),
+            "mqtt_password": os.getenv("HUAWEI_MQTT_PASSWORD", ""),
+            "mqtt_topic_prefix": os.getenv("HUAWEI_MQTT_TOPIC_PREFIX", "huawei-solar"),
             # Advanced settings
             "log_level": os.getenv("HUAWEI_LOG_LEVEL", "INFO"),
             "status_timeout": self._parse_int_env("HUAWEI_STATUS_TIMEOUT", default=180),
