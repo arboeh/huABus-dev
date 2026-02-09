@@ -1,4 +1,4 @@
 # .shellcheckrc
-disable = SC1008
-disable = SC2155
-disable = SC2034
+disable=SC1008
+disable=SC2155
+disable=SC2034
