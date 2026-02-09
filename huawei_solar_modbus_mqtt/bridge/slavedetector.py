@@ -47,7 +47,7 @@ async def detect_slave_id(host: str, port: int = 502, timeout: int = DETECTION_T
         logger.debug(f"Trying Slave ID {slave_id}...")
 
         if await _test_slave_id(host, port, slave_id, timeout):
-            logger.info(f"✅ Auto-detected Slave ID: {slave_id}")
+            logger.info(f"🕵️‍♀️ Auto-detected Slave ID: {slave_id}")
             return slave_id
 
         logger.debug(f"Slave ID {slave_id} failed")

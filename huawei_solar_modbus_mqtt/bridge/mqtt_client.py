@@ -460,7 +460,7 @@ def publish_discovery_configs(base_topic: str) -> None:
         logger.warning("⚠️ MQTT not connected, skipping discovery")
         return
 
-    logger.info("🔍 Publishing MQTT Discovery")
+    logger.info("📊 Publishing MQTT Discovery")
     client = _get_mqtt_client()
 
     # Device-Config für HA Gruppierung

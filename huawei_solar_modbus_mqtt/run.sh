@@ -138,7 +138,7 @@ echo "[$(date +'%T')] INFO:  ⏱️  Poll: ${HUAWEI_POLL_INTERVAL}s | Timeout: $
 
 # Registerzähler
 REGISTER_COUNT=58
-echo "[$(date +'%T')] INFO:  📊 Registers: ${REGISTER_COUNT} essential"
+echo "[$(date +'%T')] INFO:  📱 Registers: ${REGISTER_COUNT} essential"
 echo "[$(date +'%T')] INFO: ----------------------------------------------------------"
 
 # === System Info ===

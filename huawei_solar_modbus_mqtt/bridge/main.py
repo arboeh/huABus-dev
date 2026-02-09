@@ -427,7 +427,7 @@ async def main() -> None:
     # === Discovery publizieren ===
     try:
         publish_discovery_configs(config.mqtt_topic)
-        logger.info("✅ Discovery published")
+        logger.info("📢 Discovery published")
     except Exception as e:
         logger.error(f"❌ Discovery failed: {e}")
 
