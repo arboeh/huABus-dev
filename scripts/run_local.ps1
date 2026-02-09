@@ -16,10 +16,12 @@ if (-not $env:VIRTUAL_ENV) {
     if (Test-Path "$rootDir\venv\Scripts\Activate.ps1") {
         & "$rootDir\venv\Scripts\Activate.ps1"
         Write-Host "✅ Virtual environment activated" -ForegroundColor Green
-    } elseif (Test-Path "$rootDir\.venv\Scripts\Activate.ps1") {
+    }
+    elseif (Test-Path "$rootDir\.venv\Scripts\Activate.ps1") {
         & "$rootDir\.venv\Scripts\Activate.ps1"
         Write-Host "✅ Virtual environment activated" -ForegroundColor Green
-    } else {
+    }
+    else {
         Write-Host "❌ No virtual environment found (venv or .venv)!" -ForegroundColor Red
         Write-Host "   Run: python -m venv venv" -ForegroundColor Yellow
         exit 1
@@ -39,15 +41,18 @@ if ($Test) {
         if ($LASTEXITCODE -eq 0) {
             Write-Host "✅ All tests passed!" -ForegroundColor Green
             Write-Host "📊 Opening coverage report..." -ForegroundColor Cyan
-            start htmlcov/index.html
-        } else {
+            Start-Process htmlcov/index.html  # ← Hier geändert
+        }
+        else {
             Write-Host "❌ Tests failed!" -ForegroundColor Red
         }
-    } else {
+    }
+    else {
         pytest tests/ -v
         if ($LASTEXITCODE -eq 0) {
             Write-Host "✅ All tests passed!" -ForegroundColor Green
-        } else {
+        }
+        else {
             Write-Host "❌ Tests failed!" -ForegroundColor Red
         }
     }
@@ -77,7 +82,8 @@ if (Test-Path $envPath) {
             }
         }
     }
-} else {
+}
+else {
     Write-Host "❌ No .env file in root directory!" -ForegroundColor Red
     Write-Host "   Expected: $envPath" -ForegroundColor Yellow
     exit 1
@@ -98,35 +104,60 @@ try {
         $versionContent = Get-Content $versionPath | Select-String '__version__\s*=\s*"([^"]+)"'
         if ($versionContent) {
             $appVersion = $versionContent.Matches.Groups[1].Value
-        } else {
+        }
+        else {
             $appVersion = "dev"
         }
-    } else {
+    }
+    else {
         $appVersion = "dev"
         Write-Host "   [DEBUG] __version__.py not found at: $versionPath" -ForegroundColor DarkYellow
     }
-} catch {
+}
+catch {
     $appVersion = "dev"
     Write-Host "   [DEBUG] Error reading __version__.py: $_" -ForegroundColor Red
 }
 
 Write-Host "   - App-Version: $appVersion" -ForegroundColor Cyan
 
+# Register count
+try {
+    # Wechsel ins Addon-Verzeichnis für den Import
+    Push-Location (Join-Path $rootDir "huawei_solar_modbus_mqtt")
+    $registerCount = python -c "from bridge.config.registers import ESSENTIAL_REGISTERS; print(len(ESSENTIAL_REGISTERS))" 2>$null
+    Pop-Location
+
+    if ($registerCount -and $registerCount -match '^\d+$') {
+        Write-Host "   - Registers: $registerCount essential" -ForegroundColor White
+    }
+    else {
+        Write-Host "   - Registers: unknown" -ForegroundColor DarkGray
+    }
+}
+catch {
+    Pop-Location  # Sicherstellen, dass wir zurückwechseln
+    Write-Host "   - Registers: unknown" -ForegroundColor DarkGray
+}
+
 # Package versions
 try {
     $huaweiVersion = pip show huawei-solar 2>$null | Select-String "^Version:" | ForEach-Object { $_.ToString().Split(":")[1].Trim() }
     if (!$huaweiVersion) { $huaweiVersion = "unknown" }
-} catch { $huaweiVersion = "unknown" }
+}
+catch { $huaweiVersion = "unknown" }
 
 try {
     $pymodbusVersion = pip show pymodbus 2>$null | Select-String "^Version:" | ForEach-Object { $_.ToString().Split(":")[1].Trim() }
     if (!$pymodbusVersion) { $pymodbusVersion = "unknown" }
-} catch { $pymodbusVersion = "unknown" }
+}
+catch { $pymodbusVersion = "unknown" }
 
 try {
     $pahoVersion = pip show paho-mqtt 2>$null | Select-String "^Version:" | ForEach-Object { $_.ToString().Split(":")[1].Trim() }
     if (!$pahoVersion) { $pahoVersion = "unknown" }
-} catch { $pahoVersion = "unknown" }
+}
+catch { $pahoVersion = "unknown" }
 
 Write-Host "   - huawei-solar: $huaweiVersion" -ForegroundColor White
 Write-Host "   - pymodbus: $pymodbusVersion" -ForegroundColor White
@@ -149,10 +180,12 @@ try {
     if (!$connection.TcpTestSucceeded) {
         Write-Host "⚠️  MQTT Broker not reachable at ${mqttHost}:${mqttPort}" -ForegroundColor Yellow
         Write-Host "   Make sure Mosquitto is running!" -ForegroundColor Yellow
-    } else {
+    }
+    else {
         Write-Host "✅ MQTT Broker reachable" -ForegroundColor Green
     }
-} catch {
+}
+catch {
     Write-Host "⚠️  Cannot test MQTT connection" -ForegroundColor Yellow
 }
 

@@ -136,9 +136,9 @@ fi
 echo "[$(date +'%T')] INFO:  📍 Topic: ${HUAWEI_MQTT_TOPIC}"
 echo "[$(date +'%T')] INFO:  ⏱️  Poll: ${HUAWEI_POLL_INTERVAL}s | Timeout: ${HUAWEI_STATUS_TIMEOUT}s"
 
-# Registerzähler
-REGISTER_COUNT=58
-echo "[$(date +'%T')] INFO:  📱 Registers: ${REGISTER_COUNT} essential"
+# Dynamische Register-Zählung
+REGISTER_COUNT=$(python3 -c "from bridge.config.registers import ESSENTIAL_REGISTERS; print(len(ESSENTIAL_REGISTERS))")
+echo "$(date '+%Y-%m-%dT%H:%M:%S') INFO - Registers $REGISTER_COUNT essential"
 echo "[$(date +'%T')] INFO: ----------------------------------------------------------"
 
 # === System Info ===
