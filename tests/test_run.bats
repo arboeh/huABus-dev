@@ -122,7 +122,7 @@ teardown() {
     [[ "$output" =~ "502" ]]
 }
 
-@test "MQTT broker from custom config" {
+@test "MQTT broker from custom config with HA auth" {
     bashio::config.has_value() {
         case "$1" in
         modbus_host | modbus_port | mqtt_host) return 0 ;;
@@ -136,6 +136,9 @@ teardown() {
         modbus_port) echo '502' ;;
         modbus_auto_detect_slave_id) echo 'true' ;;
         slave_id) echo '1' ;;
+        mqtt_port) echo '1883' ;;
+        mqtt_user) echo '' ;;     # Leer!
+        mqtt_password) echo '' ;; # Leer!
         mqtt_topic) echo 'huawei-solar' ;;
         log_level) echo 'INFO' ;;
         status_timeout) echo '180' ;;
@@ -149,6 +152,42 @@ teardown() {
     source huawei_solar_modbus_mqtt/run.sh >/dev/null 2>&1
 
     [ "$HUAWEI_MQTT_HOST" = "mqtt.custom.local" ]
+    [ "$HUAWEI_MQTT_USER" = "homeassistant" ] # Aus HA Service
+    [ "$HUAWEI_MQTT_PASSWORD" = "secret" ]    # Aus HA Service
+}
+
+@test "MQTT broker from custom config with explicit auth" {
+    bashio::config.has_value() {
+        case "$1" in
+        modbus_host | modbus_port | mqtt_host | mqtt_user | mqtt_password) return 0 ;;
+        *) return 1 ;;
+        esac
+    }
+    bashio::config() {
+        case "$1" in
+        mqtt_host) echo 'mqtt.custom.local' ;;
+        mqtt_user) echo 'custom_user' ;;
+        mqtt_password) echo 'custom_pass' ;;
+        modbus_host) echo '192.168.1.100' ;;
+        modbus_port) echo '502' ;;
+        modbus_auto_detect_slave_id) echo 'true' ;;
+        slave_id) echo '1' ;;
+        mqtt_port) echo '1883' ;;
+        mqtt_topic) echo 'huawei-solar' ;;
+        log_level) echo 'INFO' ;;
+        status_timeout) echo '180' ;;
+        poll_interval) echo '30' ;;
+        *) echo '' ;;
+        esac
+    }
+    export -f bashio::config.has_value
+    export -f bashio::config
+
+    source huawei_solar_modbus_mqtt/run.sh >/dev/null 2>&1
+
+    [ "$HUAWEI_MQTT_HOST" = "mqtt.custom.local" ]
+    [ "$HUAWEI_MQTT_USER" = "custom_user" ]
+    [ "$HUAWEI_MQTT_PASSWORD" = "custom_pass" ]
 }
 
 @test "MQTT broker from HA service when no custom config" {

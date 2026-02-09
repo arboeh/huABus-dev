@@ -371,7 +371,7 @@ class TestConfigManagerLogConfig:
         """Should mask password in logs by default."""
         import logging
 
-        caplog.set_level(logging.INFO)
+        caplog.set_level(logging.DEBUG)
 
         config_file = tmp_path / "options.json"
         config_data = {
@@ -401,7 +401,7 @@ class TestConfigManagerLogConfig:
         """Should show password when hide_passwords=False."""
         import logging
 
-        caplog.set_level(logging.INFO)
+        caplog.set_level(logging.DEBUG)
 
         config_file = tmp_path / "options.json"
         config_data = {
@@ -431,7 +431,7 @@ class TestConfigManagerLogConfig:
         """Should log all configuration sections."""
         import logging
 
-        caplog.set_level(logging.INFO)
+        caplog.set_level(logging.DEBUG)
 
         config_file = tmp_path / "options.json"
         config_data = {
@@ -472,7 +472,7 @@ class TestConfigManagerLogConfig:
         """Should show 'Auth: None' when no username/password."""
         import logging
 
-        caplog.set_level(logging.INFO)
+        caplog.set_level(logging.DEBUG)
 
         config_file = tmp_path / "options.json"
         config_data = {

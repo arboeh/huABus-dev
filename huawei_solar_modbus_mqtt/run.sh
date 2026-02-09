@@ -13,20 +13,20 @@ echo "[$(date +'%T')] INFO: >> Starting huABus - Huawei Solar Modbus MQTT Add-on
 
 # === Helper function for required config ===
 get_required_config() {
-    local key=$1
-    local default=${2:-}  # Default ist leerer String wenn nicht angegeben
-    local value
+	local key=$1
+	local default=${2:-} # Default ist leerer String wenn nicht angegeben
+	local value
 
-    if bashio::config.has_value "$key"; then
-        value=$(bashio::config "$key")
-    elif [ -n "$default" ]; then
-        value="$default"
-    else
-        # Bei leerem default ist es optional
-        value=""
-    fi
+	if bashio::config.has_value "$key"; then
+		value=$(bashio::config "$key")
+	elif [ -n "$default" ]; then
+		value="$default"
+	else
+		# Bei leerem default ist es optional
+		value=""
+	fi
 
-    echo "$value"
+	echo "$value"
 }
 
 # === Modbus Configuration ===
@@ -36,24 +36,43 @@ export HUAWEI_MODBUS_AUTO_DETECT_SLAVE_ID=$(get_required_config 'modbus_auto_det
 export HUAWEI_SLAVE_ID=$(get_required_config 'slave_id' '1')
 
 # === MQTT Configuration ===
-# Prüfe ob mqtt_host in der Config ist, sonst versuche HA Service
-if bashio::config.has_value 'mqtt_host' && [ -n "$(bashio::config 'mqtt_host')" ]; then
-    export HUAWEI_MQTT_HOST=$(bashio::config 'mqtt_host')
-    export HUAWEI_MQTT_PORT=$(get_required_config 'mqtt_port' '1883')
-    export HUAWEI_MQTT_USER=$(get_required_config 'mqtt_user' '')
-    export HUAWEI_MQTT_PASSWORD=$(get_required_config 'mqtt_password' '')
-    MQTT_SOURCE="custom"
+# Prüfe ob mqtt_host in der Config ist
+MQTT_HOST_CONFIG=$(get_required_config 'mqtt_host' '')
+
+if [ -n "$MQTT_HOST_CONFIG" ]; then
+	# Custom mqtt_host aus Config
+	export HUAWEI_MQTT_HOST="$MQTT_HOST_CONFIG"
+	export HUAWEI_MQTT_PORT=$(get_required_config 'mqtt_port' '1883')
+	MQTT_SOURCE="custom"
 else
-    if bashio::services.available mqtt; then
-        export HUAWEI_MQTT_HOST=$(bashio::services mqtt "host")
-        export HUAWEI_MQTT_PORT=$(bashio::services mqtt "port")
-        export HUAWEI_MQTT_USER=$(bashio::services mqtt "username")
-        export HUAWEI_MQTT_PASSWORD=$(bashio::services mqtt "password")
-        MQTT_SOURCE="HA service"
-    else
-        bashio::log.fatal "No MQTT broker configured and HA MQTT service not available!"
-        exit 1
-    fi
+	# Alles aus HA Service
+	if bashio::services.available mqtt; then
+		export HUAWEI_MQTT_HOST=$(bashio::services mqtt "host")
+		export HUAWEI_MQTT_PORT=$(bashio::services mqtt "port")
+		MQTT_SOURCE="HA service"
+	else
+		bashio::log.fatal "No MQTT broker configured and HA MQTT service not available!"
+		exit 1
+	fi
+fi
+
+# === MQTT Credentials ===
+# Prüfe ob explizite Credentials in Config gesetzt sind
+MQTT_USER_CONFIG=$(get_required_config 'mqtt_user' '')
+MQTT_PASS_CONFIG=$(get_required_config 'mqtt_password' '')
+
+if [ -n "$MQTT_USER_CONFIG" ] && [ -n "$MQTT_PASS_CONFIG" ]; then
+	# Explizite Credentials in Config → verwenden
+	export HUAWEI_MQTT_USER="$MQTT_USER_CONFIG"
+	export HUAWEI_MQTT_PASSWORD="$MQTT_PASS_CONFIG"
+elif bashio::services.available mqtt; then
+	# Keine expliziten Credentials → HA Service nutzen
+	export HUAWEI_MQTT_USER=$(bashio::services mqtt "username")
+	export HUAWEI_MQTT_PASSWORD=$(bashio::services mqtt "password")
+else
+	# Keine Credentials verfügbar (no-auth Broker)
+	export HUAWEI_MQTT_USER=""
+	export HUAWEI_MQTT_PASSWORD=""
 fi
 
 export HUAWEI_MQTT_TOPIC=$(get_required_config 'mqtt_topic' 'huawei-solar')
@@ -68,31 +87,31 @@ echo "[$(date +'%T')] INFO: >> Log level: ${HUAWEI_LOG_LEVEL}"
 # Set bashio log level to match
 case "${HUAWEI_LOG_LEVEL}" in
 TRACE)
-    bashio::log.level debug # bashio doesn't have TRACE, use DEBUG
-    ;;
+	bashio::log.level debug # bashio doesn't have TRACE, use DEBUG
+	;;
 DEBUG)
-    bashio::log.level debug
-    ;;
+	bashio::log.level debug
+	;;
 WARNING)
-    bashio::log.level warning
-    ;;
+	bashio::log.level warning
+	;;
 ERROR)
-    bashio::log.level error
-    ;;
+	bashio::log.level error
+	;;
 *)
-    bashio::log.level info
-    ;;
+	bashio::log.level info
+	;;
 esac
 
 # === Validation ===
 if [ -z "$HUAWEI_MODBUS_HOST" ]; then
-    bashio::log.fatal "Modbus host is required but not configured!"
-    exit 1
+	bashio::log.fatal "Modbus host is required but not configured!"
+	exit 1
 fi
 
 if [ -z "$HUAWEI_MQTT_HOST" ]; then
-    bashio::log.fatal "MQTT broker is required but not configured!"
-    exit 1
+	bashio::log.fatal "MQTT broker is required but not configured!"
+	exit 1
 fi
 
 # === Connection Summary ===
@@ -100,18 +119,18 @@ echo "[$(date +'%T')] INFO: ----------------------------------------------------
 
 # Slave ID Display Logic
 if [ "${HUAWEI_MODBUS_AUTO_DETECT_SLAVE_ID}" = "true" ]; then
-    echo "[$(date +'%T')] INFO:  🔌 Inverter: ${HUAWEI_MODBUS_HOST}:${HUAWEI_MODBUS_PORT} (Slave ID: auto-detect)"
+	echo "[$(date +'%T')] INFO:  🔌 Inverter: ${HUAWEI_MODBUS_HOST}:${HUAWEI_MODBUS_PORT} (Slave ID: auto-detect)"
 else
-    echo "[$(date +'%T')] INFO:  🔌 Inverter: ${HUAWEI_MODBUS_HOST}:${HUAWEI_MODBUS_PORT} (Slave ID: ${HUAWEI_SLAVE_ID})"
+	echo "[$(date +'%T')] INFO:  🔌 Inverter: ${HUAWEI_MODBUS_HOST}:${HUAWEI_MODBUS_PORT} (Slave ID: ${HUAWEI_SLAVE_ID})"
 fi
 
 echo "[$(date +'%T')] INFO:  📡 MQTT: ${HUAWEI_MQTT_HOST}:${HUAWEI_MQTT_PORT} (${MQTT_SOURCE})"
 
 # Zeige MQTT Auth Status (ohne Credentials zu leaken)
 if [ -n "${HUAWEI_MQTT_USER}" ]; then
-    echo "[$(date +'%T')] INFO:  🔐 Auth: enabled (${MQTT_SOURCE})"
+	echo "[$(date +'%T')] INFO:  🔐 Auth: enabled (${MQTT_SOURCE})"
 else
-    echo "[$(date +'%T')] INFO:  🔐 Auth: disabled"
+	echo "[$(date +'%T')] INFO:  🔐 Auth: disabled"
 fi
 
 echo "[$(date +'%T')] INFO:  📍 Topic: ${HUAWEI_MQTT_TOPIC}"
@@ -145,8 +164,8 @@ bashio::log.info "   - Architecture: $(uname -m)"
 # === TEST MODE GUARD - Exit here when running BATS tests ===
 # ============================================================
 if [ "${BATS_TEST_MODE:-false}" = "true" ]; then
-    bashio::log.info ">> Test mode enabled - skipping application start"
-    return 0
+	bashio::log.info ">> Test mode enabled - skipping application start"
+	return 0
 fi
 # ============================================================
 

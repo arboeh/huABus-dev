@@ -33,12 +33,12 @@ class ConfigManager:
     def _load_config(self) -> None:
         """Load configuration from file or environment variables."""
         if self.config_path.exists():
-            logger.info(f"Loading configuration from {self.config_path}")
+            logger.info(f"🚀 Loading configuration from {self.config_path}")
             with open(self.config_path, "r") as f:
                 self._config = json.load(f)
-            logger.debug(f"Loaded config keys: {list(self._config.keys())}")
+            logger.debug(f"✅ Loaded config keys: {list(self._config.keys())}")
         else:
-            logger.info("No config file found, loading from environment variables")
+            logger.info("🔍 No config file found, loading from environment variables")
             self._config = self._load_from_env()
 
     def _load_from_env(self) -> dict[str, Any]:
@@ -98,7 +98,7 @@ class ConfigManager:
         try:
             return int(value)
         except ValueError:
-            logger.warning(f"Invalid integer value for {key}: {value}, using default {default}")
+            logger.warning(f"❌ Invalid integer value for {key}: {value}, using default {default}")
             return default
 
     # === Modbus Configuration ===
@@ -232,30 +232,30 @@ class ConfigManager:
         """
 
         # Modbus
-        logger.info("Modbus:")
-        logger.info(f"  Host: {self.modbus_host}")
-        logger.info(f"  Port: {self.modbus_port}")
-        logger.info(f"  Auto-detect Slave ID: {self.modbus_auto_detect_slave_id}")
+        logger.debug("Modbus:")
+        logger.debug(f"  Host: {self.modbus_host}")
+        logger.debug(f"  Port: {self.modbus_port}")
+        logger.debug(f"  Auto-detect Slave ID: {self.modbus_auto_detect_slave_id}")
         if not self.modbus_auto_detect_slave_id:
-            logger.info(f"  Slave ID: {self.slave_id}")
+            logger.debug(f"  Slave ID: {self.slave_id}")
 
         # MQTT
-        logger.info("MQTT:")
-        logger.info(f"  Host: {self.mqtt_host}")
-        logger.info(f"  Port: {self.mqtt_port}")
+        logger.debug("MQTT:")
+        logger.debug(f"  Host: {self.mqtt_host}")
+        logger.debug(f"  Port: {self.mqtt_port}")
 
         if self.mqtt_user:
-            logger.info(f"  User: {self.mqtt_user}")
+            logger.debug(f"  User: {self.mqtt_user}")
             if self.mqtt_password:
                 password_display = "***" if hide_passwords else self.mqtt_password
-                logger.info(f"  Password: {password_display}")
+                logger.debug(f"  Password: {password_display}")
         else:
-            logger.info("  Auth: None")
+            logger.debug("  Auth: None")
 
-        logger.info(f"  Topic: {self.mqtt_topic}")
+        logger.debug(f"  Topic: {self.mqtt_topic}")
 
         # Advanced
-        logger.info("Advanced:")
-        logger.info(f"  Log Level: {self.log_level}")
-        logger.info(f"  Status Timeout: {self.status_timeout}s")
-        logger.info(f"  Poll Interval: {self.poll_interval}s")
+        logger.debug("Advanced:")
+        logger.debug(f"  Log Level: {self.log_level}")
+        logger.debug(f"  Status Timeout: {self.status_timeout}s")
+        logger.debug(f"  Poll Interval: {self.poll_interval}s")
