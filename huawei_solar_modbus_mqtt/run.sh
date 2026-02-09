@@ -1,4 +1,6 @@
 #!/usr/bin/with-contenv bashio
+# shellcheck shell=bash
+# shellcheck disable=SC1008
 
 VERSION=$(bashio::addon.version)
 
@@ -13,7 +15,7 @@ echo "[$(date +'%T')] INFO: >> Starting huABus - Huawei Solar Modbus MQTT Add-on
 get_required_config() {
 	local key=$1
 	local default=$2
-	local valuev
+	local value
 
 	if bashio::config.has_value "$key"; then
 		value=$(bashio::config "$key")
@@ -29,6 +31,7 @@ get_required_config() {
 }
 
 # === Modbus Configuration ===
+# shellcheck disable=SC2155
 export HUAWEI_MODBUS_HOST=$(get_required_config 'modbus_host')
 export HUAWEI_MODBUS_PORT=$(get_required_config 'modbus_port' '502')
 export HUAWEI_SLAVEID_AUTO=$(get_required_config 'modbus_auto_detect_slave_id' 'true')
@@ -65,10 +68,12 @@ esac
 
 # === MQTT Broker (Custom or HA Service) ===
 if bashio::config.has_value 'mqtt_broker' && [ -n "$(bashio::config 'mqtt_broker')" ]; then
+	# shellcheck disable=SC2155
 	export HUAWEI_MODBUS_MQTT_BROKER=$(bashio::config 'mqtt_broker')
 	MQTT_SOURCE="custom"
 else
 	if bashio::services.available mqtt; then
+		# shellcheck disable=SC2155
 		export HUAWEI_MODBUS_MQTT_BROKER=$(bashio::services mqtt "host")
 		MQTT_SOURCE="HA service"
 	else
@@ -79,9 +84,11 @@ fi
 
 # === MQTT Port ===
 if bashio::config.has_value 'mqtt_port' && [ -n "$(bashio::config 'mqtt_port')" ]; then
+	# shellcheck disable=SC2155
 	export HUAWEI_MODBUS_MQTT_PORT=$(bashio::config 'mqtt_port')
 else
 	if bashio::services.available mqtt; then
+		# shellcheck disable=SC2155
 		export HUAWEI_MODBUS_MQTT_PORT=$(bashio::services mqtt "port")
 	else
 		export HUAWEI_MODBUS_MQTT_PORT=1883
@@ -91,10 +98,12 @@ fi
 
 # === MQTT User ===
 if bashio::config.has_value 'mqtt_username' && [ -n "$(bashio::config 'mqtt_username')" ]; then
+	# shellcheck disable=SC2155
 	export HUAWEI_MODBUS_MQTT_USER=$(bashio::config 'mqtt_username')
 	MQTT_AUTH="custom"
 else
 	if bashio::services.available mqtt; then
+		# shellcheck disable=SC2155
 		export HUAWEI_MODBUS_MQTT_USER=$(bashio::services mqtt "username")
 		MQTT_AUTH="HA service"
 	else
@@ -105,9 +114,11 @@ fi
 
 # === MQTT Password ===
 if bashio::config.has_value 'mqtt_password' && [ -n "$(bashio::config 'mqtt_password')" ]; then
+	# shellcheck disable=SC2155
 	export HUAWEI_MODBUS_MQTT_PASSWORD=$(bashio::config 'mqtt_password')
 else
 	if bashio::services.available mqtt; then
+		# shellcheck disable=SC2155
 		export HUAWEI_MODBUS_MQTT_PASSWORD=$(bashio::services mqtt "password")
 	else
 		export HUAWEI_MODBUS_MQTT_PASSWORD=""
