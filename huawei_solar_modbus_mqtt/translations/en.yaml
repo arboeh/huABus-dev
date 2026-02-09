@@ -12,7 +12,7 @@ configuration:
     name: Auto-detect Slave ID
     description: |
       Automatically detects the correct Slave ID.
-      Tries common values (0, 1, 100) and uses the first working one.
+      Tries common values (0, 1, 2, 100) and uses the first working one.
 
   slave_id:
     name: Slave ID (manual)
