@@ -38,7 +38,7 @@ from .mqtt_client import (
     publish_discovery_configs,
     publish_status,
 )
-from .slavedetector import KNOWN_SLAVE_IDS, detect_slave_id
+from .slave_detector import KNOWN_SLAVE_IDS, detect_slave_id
 from .total_increasing_filter import get_filter, reset_filter
 from .transform import transform_data
 

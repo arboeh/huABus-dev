@@ -1,4 +1,4 @@
-# huawei_solar_modbus_mqtt\bridge\slavedetector.py
+# huawei_solar_modbus_mqtt\bridge\slave_detector.py
 
 """Auto-detection of Modbus Slave ID for Huawei inverters."""
 
@@ -8,7 +8,7 @@ from huawei_solar import AsyncHuaweiSolar
 
 from .logging_utils import get_logger
 
-logger = get_logger("huawei.slavedetector")
+logger = get_logger("huawei.slave_detector")
 
 
 KNOWN_SLAVE_IDS = [1, 0, 2, 100]

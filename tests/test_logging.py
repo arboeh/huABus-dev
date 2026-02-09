@@ -62,14 +62,14 @@ def test_logging_levels_hierarchy():
 
 
 @pytest.mark.asyncio
-async def test_trace_logs_in_slavedetector(caplog):  # ← async def!
+async def test_trace_logs_in_slave_detector(caplog):  # ← async def!
     """SlaveDetector should use TRACE for detection attempts."""
-    from bridge.slavedetector import detect_slave_id
+    from bridge.slave_detector import detect_slave_id
 
     caplog.set_level(TRACE)
 
     # Mock detection
-    with patch("bridge.slavedetector.AsyncHuaweiSolar") as mock:
+    with patch("bridge.slave_detector.AsyncHuaweiSolar") as mock:
         mock_client = AsyncMock()
         mock_client.get = AsyncMock(side_effect=TimeoutError())
         mock.create = AsyncMock(return_value=mock_client)
