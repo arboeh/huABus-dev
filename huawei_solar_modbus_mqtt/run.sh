@@ -5,10 +5,10 @@
 VERSION=$(bashio::addon.version)
 
 # Banner IMMER anzeigen
-echo "[$(date +'%T')] INFO: ========================================================"
+echo "[$(date +'%T')] INFO: =========================================================="
 echo "[$(date +'%T')] INFO:  🌞 huABus v${VERSION}"
 echo "[$(date +'%T')] INFO:  📦 https://github.com/arboeh/huABus"
-echo "[$(date +'%T')] INFO: ========================================================"
+echo "[$(date +'%T')] INFO: =========================================================="
 echo "[$(date +'%T')] INFO: >> Starting huABus - Huawei Solar Modbus MQTT Add-on..."
 
 # === Helper function for required config ===
@@ -137,7 +137,7 @@ if [ -z "$HUAWEI_MODBUS_MQTT_BROKER" ]; then
 fi
 
 # === Connection Summary ===
-echo "[$(date +'%T')] INFO: --------------------------------------------------------"
+echo "[$(date +'%T')] INFO: ----------------------------------------------------------"
 
 # Slave ID Display Logic
 if [ "${HUAWEI_SLAVEID_AUTO}" = "true" ]; then
@@ -161,7 +161,7 @@ echo "[$(date +'%T')] INFO:  ⏱️  Poll: ${HUAWEI_POLL_INTERVAL}s | Timeout: $
 # Registerzähler
 REGISTER_COUNT=58
 echo "[$(date +'%T')] INFO:  📊 Registers: ${REGISTER_COUNT} essential"
-echo "[$(date +'%T')] INFO: --------------------------------------------------------"
+echo "[$(date +'%T')] INFO: ----------------------------------------------------------"
 
 # === System Info ===
 bashio::log.info ">> System Info:"
