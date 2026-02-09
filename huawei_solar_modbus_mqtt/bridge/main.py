@@ -195,7 +195,7 @@ def heartbeat(config: ConfigManager) -> None:
                 f"Failed attempts: {error_status['total_failures']} | "
                 f"Error types: {error_status['active_errors']}"
             )
-        publish_status("offline", config.mqtt_topic_prefix)
+        publish_status("offline", config.mqtt_topic)
     else:
         logger.debug(f"Heartbeat OK: {offline_duration:.1f}s since last success")
 
@@ -312,7 +312,7 @@ async def main_once(client: AsyncHuaweiSolar, config: ConfigManager, cycle_num: 
 
     # === PHASE 4: MQTT Publish ===
     mqtt_start: float = time.time()
-    publish_data(mqtt_data, config.mqtt_topic_prefix)
+    publish_data(mqtt_data, config.mqtt_topic)
     mqtt_duration = time.time() - mqtt_start
 
     LAST_SUCCESS = time.time()
@@ -379,7 +379,7 @@ async def determine_slave_id(config: ConfigManager) -> int:
 
     else:
         # Manual Slave ID
-        manual_slave_id = config.modbus_slave_id
+        manual_slave_id = config.slave_id
 
         if manual_slave_id is None:
             logger.error(
@@ -424,11 +424,11 @@ async def main() -> None:
         sys.exit(1)
 
     # Initial Status: offline
-    publish_status("offline", config.mqtt_topic_prefix)
+    publish_status("offline", config.mqtt_topic)
 
     # === Discovery publizieren ===
     try:
-        publish_discovery_configs(config.mqtt_topic_prefix)
+        publish_discovery_configs(config.mqtt_topic)
         logger.info("✅ Discovery published")
     except Exception as e:
         logger.error(f"❌ Discovery failed: {e}")
@@ -441,7 +441,7 @@ async def main() -> None:
             slave_id,
         )
         logger.info(f"🔌 Connected (Slave ID: {slave_id})")
-        publish_status("online", config.mqtt_topic_prefix)
+        publish_status("online", config.mqtt_topic)
     except Exception as e:
         logger.error(f"❌ Connection failed: {e}")
         disconnect_mqtt()
@@ -462,18 +462,18 @@ async def main() -> None:
             try:
                 await main_once(client, config, cycle_count)
                 error_tracker.mark_success()
-                publish_status("online", config.mqtt_topic_prefix)
+                publish_status("online", config.mqtt_topic)
 
             except asyncio.TimeoutError as e:
                 error_tracker.track_error("timeout", str(e))
-                publish_status("offline", config.mqtt_topic_prefix)
+                publish_status("offline", config.mqtt_topic)
                 reset_filter()
                 logger.debug("Filter reset due to timeout")
                 await asyncio.sleep(10)
 
             except ConnectionRefusedError as e:
                 error_tracker.track_error("connection_refused", f"Errno {e.errno}")
-                publish_status("offline", config.mqtt_topic_prefix)
+                publish_status("offline", config.mqtt_topic)
                 reset_filter()
                 logger.debug("Filter reset due to connection error")
                 await asyncio.sleep(10)
@@ -487,7 +487,7 @@ async def main() -> None:
                     if error_tracker.track_error(error_type, str(e)):
                         logger.error(f"❌ Unexpected: {error_type}", exc_info=True)
 
-                publish_status("offline", config.mqtt_topic_prefix)
+                publish_status("offline", config.mqtt_topic)
                 reset_filter()
                 logger.debug("Filter reset")
                 await asyncio.sleep(10)
@@ -497,12 +497,12 @@ async def main() -> None:
 
     except (KeyboardInterrupt, asyncio.CancelledError):
         logger.info("🛑 Shutdown")
-        publish_status("offline", config.mqtt_topic_prefix)
+        publish_status("offline", config.mqtt_topic)
         disconnect_mqtt()
 
     except Exception as e:
         logger.error(f"💥 Fatal: {e}", exc_info=True)
-        publish_status("offline", config.mqtt_topic_prefix)
+        publish_status("offline", config.mqtt_topic)
         disconnect_mqtt()
         sys.exit(1)
 

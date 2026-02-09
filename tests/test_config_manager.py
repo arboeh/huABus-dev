@@ -1,5 +1,3 @@
-# tests/test_config_manager.py
-
 """Tests for ConfigManager."""
 
 import json
@@ -19,19 +17,18 @@ class TestConfigManagerLoading:
             "modbus_host": "192.168.1.200",
             "modbus_port": 502,
             "modbus_auto_detect_slave_id": True,
-            "modbus_slave_id": 1,
+            "slave_id": 1,
             # MQTT (flat)
-            "mqtt_broker": "mqtt.example.com",
+            "mqtt_host": "mqtt.example.com",
             "mqtt_port": 1883,
-            "mqtt_username": "testuser",
+            "mqtt_user": "testuser",
             "mqtt_password": "testpass",
-            "mqtt_topic_prefix": "test-topic",
+            "mqtt_topic": "test-topic",
             # Advanced (flat)
             "log_level": "DEBUG",
             "status_timeout": 120,
             "poll_interval": 20,
         }
-
         config_file.write_text(json.dumps(config_data))
 
         config = ConfigManager(config_path=config_file)
@@ -40,14 +37,14 @@ class TestConfigManagerLoading:
         assert config.modbus_host == "192.168.1.200"
         assert config.modbus_port == 502
         assert config.modbus_auto_detect_slave_id is True
-        assert config.modbus_slave_id == 1
+        assert config.slave_id == 1
 
         # MQTT
-        assert config.mqtt_broker == "mqtt.example.com"
+        assert config.mqtt_host == "mqtt.example.com"
         assert config.mqtt_port == 1883
-        assert config.mqtt_username == "testuser"
+        assert config.mqtt_user == "testuser"
         assert config.mqtt_password == "testpass"
-        assert config.mqtt_topic_prefix == "test-topic"
+        assert config.mqtt_topic == "test-topic"
 
         # Advanced
         assert config.log_level == "DEBUG"
@@ -62,14 +59,14 @@ class TestConfigManagerLoading:
         monkeypatch.setenv("HUAWEI_MODBUS_HOST", "10.0.0.5")
         monkeypatch.setenv("HUAWEI_MODBUS_PORT", "5020")
         monkeypatch.setenv("HUAWEI_MODBUS_AUTO_DETECT_SLAVE_ID", "false")
-        monkeypatch.setenv("HUAWEI_MODBUS_SLAVE_ID", "2")
+        monkeypatch.setenv("HUAWEI_SLAVE_ID", "2")
 
         # MQTT
-        monkeypatch.setenv("HUAWEI_MQTT_BROKER", "mqtt.local")
+        monkeypatch.setenv("HUAWEI_MQTT_HOST", "mqtt.local")
         monkeypatch.setenv("HUAWEI_MQTT_PORT", "1884")
-        monkeypatch.setenv("HUAWEI_MQTT_USERNAME", "envuser")
+        monkeypatch.setenv("HUAWEI_MQTT_USER", "envuser")
         monkeypatch.setenv("HUAWEI_MQTT_PASSWORD", "envpass")
-        monkeypatch.setenv("HUAWEI_MQTT_TOPIC_PREFIX", "env-topic")
+        monkeypatch.setenv("HUAWEI_MQTT_TOPIC", "env-topic")
 
         # Advanced
         monkeypatch.setenv("HUAWEI_LOG_LEVEL", "ERROR")
@@ -78,16 +75,15 @@ class TestConfigManagerLoading:
 
         config = ConfigManager(config_path=config_file)
 
-        # Assertions bleiben gleich
         assert config.modbus_host == "10.0.0.5"
         assert config.modbus_port == 5020
-        assert config.modbus_auto_detect_slave_id is False  # Dieser Test würde jetzt funktionieren!
-        assert config.modbus_slave_id == 2
-        assert config.mqtt_broker == "mqtt.local"
+        assert config.modbus_auto_detect_slave_id is False
+        assert config.slave_id == 2
+        assert config.mqtt_host == "mqtt.local"
         assert config.mqtt_port == 1884
-        assert config.mqtt_username == "envuser"
+        assert config.mqtt_user == "envuser"
         assert config.mqtt_password == "envpass"
-        assert config.mqtt_topic_prefix == "env-topic"
+        assert config.mqtt_topic == "env-topic"
         assert config.log_level == "ERROR"
         assert config.status_timeout == 90
         assert config.poll_interval == 60
@@ -104,17 +100,16 @@ class TestConfigManagerProperties:
             "modbus_host": "192.168.1.100",
             "modbus_port": 502,
             "modbus_auto_detect_slave_id": False,
-            "modbus_slave_id": 5,
-            "mqtt_broker": "mqtt.test",
+            "slave_id": 5,
+            "mqtt_host": "mqtt.test",
             "mqtt_port": 1883,
-            "mqtt_username": "user",
+            "mqtt_user": "user",
             "mqtt_password": "pass",
-            "mqtt_topic_prefix": "test",
+            "mqtt_topic": "test",
             "log_level": "WARNING",
             "status_timeout": 200,
             "poll_interval": 45,
         }
-
         config_file.write_text(json.dumps(config_data))
         return ConfigManager(config_path=config_file)
 
@@ -123,15 +118,15 @@ class TestConfigManagerProperties:
         assert config.modbus_host == "192.168.1.100"
         assert config.modbus_port == 502
         assert config.modbus_auto_detect_slave_id is False
-        assert config.modbus_slave_id == 5
+        assert config.slave_id == 5
 
     def test_mqtt_properties(self, config):
         """Test MQTT property accessors."""
-        assert config.mqtt_broker == "mqtt.test"
+        assert config.mqtt_host == "mqtt.test"
         assert config.mqtt_port == 1883
-        assert config.mqtt_username == "user"
+        assert config.mqtt_user == "user"
         assert config.mqtt_password == "pass"
-        assert config.mqtt_topic_prefix == "test"
+        assert config.mqtt_topic == "test"
 
     def test_advanced_properties(self, config):
         """Test advanced property accessors."""
@@ -139,28 +134,27 @@ class TestConfigManagerProperties:
         assert config.status_timeout == 200
         assert config.poll_interval == 45
 
-    def test_mqtt_username_returns_none_for_empty_string(self, tmp_path):
+    def test_mqtt_user_returns_none_for_empty_string(self, tmp_path):
         """Should return None for empty username."""
         config_file = tmp_path / "options.json"
         config_data = {
             "modbus_host": "192.168.1.100",
             "modbus_port": 502,
             "modbus_auto_detect_slave_id": True,
-            "modbus_slave_id": 1,
-            "mqtt_broker": "localhost",
+            "slave_id": 1,
+            "mqtt_host": "localhost",
             "mqtt_port": 1883,
-            "mqtt_username": "",  # Empty string
+            "mqtt_user": "",  # Empty string
             "mqtt_password": "",  # Empty string
-            "mqtt_topic_prefix": "test",
+            "mqtt_topic": "test",
             "log_level": "INFO",
             "status_timeout": 180,
             "poll_interval": 30,
         }
-
         config_file.write_text(json.dumps(config_data))
         config = ConfigManager(config_path=config_file)
 
-        assert config.mqtt_username is None
+        assert config.mqtt_user is None
         assert config.mqtt_password is None
 
 
@@ -174,15 +168,14 @@ class TestConfigManagerValidation:
             "modbus_host": "192.168.1.100",
             "modbus_port": 502,
             "modbus_auto_detect_slave_id": True,
-            "modbus_slave_id": 1,
-            "mqtt_broker": "localhost",
+            "slave_id": 1,
+            "mqtt_host": "localhost",
             "mqtt_port": 1883,
-            "mqtt_topic_prefix": "test",
+            "mqtt_topic": "test",
             "log_level": "INFO",
             "status_timeout": 180,
             "poll_interval": 30,
         }
-
         config_file.write_text(json.dumps(config_data))
         config = ConfigManager(config_path=config_file)
 
@@ -194,15 +187,15 @@ class TestConfigManagerValidation:
         config_file = tmp_path / "options.json"
         config_data = {
             "modbus_host": "",  # LEER statt fehlend!
-            "mqtt_broker": "",  # LEER!
-            "mqtt_topic_prefix": "",  # LEER!
+            "mqtt_host": "",  # LEER!
+            "mqtt_topic": "",  # LEER!
         }
-
         config_file.write_text(json.dumps(config_data))
         config = ConfigManager(config_path=config_file)
 
         errors = config.validate()
         assert len(errors) >= 3  # Mindestens 3 Fehler
+
         # Prüfe dass die Errors zu leeren Strings gehören
         error_text = " ".join(errors)
         assert "required" in error_text.lower()
@@ -213,11 +206,10 @@ class TestConfigManagerValidation:
         config_data = {
             "modbus_host": "192.168.1.100",
             "modbus_port": 99999,  # Invalid!
-            "mqtt_broker": "localhost",
+            "mqtt_host": "localhost",
             "mqtt_port": 0,  # Invalid!
-            "mqtt_topic_prefix": "test",
+            "mqtt_topic": "test",
         }
-
         config_file.write_text(json.dumps(config_data))
         config = ConfigManager(config_path=config_file)
 
@@ -231,11 +223,10 @@ class TestConfigManagerValidation:
         config_file = tmp_path / "options.json"
         config_data = {
             "modbus_host": "192.168.1.100",
-            "mqtt_broker": "localhost",
-            "mqtt_topic_prefix": "test",
+            "mqtt_host": "localhost",
+            "mqtt_topic": "test",
             "log_level": "INVALID",  # Not in list!
         }
-
         config_file.write_text(json.dumps(config_data))
         config = ConfigManager(config_path=config_file)
 
@@ -251,14 +242,14 @@ class TestConfigManagerEnvParsing:
         for true_val in ["true", "True", "TRUE", "yes", "YES", "1", "on", "ON"]:
             monkeypatch.setenv("TEST_BOOL", true_val)
             result = ConfigManager._parse_bool_env("TEST_BOOL", default=False)
-            assert result is True, f"Failed for value: {true_val}"
+            assert result is True, f"Failed for value {true_val}"
 
     def test_parse_bool_env_false_values(self, monkeypatch):
         """Should parse various false values."""
         for false_val in ["false", "False", "FALSE", "no", "NO", "0", "off", "OFF"]:
             monkeypatch.setenv("TEST_BOOL", false_val)
             result = ConfigManager._parse_bool_env("TEST_BOOL", default=True)
-            assert result is False, f"Failed for value: {false_val}"
+            assert result is False, f"Failed for value {false_val}"
 
     def test_parse_bool_env_uses_default(self, monkeypatch):
         """Should use default when ENV not set."""
@@ -273,12 +264,12 @@ class TestConfigManagerEnvParsing:
 
     def test_parse_int_env_strips_whitespace(self, monkeypatch):
         """Should strip whitespace."""
-        monkeypatch.setenv("TEST_INT", "  123  ")
+        monkeypatch.setenv("TEST_INT", " 123 ")
         assert ConfigManager._parse_int_env("TEST_INT", default=0) == 123
 
     def test_parse_int_env_invalid_value_uses_default(self, monkeypatch, caplog):
         """Should use default for invalid integer."""
-        monkeypatch.setenv("TEST_INT", "not_a_number")
+        monkeypatch.setenv("TEST_INT", "notanumber")
         result = ConfigManager._parse_int_env("TEST_INT", default=50)
         assert result == 50
         assert "Invalid integer" in caplog.text
@@ -297,13 +288,13 @@ class TestConfigManagerEdgeCases:
             "HUAWEI_MODBUS_HOST",
             "HUAWEI_MODBUS_PORT",
             "HUAWEI_MODBUS_AUTO_DETECT_SLAVE_ID",
-            "HUAWEI_MODBUS_SLAVE_ID",
+            "HUAWEI_SLAVE_ID",
             # MQTT
-            "HUAWEI_MQTT_BROKER",
+            "HUAWEI_MQTT_HOST",
             "HUAWEI_MQTT_PORT",
-            "HUAWEI_MQTT_USERNAME",
+            "HUAWEI_MQTT_USER",
             "HUAWEI_MQTT_PASSWORD",
-            "HUAWEI_MQTT_TOPIC_PREFIX",
+            "HUAWEI_MQTT_TOPIC",
             # Advanced
             "HUAWEI_LOG_LEVEL",
             "HUAWEI_STATUS_TIMEOUT",
@@ -317,10 +308,10 @@ class TestConfigManagerEdgeCases:
         assert config.modbus_host == "192.168.1.100"
         assert config.modbus_port == 502
         assert config.modbus_auto_detect_slave_id is True
-        assert config.modbus_slave_id == 1
-        assert config.mqtt_broker == "core-mosquitto"
+        assert config.slave_id == 1
+        assert config.mqtt_host == "core-mosquitto"
         assert config.mqtt_port == 1883
-        assert config.mqtt_topic_prefix == "huawei-solar"
+        assert config.mqtt_topic == "huawei-solar"
         assert config.log_level == "INFO"
         assert config.status_timeout == 180
         assert config.poll_interval == 30
@@ -330,43 +321,40 @@ class TestConfigManagerEdgeCases:
         config_file = tmp_path / "options.json"
         partial_config = {
             "modbus_host": "192.168.1.50",
-            "mqtt_topic_prefix": "partial-topic",
+            "mqtt_topic": "partial-topic",
         }
-
         config_file.write_text(json.dumps(partial_config))
         config = ConfigManager(config_path=config_file)
 
         # Provided values
         assert config.modbus_host == "192.168.1.50"
-        assert config.mqtt_topic_prefix == "partial-topic"
+        assert config.mqtt_topic == "partial-topic"
 
         # Defaults
         assert config.modbus_port == 502
-        assert config.mqtt_broker == "core-mosquitto"
+        assert config.mqtt_host == "core-mosquitto"
         assert config.log_level == "INFO"
 
     def test_empty_config_file(self, tmp_path):
         """Should handle empty config file."""
         config_file = tmp_path / "options.json"
         config_file.write_text("{}")
-
         config = ConfigManager(config_path=config_file)
 
         # Should use all defaults
         assert config.modbus_host == "192.168.1.100"
-        assert config.mqtt_broker == "core-mosquitto"
+        assert config.mqtt_host == "core-mosquitto"
 
     def test_repr_does_not_leak_password(self, tmp_path):
-        """__repr__ should not contain password."""
+        """repr() should not contain password."""
         config_file = tmp_path / "options.json"
         config_data = {
             "modbus_host": "192.168.1.100",
-            "mqtt_broker": "localhost",
-            "mqtt_username": "user",
+            "mqtt_host": "localhost",
+            "mqtt_user": "user",
             "mqtt_password": "secret123",
-            "mqtt_topic_prefix": "test",
+            "mqtt_topic": "test",
         }
-
         config_file.write_text(json.dumps(config_data))
         config = ConfigManager(config_path=config_file)
 
@@ -390,17 +378,16 @@ class TestConfigManagerLogConfig:
             "modbus_host": "192.168.1.100",
             "modbus_port": 502,
             "modbus_auto_detect_slave_id": True,
-            "modbus_slave_id": 1,
-            "mqtt_broker": "localhost",
+            "slave_id": 1,
+            "mqtt_host": "localhost",
             "mqtt_port": 1883,
-            "mqtt_username": "testuser",
+            "mqtt_user": "testuser",
             "mqtt_password": "secret123",
-            "mqtt_topic_prefix": "test",
+            "mqtt_topic": "test",
             "log_level": "INFO",
             "status_timeout": 180,
             "poll_interval": 30,
         }
-
         config_file.write_text(json.dumps(config_data))
         config = ConfigManager(config_path=config_file)
 
@@ -421,17 +408,16 @@ class TestConfigManagerLogConfig:
             "modbus_host": "192.168.1.100",
             "modbus_port": 502,
             "modbus_auto_detect_slave_id": True,
-            "modbus_slave_id": 1,
-            "mqtt_broker": "localhost",
+            "slave_id": 1,
+            "mqtt_host": "localhost",
             "mqtt_port": 1883,
-            "mqtt_username": "testuser",
+            "mqtt_user": "testuser",
             "mqtt_password": "secret123",
-            "mqtt_topic_prefix": "test",
+            "mqtt_topic": "test",
             "log_level": "INFO",
             "status_timeout": 180,
             "poll_interval": 30,
         }
-
         config_file.write_text(json.dumps(config_data))
         config = ConfigManager(config_path=config_file)
 
@@ -452,17 +438,16 @@ class TestConfigManagerLogConfig:
             "modbus_host": "192.168.1.100",
             "modbus_port": 502,
             "modbus_auto_detect_slave_id": False,
-            "modbus_slave_id": 2,
-            "mqtt_broker": "mqtt.test",
+            "slave_id": 2,
+            "mqtt_host": "mqtt.test",
             "mqtt_port": 1883,
-            "mqtt_username": None,
+            "mqtt_user": None,
             "mqtt_password": None,
-            "mqtt_topic_prefix": "huawei",
+            "mqtt_topic": "huawei",
             "log_level": "DEBUG",
             "status_timeout": 120,
             "poll_interval": 25,
         }
-
         config_file.write_text(json.dumps(config_data))
         config = ConfigManager(config_path=config_file)
 
@@ -492,12 +477,11 @@ class TestConfigManagerLogConfig:
         config_file = tmp_path / "options.json"
         config_data = {
             "modbus_host": "192.168.1.100",
-            "mqtt_broker": "localhost",
-            "mqtt_topic_prefix": "test",
-            "mqtt_username": "",  # Empty = None
+            "mqtt_host": "localhost",
+            "mqtt_topic": "test",
+            "mqtt_user": "",  # Empty = None
             "mqtt_password": "",
         }
-
         config_file.write_text(json.dumps(config_data))
         config = ConfigManager(config_path=config_file)
 
@@ -521,12 +505,12 @@ class TestConfigManagerConsistency:
             "modbus_host": "192.168.1.50",
             "modbus_port": 5020,
             "modbus_auto_detect_slave_id": False,
-            "modbus_slave_id": 42,
-            "mqtt_broker": "mqtt.test.local",
+            "slave_id": 42,
+            "mqtt_host": "mqtt.test.local",
             "mqtt_port": 1884,
-            "mqtt_username": "testuser",
+            "mqtt_user": "testuser",
             "mqtt_password": "testpass",
-            "mqtt_topic_prefix": "test-prefix",
+            "mqtt_topic": "test-prefix",
             "log_level": "DEBUG",
             "status_timeout": 120,
             "poll_interval": 45,
@@ -542,12 +526,12 @@ class TestConfigManagerConsistency:
             "HUAWEI_MODBUS_HOST": "192.168.1.50",
             "HUAWEI_MODBUS_PORT": "5020",
             "HUAWEI_MODBUS_AUTO_DETECT_SLAVE_ID": "false",
-            "HUAWEI_MODBUS_SLAVE_ID": "42",
-            "HUAWEI_MQTT_BROKER": "mqtt.test.local",
+            "HUAWEI_SLAVE_ID": "42",
+            "HUAWEI_MQTT_HOST": "mqtt.test.local",
             "HUAWEI_MQTT_PORT": "1884",
-            "HUAWEI_MQTT_USERNAME": "testuser",
+            "HUAWEI_MQTT_USER": "testuser",
             "HUAWEI_MQTT_PASSWORD": "testpass",
-            "HUAWEI_MQTT_TOPIC_PREFIX": "test-prefix",
+            "HUAWEI_MQTT_TOPIC": "test-prefix",
             "HUAWEI_LOG_LEVEL": "DEBUG",
             "HUAWEI_STATUS_TIMEOUT": "120",
             "HUAWEI_POLL_INTERVAL": "45",
@@ -562,12 +546,12 @@ class TestConfigManagerConsistency:
         assert config_from_file.modbus_host == config_from_env.modbus_host
         assert config_from_file.modbus_port == config_from_env.modbus_port
         assert config_from_file.modbus_auto_detect_slave_id == config_from_env.modbus_auto_detect_slave_id
-        assert config_from_file.modbus_slave_id == config_from_env.modbus_slave_id
-        assert config_from_file.mqtt_broker == config_from_env.mqtt_broker
+        assert config_from_file.slave_id == config_from_env.slave_id
+        assert config_from_file.mqtt_host == config_from_env.mqtt_host
         assert config_from_file.mqtt_port == config_from_env.mqtt_port
-        assert config_from_file.mqtt_username == config_from_env.mqtt_username
+        assert config_from_file.mqtt_user == config_from_env.mqtt_user
         assert config_from_file.mqtt_password == config_from_env.mqtt_password
-        assert config_from_file.mqtt_topic_prefix == config_from_env.mqtt_topic_prefix
+        assert config_from_file.mqtt_topic == config_from_env.mqtt_topic
         assert config_from_file.log_level == config_from_env.log_level
         assert config_from_file.status_timeout == config_from_env.status_timeout
         assert config_from_file.poll_interval == config_from_env.poll_interval
@@ -580,16 +564,16 @@ class TestConfigManagerConsistency:
         """
         # Test 1: auto_detect = True (default)
         config_file_true = tmp_path / "options_true.json"
-        config_file_true.write_text(json.dumps({"modbus_auto_detect_slave_id": True, "modbus_slave_id": 1}))
+        config_file_true.write_text(json.dumps({"modbus_auto_detect_slave_id": True, "slave_id": 1}))
         config_true = ConfigManager(config_path=config_file_true)
         assert config_true.modbus_auto_detect_slave_id is True
 
         # Test 2: auto_detect = False (manual slave ID)
         config_file_false = tmp_path / "options_false.json"
-        config_file_false.write_text(json.dumps({"modbus_auto_detect_slave_id": False, "modbus_slave_id": 42}))
+        config_file_false.write_text(json.dumps({"modbus_auto_detect_slave_id": False, "slave_id": 42}))
         config_false = ConfigManager(config_path=config_file_false)
         assert config_false.modbus_auto_detect_slave_id is False
-        assert config_false.modbus_slave_id == 42
+        assert config_false.slave_id == 42
 
     @pytest.mark.parametrize(
         "env_var,dict_key,test_value,expected",
@@ -598,12 +582,12 @@ class TestConfigManagerConsistency:
             ("HUAWEI_MODBUS_PORT", "modbus_port", "5020", 5020),
             ("HUAWEI_MODBUS_AUTO_DETECT_SLAVE_ID", "modbus_auto_detect_slave_id", "false", False),
             ("HUAWEI_MODBUS_AUTO_DETECT_SLAVE_ID", "modbus_auto_detect_slave_id", "true", True),
-            ("HUAWEI_MODBUS_SLAVE_ID", "modbus_slave_id", "42", 42),
-            ("HUAWEI_MQTT_BROKER", "mqtt_broker", "mqtt.test", "mqtt.test"),
+            ("HUAWEI_SLAVE_ID", "slave_id", "42", 42),
+            ("HUAWEI_MQTT_HOST", "mqtt_host", "mqtt.test", "mqtt.test"),
             ("HUAWEI_MQTT_PORT", "mqtt_port", "1884", 1884),
-            ("HUAWEI_MQTT_USERNAME", "mqtt_username", "testuser", "testuser"),
+            ("HUAWEI_MQTT_USER", "mqtt_user", "testuser", "testuser"),
             ("HUAWEI_MQTT_PASSWORD", "mqtt_password", "testpass", "testpass"),
-            ("HUAWEI_MQTT_TOPIC_PREFIX", "mqtt_topic_prefix", "test", "test"),
+            ("HUAWEI_MQTT_TOPIC", "mqtt_topic", "test", "test"),
             ("HUAWEI_LOG_LEVEL", "log_level", "DEBUG", "DEBUG"),
             ("HUAWEI_STATUS_TIMEOUT", "status_timeout", "120", 120),
             ("HUAWEI_POLL_INTERVAL", "poll_interval", "45", 45),

@@ -1,5 +1,3 @@
-# bridge/config_manager.py
-
 """Configuration Manager for Huawei Solar Modbus MQTT Bridge.
 
 Handles configuration loading from:
@@ -44,18 +42,23 @@ class ConfigManager:
             self._config = self._load_from_env()
 
     def _load_from_env(self) -> dict[str, Any]:
+        """Load configuration from environment variables.
+
+        Returns:
+            Configuration dictionary with flat structure
+        """
         return {
             # Modbus settings
             "modbus_host": os.getenv("HUAWEI_MODBUS_HOST", "192.168.1.100"),
             "modbus_port": self._parse_int_env("HUAWEI_MODBUS_PORT", default=502),
             "modbus_auto_detect_slave_id": self._parse_bool_env("HUAWEI_MODBUS_AUTO_DETECT_SLAVE_ID", default=True),
-            "modbus_slave_id": self._parse_int_env("HUAWEI_MODBUS_SLAVE_ID", default=1),
+            "slave_id": self._parse_int_env("HUAWEI_SLAVE_ID", default=1),
             # MQTT settings
-            "mqtt_broker": os.getenv("HUAWEI_MQTT_BROKER", "core-mosquitto"),
+            "mqtt_host": os.getenv("HUAWEI_MQTT_HOST", "core-mosquitto"),
             "mqtt_port": self._parse_int_env("HUAWEI_MQTT_PORT", default=1883),
-            "mqtt_username": os.getenv("HUAWEI_MQTT_USERNAME", ""),
+            "mqtt_user": os.getenv("HUAWEI_MQTT_USER", ""),
             "mqtt_password": os.getenv("HUAWEI_MQTT_PASSWORD", ""),
-            "mqtt_topic_prefix": os.getenv("HUAWEI_MQTT_TOPIC_PREFIX", "huawei-solar"),
+            "mqtt_topic": os.getenv("HUAWEI_MQTT_TOPIC", "huawei-solar"),
             # Advanced settings
             "log_level": os.getenv("HUAWEI_LOG_LEVEL", "INFO"),
             "status_timeout": self._parse_int_env("HUAWEI_STATUS_TIMEOUT", default=180),
@@ -112,20 +115,20 @@ class ConfigManager:
 
     @property
     def modbus_auto_detect_slave_id(self) -> bool:
-        """Get auto-detect slave ID setting."""
+        """Get auto-detect slave ID setting (new in 1.8.0)."""
         return cast(bool, self._config.get("modbus_auto_detect_slave_id", True))
 
     @property
-    def modbus_slave_id(self) -> int:
+    def slave_id(self) -> int:
         """Get Modbus slave ID."""
-        return cast(int, self._config.get("modbus_slave_id", 1))
+        return cast(int, self._config.get("slave_id", 1))
 
     # === MQTT Configuration ===
 
     @property
-    def mqtt_broker(self) -> str:
+    def mqtt_host(self) -> str:
         """Get MQTT broker hostname."""
-        return cast(str, self._config.get("mqtt_broker", "core-mosquitto"))
+        return cast(str, self._config.get("mqtt_host", "core-mosquitto"))
 
     @property
     def mqtt_port(self) -> int:
@@ -133,10 +136,10 @@ class ConfigManager:
         return cast(int, self._config.get("mqtt_port", 1883))
 
     @property
-    def mqtt_username(self) -> Optional[str]:
+    def mqtt_user(self) -> Optional[str]:
         """Get MQTT username (optional)."""
-        username = self._config.get("mqtt_username", "")
-        return username if username else None
+        user = self._config.get("mqtt_user", "")
+        return user if user else None
 
     @property
     def mqtt_password(self) -> Optional[str]:
@@ -145,9 +148,9 @@ class ConfigManager:
         return password if password else None
 
     @property
-    def mqtt_topic_prefix(self) -> str:
+    def mqtt_topic(self) -> str:
         """Get MQTT topic prefix."""
-        return cast(str, self._config.get("mqtt_topic_prefix", "huawei-solar"))
+        return cast(str, self._config.get("mqtt_topic", "huawei-solar"))
 
     # === Advanced Configuration ===
 
@@ -184,18 +187,18 @@ class ConfigManager:
             errors.append(f"modbus_port must be 1-65535, got {self.modbus_port}")
 
         if not self.modbus_auto_detect_slave_id:
-            if not (0 <= self.modbus_slave_id <= 247):
-                errors.append(f"modbus_slave_id must be 0-247, got {self.modbus_slave_id}")
+            if not (0 <= self.slave_id <= 247):
+                errors.append(f"slave_id must be 0-247, got {self.slave_id}")
 
         # MQTT validation
-        if not self.mqtt_broker:
-            errors.append("mqtt_broker is required")
+        if not self.mqtt_host:
+            errors.append("mqtt_host is required")
 
         if not (1 <= self.mqtt_port <= 65535):
             errors.append(f"mqtt_port must be 1-65535, got {self.mqtt_port}")
 
-        if not self.mqtt_topic_prefix:
-            errors.append("mqtt_topic_prefix is required")
+        if not self.mqtt_topic:
+            errors.append("mqtt_topic is required")
 
         # Advanced validation
         valid_log_levels = ["TRACE", "DEBUG", "INFO", "WARNING", "ERROR"]
@@ -215,8 +218,8 @@ class ConfigManager:
         return (
             f"ConfigManager("
             f"modbus={self.modbus_host}:{self.modbus_port}, "
-            f"mqtt={self.mqtt_broker}:{self.mqtt_port}, "
-            f"topic={self.mqtt_topic_prefix}, "
+            f"mqtt={self.mqtt_host}:{self.mqtt_port}, "
+            f"topic={self.mqtt_topic}, "
             f"log_level={self.log_level}, "
             f"poll={self.poll_interval}s)"
         )
@@ -237,22 +240,22 @@ class ConfigManager:
         logger.info(f"  Port: {self.modbus_port}")
         logger.info(f"  Auto-detect Slave ID: {self.modbus_auto_detect_slave_id}")
         if not self.modbus_auto_detect_slave_id:
-            logger.info(f"  Slave ID: {self.modbus_slave_id}")
+            logger.info(f"  Slave ID: {self.slave_id}")
 
         # MQTT
         logger.info("MQTT:")
-        logger.info(f"  Broker: {self.mqtt_broker}")
+        logger.info(f"  Host: {self.mqtt_host}")
         logger.info(f"  Port: {self.mqtt_port}")
 
-        if self.mqtt_username:
-            logger.info(f"  Username: {self.mqtt_username}")
+        if self.mqtt_user:
+            logger.info(f"  User: {self.mqtt_user}")
             if self.mqtt_password:
                 password_display = "***" if hide_passwords else self.mqtt_password
                 logger.info(f"  Password: {password_display}")
         else:
             logger.info("  Auth: None")
 
-        logger.info(f"  Topic Prefix: {self.mqtt_topic_prefix}")
+        logger.info(f"  Topic: {self.mqtt_topic}")
 
         # Advanced
         logger.info("Advanced:")

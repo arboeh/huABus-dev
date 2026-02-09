@@ -34,14 +34,14 @@ get_required_config() {
 export HUAWEI_MODBUS_HOST=$(get_required_config 'modbus_host')
 export HUAWEI_MODBUS_PORT=$(get_required_config 'modbus_port' '502')
 export HUAWEI_MODBUS_AUTO_DETECT_SLAVE_ID=$(get_required_config 'modbus_auto_detect_slave_id' 'true')
-export HUAWEI_MODBUS_SLAVE_ID=$(get_required_config 'modbus_slave_id' '1')
+export HUAWEI_SLAVE_ID=$(get_required_config 'slave_id' '1')
 
 # === MQTT Configuration ===
-export HUAWEI_MQTT_BROKER=$(get_required_config 'mqtt_broker' 'core-mosquitto')
+export HUAWEI_MQTT_HOST=$(get_required_config 'mqtt_host' 'core-mosquitto')
 export HUAWEI_MQTT_PORT=$(get_required_config 'mqtt_port' '1883')
-export HUAWEI_MQTT_USERNAME=$(get_required_config 'mqtt_username' '')
+export HUAWEI_MQTT_USER=$(get_required_config 'mqtt_user' '')
 export HUAWEI_MQTT_PASSWORD=$(get_required_config 'mqtt_password' '')
-export HUAWEI_MQTT_TOPIC_PREFIX=$(get_required_config 'mqtt_topic_prefix' 'huawei-solar')
+export HUAWEI_MQTT_TOPIC=$(get_required_config 'mqtt_topic' 'huawei-solar')
 
 # === Advanced Configuration ===
 export HUAWEI_STATUS_TIMEOUT=$(get_required_config 'status_timeout' '180')
