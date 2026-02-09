@@ -356,7 +356,7 @@ async def determine_slave_id(config: ConfigManager) -> int:
     Raises:
         SystemExit: If Slave ID cannot be determined
     """
-    if config.auto_detect_slave_id:
+    if config.modbus_auto_detect_slave_id:
         detected_id = await detect_slave_id(
             host=config.modbus_host,
             port=config.modbus_port,
@@ -379,7 +379,7 @@ async def determine_slave_id(config: ConfigManager) -> int:
 
     else:
         # Manual Slave ID
-        manual_slave_id = config.slave_id
+        manual_slave_id = config.modbus_slave_id
 
         if manual_slave_id is None:
             logger.error(
@@ -450,7 +450,7 @@ async def main() -> None:
     # Filter initialisieren
     get_filter()
     logger.info("🛡️ Total Increasing Filter initialized")
-    logger.info(f"⏱️  Poll interval: {config.poll_interval}s")
+    logger.info(f"⏱️ Poll interval: {config.poll_interval}s")
 
     # === Main Loop ===
     cycle_count: float = 0

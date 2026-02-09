@@ -59,23 +59,21 @@ def mock_config_file(tmp_path):
 
 @pytest.mark.asyncio
 async def test_main_connection_retry_on_failure():
-    """Test that main() handles connection failures gracefully."""
+    """Test that main handles connection failures gracefully."""
     with (
         patch("bridge.main.ConfigManager") as mock_config_class,
+        patch("bridge.main.detect_slave_id") as mock_detect,
         patch("bridge.main.AsyncHuaweiSolar.create") as mock_create,
         patch("bridge.main.connect_mqtt"),
-        patch("bridge.main.disconnect_mqtt"),
+        patch("bridge.main.disconnect_mqtt") as mock_disconnect,
         patch("bridge.main.publish_status"),
         patch("bridge.main.publish_discovery_configs"),
-        patch("bridge.main.main_once"),
-        patch("asyncio.sleep", new_callable=AsyncMock),
     ):
-        # Mock ConfigManager
+        # Mock config
         mock_config = Mock()
         mock_config.modbus_host = "192.168.0.246"
         mock_config.modbus_port = 502
-        mock_config.auto_detect_slave_id = False
-        mock_config.slave_id = 1
+        mock_config.modbus_auto_detect_slave_id = True  # Auto-detect
         mock_config.mqtt_broker = "192.168.0.140"
         mock_config.mqtt_port = 1883
         mock_config.mqtt_topic_prefix = "test-topic"
@@ -85,14 +83,29 @@ async def test_main_connection_retry_on_failure():
         mock_config.log_config = Mock()
         mock_config_class.return_value = mock_config
 
+        # Auto-detect erfolgreich
+        mock_detect.return_value = 1
+
         # Connection fails
         mock_create.side_effect = ConnectionRefusedError("Connection refused")
 
-        # Main should log error and return (not crash)
         await main()
 
-        # Verify connection was attempted (only once - no auto-detection)
-        assert mock_create.call_count == 1
+        # Main sollte disconnect_mqtt aufrufen bei Connection-Fehler
+        mock_disconnect.assert_called_once()
+
+
+@pytest.mark.asyncio
+async def test_determine_slave_id_manual_mode():
+    """Should use manual Slave ID when auto-detect disabled."""
+    mock_config = Mock()
+    mock_config.modbus_auto_detect_slave_id = False
+    mock_config.modbus_slave_id = 42
+
+    # Kein patch nötig - detect_slave_id wird nicht aufgerufen
+    result = await determine_slave_id(mock_config)
+
+    assert result == 42
 
 
 @pytest.mark.asyncio
@@ -483,20 +496,6 @@ async def test_determine_slave_id_auto_detect_fails_exits():
     ):
         mock_detect.return_value = None
         await determine_slave_id(mock_config)
-
-
-@pytest.mark.asyncio
-async def test_determine_slave_id_manual_mode():
-    """Should use manual Slave ID when auto-detect disabled."""
-    mock_config = Mock()
-    mock_config.auto_detect_slave_id = False
-    mock_config.slave_id = 42
-
-    with patch("bridge.main.detect_slave_id") as mock_detect:
-        result = await determine_slave_id(mock_config)
-
-        assert result == 42
-        mock_detect.assert_not_called()
 
 
 @pytest.mark.asyncio

@@ -24,18 +24,15 @@ apparmor: true
 codenotary: notary@home-assistant.io
 
 options:
-  # Modbus
   modbus_host: '192.168.1.100'
   modbus_port: 502
   modbus_auto_detect_slave_id: true
   modbus_slave_id: 1
-  # MQTT (flach, nicht verschachtelt!)
   mqtt_broker: 'core-mosquitto'
   mqtt_port: 1883
   mqtt_username: ''
   mqtt_password: ''
   mqtt_topic_prefix: 'huawei-solar'
-  # Advanced (flach!)
   log_level: 'INFO'
   status_timeout: 180
   poll_interval: 30

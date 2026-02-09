@@ -7,8 +7,7 @@ Handles configuration loading from:
 - /data/options.json (Home Assistant Add-on)
 - Default values (development)
 
-Supports both flat (old) and nested (new) configuration structures
-with automatic migration.
+Uses flat configuration structure (no nesting) for Home Assistant compatibility.
 """
 
 import json
@@ -21,7 +20,7 @@ logger = logging.getLogger(__name__)
 
 
 class ConfigManager:
-    """Manage add-on configuration with validation and migration."""
+    """Manage add-on configuration with validation."""
 
     def __init__(self, config_path: Optional[Path] = None):
         """Initialize ConfigManager.
@@ -38,212 +37,231 @@ class ConfigManager:
         if self.config_path.exists():
             logger.info(f"Loading configuration from {self.config_path}")
             with open(self.config_path, "r") as f:
-                raw_config = json.load(f)
-            self._config = self._migrate_config(raw_config)
+                self._config = json.load(f)
+            logger.debug(f"Loaded config keys: {list(self._config.keys())}")
         else:
             logger.info("No config file found, loading from environment variables")
             self._config = self._load_from_env()
 
-    def _migrate_config(self, config: dict) -> dict:
-        """Migrate old flat config to new nested structure.
-
-        Args:
-            config: Configuration dictionary (might be old or new format)
-
-        Returns:
-            Configuration in new nested format
-        """
-        # Check if already new format
-        if "modbus" in config and isinstance(config["modbus"], dict):
-            logger.debug("Configuration already in new nested format")
-            return config
-
-        logger.warning("Detected old configuration format. Migrating to new structure...")
-
-        # Migrate from old flat structure
-        migrated = {
-            "modbus": {
-                "host": config.get("modbus_host", "192.168.1.100"),
-                "port": config.get("modbus_port", 502),
-                "auto_detect_slave_id": config.get("auto_detect_slave_id", True),
-                "slave_id": config.get("slave_id", 1),
-            },
-            "mqtt": {
-                "broker": config.get("mqtt_host", "localhost"),
-                "port": config.get("mqtt_port", 1883),
-                "username": config.get("mqtt_user"),
-                "password": config.get("mqtt_password"),
-                "topic_prefix": config.get("mqtt_topic", "huawei-solar"),
-            },
-            "advanced": {
-                "log_level": config.get("log_level", "INFO"),
-                "status_timeout": config.get("status_timeout", 180),
-                "poll_interval": config.get("poll_interval", 30),
-            },
-        }
-
-        logger.info("Migration completed successfully")
-        return migrated
-
-    def _load_from_env(self) -> dict:
+    def _load_from_env(self) -> dict[str, Any]:
         """Load configuration from environment variables.
 
         Returns:
-            Configuration dictionary in new nested format
+            Configuration dictionary with flat structure
         """
         return {
-            "modbus": {
-                "host": os.getenv("HUAWEI_MODBUS_HOST", "192.168.1.100"),
-                "port": int(os.getenv("HUAWEI_MODBUS_PORT", "502")),
-                "auto_detect_slave_id": self._parse_bool_env("HUAWEI_SLAVEID_AUTO", default=True),
-                "slave_id": self._parse_int_env("HUAWEI_SLAVE_ID", default=1),
-            },
-            "mqtt": {
-                "broker": os.getenv("HUAWEI_MODBUS_MQTT_BROKER", "localhost"),
-                "port": int(os.getenv("HUAWEI_MODBUS_MQTT_PORT", "1883")),
-                "username": os.getenv("HUAWEI_MODBUS_MQTT_USER"),
-                "password": os.getenv("HUAWEI_MODBUS_MQTT_PASSWORD"),
-                "topic_prefix": os.getenv("HUAWEI_MODBUS_MQTT_TOPIC", "huawei-solar"),
-                "discovery": True,  # Always enabled
-            },
-            "advanced": {
-                "log_level": os.getenv("LOG_LEVEL", "INFO"),
-                "status_timeout": int(os.getenv("MQTT_STATUS_TIMEOUT", "180")),
-                "poll_interval": int(os.getenv("MQTT_POLL_INTERVAL", "30")),
-            },
+            # Modbus settings
+            "modbus_host": os.getenv("HUAWEI_MODBUS_HOST", "192.168.1.100"),
+            "modbus_port": self._parse_int_env("HUAWEI_MODBUS_PORT", default=502),
+            "modbus_auto_detect_slave_id": self._parse_bool_env("HUAWEI_SLAVEID_AUTO", default=True),
+            "modbus_slave_id": self._parse_int_env("HUAWEI_SLAVE_ID", default=1),
+            # MQTT settings
+            "mqtt_broker": os.getenv("HUAWEI_MODBUS_MQTT_BROKER", "core-mosquitto"),
+            "mqtt_port": self._parse_int_env("HUAWEI_MODBUS_MQTT_PORT", default=1883),
+            "mqtt_username": os.getenv("HUAWEI_MODBUS_MQTT_USER", ""),
+            "mqtt_password": os.getenv("HUAWEI_MODBUS_MQTT_PASSWORD", ""),
+            "mqtt_topic_prefix": os.getenv("HUAWEI_MODBUS_MQTT_TOPIC", "huawei-solar"),
+            # Advanced settings
+            "log_level": os.getenv("HUAWEI_LOG_LEVEL", "INFO"),
+            "status_timeout": self._parse_int_env("HUAWEI_STATUS_TIMEOUT", default=180),
+            "poll_interval": self._parse_int_env("HUAWEI_POLL_INTERVAL", default=30),
         }
 
     @staticmethod
     def _parse_bool_env(key: str, default: bool = False) -> bool:
-        """Parse boolean from environment variable."""
+        """Parse boolean environment variable.
+
+        Args:
+            key: Environment variable name
+            default: Default value if not set
+
+        Returns:
+            Boolean value
+        """
         value = os.getenv(key)
-
-        # Wenn nicht gesetzt oder leer → default verwenden
-        if not value or not value.strip():
+        if value is None:
             return default
-
-        value_lower = value.strip().lower()
-
-        if value_lower in ("true", "yes", "1", "on"):
-            return True
-        if value_lower in ("false", "no", "0", "off"):
-            return False
-
-        # Unbekannter Wert → default
-        return default
+        return value.lower() in ("true", "1", "yes", "on")
 
     @staticmethod
-    def _parse_int_env(key: str, default: int) -> int:
-        """Parse integer from environment variable."""
+    def _parse_int_env(key: str, default: int = 0) -> int:
+        """Parse integer environment variable.
+
+        Args:
+            key: Environment variable name
+            default: Default value if not set or invalid
+
+        Returns:
+            Integer value
+        """
         value = os.getenv(key)
-        if not value or value.lower() in ("null", "none", ""):
+        if value is None:
             return default
         try:
-            return int(value.strip())
+            return int(value)
         except ValueError:
-            logger.warning(f"Invalid integer for {key}={value}, using default: {default}")
+            logger.warning(f"Invalid integer value for {key}: {value}, using default {default}")
             return default
 
     # === Modbus Configuration ===
 
     @property
     def modbus_host(self) -> str:
-        """Get Modbus host."""
-        return cast(str, self._config["modbus"].get("host", "192.168.1.100"))
+        """Get Modbus host IP address."""
+        return cast(str, self._config.get("modbus_host", "192.168.1.100"))
 
     @property
     def modbus_port(self) -> int:
-        """Get Modbus port."""
-        return cast(int, self._config["modbus"].get("port", 502))
+        """Get Modbus TCP port."""
+        return cast(int, self._config.get("modbus_port", 502))
 
     @property
-    def auto_detect_slave_id(self) -> bool:
-        """Get auto-detect flag."""
-        return cast(bool, self._config["modbus"].get("auto_detect_slave_id", True))
+    def modbus_auto_detect_slave_id(self) -> bool:
+        """Get auto-detect slave ID setting."""
+        return cast(bool, self._config.get("modbus_auto_detect_slave_id", True))
 
     @property
-    def slave_id(self) -> int | None:
-        """Get Slave ID."""
-        value = self._config["modbus"].get("slave_id")
-        return cast(int, value) if value is not None else None
+    def modbus_slave_id(self) -> int:
+        """Get Modbus slave ID."""
+        return cast(int, self._config.get("modbus_slave_id", 1))
+
+    # === MQTT Configuration ===
 
     @property
     def mqtt_broker(self) -> str:
-        """Get MQTT broker."""
-        return cast(str, self._config["mqtt"].get("broker", "localhost"))
+        """Get MQTT broker hostname."""
+        return cast(str, self._config.get("mqtt_broker", "core-mosquitto"))
 
     @property
     def mqtt_port(self) -> int:
-        """Get MQTT port."""
-        return cast(int, self._config["mqtt"].get("port", 1883))
+        """Get MQTT broker port."""
+        return cast(int, self._config.get("mqtt_port", 1883))
 
     @property
-    def mqtt_username(self) -> str | None:
-        """Get MQTT username."""
-        username = self._config["mqtt"].get("username")
-        if not username or username == "":
-            return None
-        return cast(str, username)
+    def mqtt_username(self) -> Optional[str]:
+        """Get MQTT username (optional)."""
+        username = self._config.get("mqtt_username", "")
+        return username if username else None
 
     @property
-    def mqtt_password(self) -> str | None:
-        """Get MQTT password."""
-        password = self._config["mqtt"].get("password")
-        if not password or password == "":
-            return None
-        return cast(str, password)
+    def mqtt_password(self) -> Optional[str]:
+        """Get MQTT password (optional)."""
+        password = self._config.get("mqtt_password", "")
+        return password if password else None
 
     @property
     def mqtt_topic_prefix(self) -> str:
         """Get MQTT topic prefix."""
-        return cast(str, self._config["mqtt"].get("topic_prefix", "huawei-solar"))
+        return cast(str, self._config.get("mqtt_topic_prefix", "huawei-solar"))
+
+    # === Advanced Configuration ===
 
     @property
     def log_level(self) -> str:
-        """Get log level."""
-        return cast(str, self._config["advanced"].get("log_level", "INFO"))
+        """Get log level (TRACE, DEBUG, INFO, WARNING, ERROR)."""
+        return cast(str, self._config.get("log_level", "INFO")).upper()
 
     @property
     def status_timeout(self) -> int:
-        """Get status timeout."""
-        return cast(int, self._config["advanced"].get("status_timeout", 180))
+        """Get status timeout in seconds."""
+        return cast(int, self._config.get("status_timeout", 180))
 
     @property
     def poll_interval(self) -> int:
-        """Get poll interval."""
-        return cast(int, self._config["advanced"].get("poll_interval", 30))
+        """Get poll interval in seconds."""
+        return cast(int, self._config.get("poll_interval", 30))
+
+    # === Validation ===
+
+    def validate(self) -> list[str]:
+        """Validate configuration.
+
+        Returns:
+            List of validation errors (empty if valid)
+        """
+        errors = []
+
+        # Modbus validation
+        if not self.modbus_host:
+            errors.append("modbus_host is required")
+
+        if not (1 <= self.modbus_port <= 65535):
+            errors.append(f"modbus_port must be 1-65535, got {self.modbus_port}")
+
+        if not self.modbus_auto_detect_slave_id:
+            if not (0 <= self.modbus_slave_id <= 247):
+                errors.append(f"modbus_slave_id must be 0-247, got {self.modbus_slave_id}")
+
+        # MQTT validation
+        if not self.mqtt_broker:
+            errors.append("mqtt_broker is required")
+
+        if not (1 <= self.mqtt_port <= 65535):
+            errors.append(f"mqtt_port must be 1-65535, got {self.mqtt_port}")
+
+        if not self.mqtt_topic_prefix:
+            errors.append("mqtt_topic_prefix is required")
+
+        # Advanced validation
+        valid_log_levels = ["TRACE", "DEBUG", "INFO", "WARNING", "ERROR"]
+        if self.log_level not in valid_log_levels:
+            errors.append(f"log_level must be one of {valid_log_levels}, got {self.log_level}")
+
+        if not (30 <= self.status_timeout <= 600):
+            errors.append(f"status_timeout must be 30-600 seconds, got {self.status_timeout}")
+
+        if not (10 <= self.poll_interval <= 300):
+            errors.append(f"poll_interval must be 10-300 seconds, got {self.poll_interval}")
+
+        return errors
+
+    def __repr__(self) -> str:
+        """String representation (without sensitive data)."""
+        return (
+            f"ConfigManager("
+            f"modbus={self.modbus_host}:{self.modbus_port}, "
+            f"mqtt={self.mqtt_broker}:{self.mqtt_port}, "
+            f"topic={self.mqtt_topic_prefix}, "
+            f"log_level={self.log_level}, "
+            f"poll={self.poll_interval}s)"
+        )
 
     def log_config(self, hide_passwords: bool = True) -> None:
-        """
-        Log current configuration (called by main at startup).
+        """Log current configuration (for debugging).
 
         Args:
-            hide_passwords: Mask passwords in logs (default: True)
+            hide_passwords: Mask password in logs (default: True)
         """
-        # Keine Separator-Linien mehr!
+        logger.info("=" * 60)
         logger.info("Configuration:")
-        logger.info("  Modbus:")
-        logger.info(f"    Host: {self.modbus_host}")
-        logger.info(f"    Port: {self.modbus_port}")
+        logger.info("=" * 60)
 
-        if self.auto_detect_slave_id:
-            logger.info("    Slave ID: auto-detect enabled")
-        else:
-            logger.info(f"    Slave ID: {self.slave_id} (manual)")
+        # Modbus
+        logger.info("Modbus:")
+        logger.info(f"  Host: {self.modbus_host}")
+        logger.info(f"  Port: {self.modbus_port}")
+        logger.info(f"  Auto-detect Slave ID: {self.modbus_auto_detect_slave_id}")
+        if not self.modbus_auto_detect_slave_id:
+            logger.info(f"  Slave ID: {self.modbus_slave_id}")
 
-        logger.info("  MQTT:")
-        logger.info(f"    Broker: {self.mqtt_broker}:{self.mqtt_port}")
+        # MQTT
+        logger.info("MQTT:")
+        logger.info(f"  Broker: {self.mqtt_broker}")
+        logger.info(f"  Port: {self.mqtt_port}")
 
-        # Username/Password nur wenn gesetzt
         if self.mqtt_username:
-            password_display = "***" if hide_passwords and self.mqtt_password else self.mqtt_password
-            logger.info(f"    Auth: {self.mqtt_username} / {password_display or '(no password)'}")
+            logger.info(f"  Username: {self.mqtt_username}")
+            if self.mqtt_password:
+                password_display = "***" if hide_passwords else self.mqtt_password
+                logger.info(f"  Password: {password_display}")
         else:
-            logger.info("    Auth: none")
+            logger.info("  Auth: None")
 
-        logger.info(f"    Topic: {self.mqtt_topic_prefix}")
+        logger.info(f"  Topic Prefix: {self.mqtt_topic_prefix}")
 
-        logger.info("  Advanced:")
-        logger.info(f"    Log Level: {self.log_level}")
-        logger.info(f"    Status Timeout: {self.status_timeout}s")
-        logger.info(f"    Poll Interval: {self.poll_interval}s")
+        # Advanced
+        logger.info("Advanced:")
+        logger.info(f"  Log Level: {self.log_level}")
+        logger.info(f"  Status Timeout: {self.status_timeout}s")
+        logger.info(f"  Poll Interval: {self.poll_interval}s")
+        logger.info("=" * 60)
