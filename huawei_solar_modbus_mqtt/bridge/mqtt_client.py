@@ -18,7 +18,7 @@ import json
 import logging
 import os
 import time
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 import paho.mqtt.client as mqtt
 
@@ -28,7 +28,7 @@ logger = logging.getLogger("huawei.mqtt")
 
 # Globale MQTT Client Instanz (Singleton-Pattern)
 # Wird von _get_mqtt_client() erstellt und wiederverwendet
-_mqtt_client: Optional[mqtt.Client] = None
+_mqtt_client: mqtt.Client | None = None
 
 # Connection State Flag - verhindert Publishing wenn nicht verbunden
 # Wird von Callbacks (_on_connect, _on_disconnect) aktualisiert
@@ -265,7 +265,7 @@ def disconnect_mqtt() -> None:
         _is_connected = False
 
 
-def _build_sensor_config(sensor: Dict[str, Any], base_topic: str, device_config: Dict[str, Any]) -> Dict[str, Any]:
+def _build_sensor_config(sensor: dict[str, Any], base_topic: str, device_config: dict[str, Any]) -> dict[str, Any]:
     """
     Erstellt MQTT Discovery Config für einzelnen Sensor.
 
@@ -346,7 +346,7 @@ def _build_sensor_config(sensor: Dict[str, Any], base_topic: str, device_config:
     return config
 
 
-def _load_numeric_sensors() -> List[Dict[str, Any]]:
+def _load_numeric_sensors() -> list[dict[str, Any]]:
     """
     Lädt numerische Sensor-Definitionen aus sensors_mqtt.py.
 
@@ -362,7 +362,7 @@ def _load_numeric_sensors() -> List[Dict[str, Any]]:
     return NUMERIC_SENSORS
 
 
-def _load_text_sensors() -> List[Dict[str, Any]]:
+def _load_text_sensors() -> list[dict[str, Any]]:
     """
     Lädt Text-Sensor-Definitionen aus sensors_mqtt.py.
 
@@ -381,8 +381,8 @@ def _load_text_sensors() -> List[Dict[str, Any]]:
 def _publish_sensor_configs(
     client: mqtt.Client,
     base_topic: str,
-    sensors: List[Dict[str, Any]],
-    device_config: Dict[str, Any],
+    sensors: list[dict[str, Any]],
+    device_config: dict[str, Any],
 ) -> int:
     """
     Publiziert MQTT Discovery Configs für Liste von Sensoren.
@@ -488,7 +488,7 @@ def publish_discovery_configs(base_topic: str) -> None:
     logger.info(f"✅ Discovery complete: {count + text_count + 1} entities")
 
 
-def _publish_status_sensor(client: mqtt.Client, base_topic: str, device_config: Dict[str, Any]) -> None:
+def _publish_status_sensor(client: mqtt.Client, base_topic: str, device_config: dict[str, Any]) -> None:
     """
     Publiziert Binary Sensor für Connectivity-Status (online/offline).
 
@@ -536,7 +536,7 @@ def _publish_status_sensor(client: mqtt.Client, base_topic: str, device_config: 
     result.wait_for_publish(timeout=1.0)
 
 
-def publish_data(data: Dict[str, Any], topic: str) -> None:
+def publish_data(data: dict[str, Any], topic: str) -> None:
     """
     Publiziert Sensor-Daten zu MQTT (wird jeden Cycle aufgerufen).
 

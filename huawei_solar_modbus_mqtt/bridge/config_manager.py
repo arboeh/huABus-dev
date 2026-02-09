@@ -12,7 +12,7 @@ import json
 import logging
 import os
 from pathlib import Path
-from typing import Any, Optional, cast
+from typing import Any, cast
 
 logger = logging.getLogger(__name__)
 
@@ -20,7 +20,7 @@ logger = logging.getLogger(__name__)
 class ConfigManager:
     """Manage add-on configuration with validation."""
 
-    def __init__(self, config_path: Optional[Path] = None):
+    def __init__(self, config_path: Path | None = None):
         """Initialize ConfigManager.
 
         Args:
@@ -34,7 +34,7 @@ class ConfigManager:
         """Load configuration from file or environment variables."""
         if self.config_path.exists():
             logger.info(f"🚀 Loading configuration from {self.config_path}")
-            with open(self.config_path, "r") as f:
+            with open(self.config_path) as f:
                 self._config = json.load(f)
             logger.debug(f"✅ Loaded config keys: {list(self._config.keys())}")
         else:
@@ -136,13 +136,13 @@ class ConfigManager:
         return cast(int, self._config.get("mqtt_port", 1883))
 
     @property
-    def mqtt_user(self) -> Optional[str]:
+    def mqtt_user(self) -> str | None:
         """Get MQTT username (optional)."""
         user = self._config.get("mqtt_user", "")
         return user if user else None
 
     @property
-    def mqtt_password(self) -> Optional[str]:
+    def mqtt_password(self) -> str | None:
         """Get MQTT password (optional)."""
         password = self._config.get("mqtt_password", "")
         return password if password else None

@@ -3,7 +3,6 @@
 """Mock MQTT-Broker für End-to-End-Tests"""
 
 import json
-from typing import Dict, List, Optional
 
 
 class MockMQTTMessage:
@@ -36,7 +35,7 @@ class MockMQTTBroker:
     """Mock für MQTT-Broker - speichert alle Messages"""
 
     def __init__(self):
-        self.messages: List[MockMQTTMessage] = []
+        self.messages: list[MockMQTTMessage] = []
         self.connected = False
         self.subscriptions = {}
 
@@ -61,13 +60,13 @@ class MockMQTTBroker:
         self.messages.append(msg)
         return 0  # Success
 
-    def get_messages(self, topic: Optional[str] = None) -> List[MockMQTTMessage]:
+    def get_messages(self, topic: str | None = None) -> list[MockMQTTMessage]:
         """Hole alle Messages (optional gefiltert nach Topic)"""
         if topic:
             return [m for m in self.messages if m.topic == topic]
         return self.messages
 
-    def get_latest(self, topic: str) -> Optional[Dict]:
+    def get_latest(self, topic: str) -> dict | None:
         """Hole letzte Message für Topic als Dict"""
         messages = self.get_messages(topic)
         if messages:

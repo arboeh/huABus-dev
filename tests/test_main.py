@@ -348,9 +348,8 @@ def test_is_modbus_exception_false_for_generic_exception():
 
 def test_is_modbus_exception_false_for_timeout():
     """Test is_modbus_exception returns False for timeout errors."""
-    import asyncio
 
-    assert not is_modbus_exception(asyncio.TimeoutError())
+    assert not is_modbus_exception(TimeoutError())
 
 
 @pytest.mark.asyncio

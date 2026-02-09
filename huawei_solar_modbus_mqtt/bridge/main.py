@@ -23,7 +23,7 @@ import asyncio
 import logging
 import sys
 import time
-from typing import Any, Dict
+from typing import Any
 
 from huawei_solar import AsyncHuaweiSolar
 
@@ -200,7 +200,7 @@ def heartbeat(config: ConfigManager) -> None:
         logger.debug(f"Heartbeat OK: {offline_duration:.1f}s since last success")
 
 
-def log_cycle_summary(cycle_num: float, timings: Dict[str, float], data: Dict[str, Any]) -> None:
+def log_cycle_summary(cycle_num: float, timings: dict[str, float], data: dict[str, Any]) -> None:
     """Loggt Cycle-Zusammenfassung."""
     filter_stats = get_filter().get_stats()
     filter_indicator = ""
@@ -236,7 +236,7 @@ def log_cycle_summary(cycle_num: float, timings: Dict[str, float], data: Dict[st
         logger.debug(f"🔍 Filter details: {dict(filter_stats)}")
 
 
-async def read_registers(client: AsyncHuaweiSolar) -> Dict[str, Any]:
+async def read_registers(client: AsyncHuaweiSolar) -> dict[str, Any]:
     """Liest Essential Registers sequentiell vom Inverter."""
     logger.debug(f"Reading {len(ESSENTIAL_REGISTERS)} essential registers")
 
@@ -462,7 +462,7 @@ async def main() -> None:
                 error_tracker.mark_success()
                 publish_status("online", config.mqtt_topic)
 
-            except asyncio.TimeoutError as e:
+            except TimeoutError as e:
                 error_tracker.track_error("timeout", str(e))
                 publish_status("offline", config.mqtt_topic)
                 reset_filter()

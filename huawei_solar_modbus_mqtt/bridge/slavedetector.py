@@ -3,7 +3,6 @@
 """Auto-detection of Modbus Slave ID for Huawei inverters."""
 
 import asyncio
-from typing import Optional
 
 from huawei_solar import AsyncHuaweiSolar
 
@@ -22,7 +21,7 @@ DETECTION_TIMEOUT = 5
 """Timeout per Slave ID attempt in seconds."""
 
 
-async def detect_slave_id(host: str, port: int = 502, timeout: int = DETECTION_TIMEOUT) -> Optional[int]:
+async def detect_slave_id(host: str, port: int = 502, timeout: int = DETECTION_TIMEOUT) -> int | None:
     """
     Auto-detect Modbus Slave ID for Huawei inverter.
 
@@ -90,7 +89,7 @@ async def _test_slave_id(host: str, port: int, slave_id: int, timeout: int) -> b
             logger.debug(f"Slave ID {slave_id} works! Model: {result.value}")
             return True
 
-    except asyncio.TimeoutError:
+    except TimeoutError:
         logger.debug(f"Slave ID {slave_id} timed out")
     except Exception as e:
         logger.debug(f"Slave ID {slave_id} error: {e}")
@@ -124,7 +123,7 @@ class SlaveDetector:
         self.host = host
         self.port = port
 
-    async def detect(self, timeout: int = DETECTION_TIMEOUT) -> Optional[int]:
+    async def detect(self, timeout: int = DETECTION_TIMEOUT) -> int | None:
         """
         Detect Slave ID.
 

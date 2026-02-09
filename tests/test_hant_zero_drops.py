@@ -183,7 +183,7 @@ async def test_hant_zero_drop_e2e_with_mock():
 
     mqtt_values = []
 
-    for cycle in range(6):
+    for _cycle in range(6):
         register = await mock_modbus.get("energy_grid_exported")
         raw_value = register.value
 

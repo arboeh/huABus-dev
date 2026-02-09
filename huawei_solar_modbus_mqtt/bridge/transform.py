@@ -30,14 +30,14 @@ werden kann und von Home Assistant verstanden wird.
 
 import logging
 import time
-from typing import Any, Dict
+from typing import Any
 
 from .config.mappings import CRITICAL_DEFAULTS, REGISTER_MAPPING
 
 logger = logging.getLogger("huawei.transform")
 
 
-def transform_data(data: Dict[str, Any]) -> Dict[str, Any]:
+def transform_data(data: dict[str, Any]) -> dict[str, Any]:
     """
     Transformiert Huawei Register-Daten in MQTT-Format mit Filter-Anwendung.
 
@@ -179,7 +179,7 @@ def get_value(value):
     return value
 
 
-def _cleanup_result(result: Dict[str, Any]) -> Dict[str, Any]:
+def _cleanup_result(result: dict[str, Any]) -> dict[str, Any]:
     """
     Entfernt None-Werte und fügt Timestamp hinzu.
 

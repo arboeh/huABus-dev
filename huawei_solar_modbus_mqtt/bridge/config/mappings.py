@@ -14,9 +14,7 @@ Usage:
     Missing critical keys are filled with defaults.
 """
 
-from typing import Dict
-
-REGISTER_MAPPING: Dict[str, str] = {
+REGISTER_MAPPING: dict[str, str] = {
     # Power & Energy
     "active_power": "power_active",
     "input_power": "power_input",
@@ -115,7 +113,7 @@ REGISTER_MAPPING: Dict[str, str] = {
 #
 # Alternative would be None → sensor unavailable, but this would break
 # automations that depend on these sensors.
-CRITICAL_DEFAULTS: Dict[str, int] = {
+CRITICAL_DEFAULTS: dict[str, int] = {
     "power_active": 0,
     "power_input": 0,
     "meter_power_active": 0,

@@ -50,7 +50,6 @@ Beispiel-Log-Sequenz:
 
 import logging
 import time
-from typing import Dict, Optional
 
 logger = logging.getLogger("huawei.errors")
 
@@ -101,10 +100,10 @@ class ConnectionErrorTracker:
         #     "details": "Connection timeout"  # Fehlerdetails
         #   }
         # }
-        self.errors: Dict[str, Dict] = {}
+        self.errors: dict[str, dict] = {}
 
         # Timestamp des letzten erfolgreichen Cycles (für Downtime-Berechnung)
-        self.last_success_time: Optional[float] = None
+        self.last_success_time: float | None = None
 
     def track_error(self, error_type: str, details: str = "") -> bool:
         """
@@ -223,7 +222,7 @@ class ConnectionErrorTracker:
         # Erfolgs-Timestamp aktualisieren (für Statistik/Monitoring)
         self.last_success_time = time.time()
 
-    def get_status(self) -> Dict:
+    def get_status(self) -> dict:
         """
         Gibt aktuellen Error-Status für Diagnostik zurück.
 

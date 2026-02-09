@@ -13,11 +13,16 @@ requires-python = ">=3.11"
 classifiers = [
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
     "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent",
     "Topic :: Home Automation",
 ]
-dependencies = ["huawei-solar>=2.5.0", "pymodbus>=3.11.4", "paho-mqtt>=2.1.0"]
+dependencies = [
+    "huawei-solar>=2.5.0",
+    "pymodbus>=3.11.0,<4.0.0",
+    "paho-mqtt>=2.1.0"
+]
 
 [tool.setuptools.dynamic]
 version = { attr = "bridge.__version__.__version__" }
@@ -29,12 +34,12 @@ include = ["bridge*"]
 [project.optional-dependencies]
 dev = [
     "pytest>=9.0.0",
-    "pytest-asyncio>=0.23.0",
-    "pytest-cov>=4.0.0",
-    "pytest-mock>=3.12.0",
-    "mypy>=1.0.0",
-    "ruff>=0.1.0",
-    "pre-commit>=3.0.0",
+    "pytest-asyncio>=0.25.0",
+    "pytest-cov>=6.0.0",
+    "pytest-mock>=3.14.0",
+    "mypy>=1.14.0",
+    "ruff>=0.9.0",
+    "pre-commit>=4.0.0",
 ]
 
 [project.urls]
@@ -46,7 +51,7 @@ Issues = "https://github.com/arboeh/huABus/issues"
 testpaths = ["tests"]
 asyncio_mode = "auto"
 asyncio_default_fixture_loop_scope = "function"
-addopts = "-v"
+addopts = "-v --strict-markers"
 
 [tool.coverage.run]
 source = ["huawei_solar_modbus_mqtt/bridge"]
@@ -61,6 +66,8 @@ exclude_lines = [
     "raise NotImplementedError",
     "if __name__ == .__main__.:",
     "if TYPE_CHECKING:",
+    "if not TYPE_CHECKING:",
+    "@overload",
 ]
 
 [tool.mypy]
@@ -69,6 +76,9 @@ warn_return_any = true
 warn_unused_configs = true
 disallow_untyped_defs = false
 check_untyped_defs = true
+strict_optional = true
+warn_redundant_casts = true
+warn_unused_ignores = true
 
 [[tool.mypy.overrides]]
 module = ["pymodbus.*", "huaweisolar.*"]
@@ -79,11 +89,13 @@ line-length = 120
 target-version = "py311"
 
 [tool.ruff.format]
-# Docstring formatting
 docstring-code-format = true
 docstring-code-line-length = 80
 skip-magic-trailing-comma = false
 
 [tool.ruff.lint]
-select = ["E", "F", "I", "N", "W"]
+select = ["E", "F", "I", "N", "W", "UP", "B", "C4"]
 ignore = ["N802"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["E501"]
