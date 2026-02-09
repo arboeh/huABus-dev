@@ -170,9 +170,9 @@ echo "[$(date +'%T')] INFO: >> Starting Python application..."
 cd /app || exit 1
 
 # Dynamische Register-Zählung
-if [ "$BATS_TEST_MODE" != "true" ]; then
-	REGISTER_COUNT=$(python3 -c "from bridge.config.registers import ESSENTIAL_REGISTERS; print(len(ESSENTIAL_REGISTERS))" 2>/dev/null || echo "58")
-	bashio::log.info "Registers $REGISTER_COUNT essential"
+if [ "${BATS_TEST_MODE:-}" != "true" ]; then
+    REGISTER_COUNT=$(python3 -c "from bridge.config.registers import ESSENTIAL_REGISTERS; print(len(ESSENTIAL_REGISTERS))" 2>/dev/null || echo "58")
+    bashio::log.info "Registers $REGISTER_COUNT essential"
 fi
 
 exec python3 -u -m bridge.main
