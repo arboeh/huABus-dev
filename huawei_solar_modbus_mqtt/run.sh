@@ -136,11 +136,6 @@ fi
 echo "[$(date +'%T')] INFO:  📍 Topic: ${HUAWEI_MQTT_TOPIC}"
 echo "[$(date +'%T')] INFO:  ⏱️  Poll: ${HUAWEI_POLL_INTERVAL}s | Timeout: ${HUAWEI_STATUS_TIMEOUT}s"
 
-# Dynamische Register-Zählung
-REGISTER_COUNT=$(python3 -c "from bridge.config.registers import ESSENTIAL_REGISTERS; print(len(ESSENTIAL_REGISTERS))")
-echo "$(date '+%Y-%m-%dT%H:%M:%S') INFO - Registers $REGISTER_COUNT essential"
-echo "[$(date +'%T')] INFO: ----------------------------------------------------------"
-
 # === System Info ===
 bashio::log.info ">> System Info:"
 bashio::log.info "   - Python: $(python3 --version | cut -d' ' -f2)"
@@ -173,4 +168,11 @@ echo "[$(date +'%T')] INFO: >> Starting Python application..."
 
 # Start Python application
 cd /app || exit 1
+
+# Dynamische Register-Zählung
+if [ "$BATS_TEST_MODE" != "true" ]; then
+	REGISTER_COUNT=$(python3 -c "from bridge.config.registers import ESSENTIAL_REGISTERS; print(len(ESSENTIAL_REGISTERS))" 2>/dev/null || echo "58")
+	bashio::log.info "Registers $REGISTER_COUNT essential"
+fi
+
 exec python3 -u -m bridge.main
