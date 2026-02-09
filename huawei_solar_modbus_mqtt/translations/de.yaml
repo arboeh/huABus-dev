@@ -12,21 +12,17 @@ configuration:
     name: Slave ID automatisch erkennen
     description: |
       Erkennt automatisch die richtige Slave ID.
-      Probiert gängige Werte (1, 0, 2, 100) und nutzt den ersten funktionierenden.
+      Probiert gängige Werte (0, 1, 100) und nutzt den ersten funktionierenden.
 
-  modbus_slave_id:
+  slave_id:
     name: Slave ID (manuell)
     description: |
       Modbus Slave ID (0-247).
       Häufige Werte: 0 (SmartLogger), 1 (meiste Wechselrichter), 2 (alternative Konfigurationen), 100 (manche SDongles).
       Wird nur verwendet wenn Auto-Erkennung deaktiviert ist.
 
-  # === MQTT Konfiguration (Gruppenüberschrift) ===
-  mqtt:
-    name: MQTT Konfiguration
-    description: Verbindungseinstellungen für den MQTT Broker
-
-  mqtt_broker:
+  # === MQTT Konfiguration ===
+  mqtt_host:
     name: MQTT Broker
     description: Hostname des MQTT Brokers (Standard core-mosquitto für Home Assistant Add-on)
 
@@ -34,7 +30,7 @@ configuration:
     name: MQTT Port
     description: Port des MQTT Brokers (Standard 1883)
 
-  mqtt_username:
+  mqtt_user:
     name: MQTT Benutzername
     description: Optional - Leer lassen, um Zugangsdaten aus Home Assistant MQTT Service zu verwenden
 
@@ -42,15 +38,11 @@ configuration:
     name: MQTT Passwort
     description: Optional - Leer lassen, um Zugangsdaten aus Home Assistant MQTT Service zu verwenden
 
-  mqtt_topic_prefix:
+  mqtt_topic:
     name: MQTT Topic Präfix
     description: Basis-Topic unter dem die Sensordaten veröffentlicht werden (z.B. huawei-solar)
 
-  # === Erweiterte Einstellungen (Gruppenüberschrift) ===
-  advanced:
-    name: Erweiterte Einstellungen
-    description: Einstellungen für fortgeschrittene Benutzer
-
+  # === Erweiterte Einstellungen ===
   log_level:
     name: Log-Level
     description: 'TRACE: Alles inkl. Modbus-Bytes | DEBUG: Detaillierte Performance-Metriken | INFO: Wichtige Ereignisse (empfohlen) | WARNING/ERROR: Nur Probleme'
