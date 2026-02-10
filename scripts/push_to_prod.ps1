@@ -26,20 +26,15 @@ $DevOnlyFiles = @(
     
     # Personal Development Content
     "notes",
-    "en",
     "examples",
     
     # Dev README
     "README.md",
     
-    # Internal Documentation
-    "RELEASE_CHECKLIST.md",
-    
     # IDE/Editor Config
     ".pre-commit-config.yaml",
     "pyrightconfig.json",
     ".vscode",
-    ".idea",
     
     # Development Config Files
     ".env.example",
