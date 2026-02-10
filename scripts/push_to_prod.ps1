@@ -248,7 +248,7 @@ git branch -D $tempBranch 2>$null
 
 Write-Host "`n╔══════════════════════════════════════════════════════════╗" -ForegroundColor $ColorSuccess
 Write-Host "║                                                          ║" -ForegroundColor $ColorSuccess
-Write-Host "║              ✅ PUSH TO PROD SUCCESSFUL! ✅               ║" -ForegroundColor $ColorSuccess
+Write-Host "║              ✅ PUSH TO PROD SUCCESSFUL! ✅              ║" -ForegroundColor $ColorSuccess
 Write-Host "║                                                          ║" -ForegroundColor $ColorSuccess
 Write-Host "╚══════════════════════════════════════════════════════════╝" -ForegroundColor $ColorSuccess
 
