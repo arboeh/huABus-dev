@@ -26,7 +26,6 @@ $DevOnlyFiles = @(
     
     # Personal Development Content
     "notes",
-    "examples",
     
     # Dev README
     "README.md",
