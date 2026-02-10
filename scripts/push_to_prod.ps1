@@ -27,8 +27,9 @@ $DevOnlyFiles = @(
     # Personal Development Content
     "notes",
     "en",
+    "examples",
     
-    # Dev README (wird durch PRODUCTION ersetzt)
+    # Dev README
     "README.md",
     
     # Internal Documentation
@@ -39,6 +40,10 @@ $DevOnlyFiles = @(
     "pyrightconfig.json",
     ".vscode",
     ".idea",
+    
+    # Development Config Files
+    ".env.example",
+    ".shellcheckrc",
     
     # Local artifacts
     ".coverage",
