@@ -194,8 +194,13 @@ Konfiguration über Home Assistant UI mit deutschen Feldnamen:
   "inverter_status": "On-grid",
   "model_name": "SUN2000-6KTL-M1",
   "last_update": 1768649491
+  ...
+  ..
+  .
 }
 ```
+
+_Komplettes Payload-Beispiel: [mqtt_payload.json](examples/mqtt_payload.json)_
 
 ## Wichtige Entitäten
 
