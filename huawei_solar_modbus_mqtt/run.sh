@@ -5,11 +5,11 @@
 VERSION=$(bashio::addon.version)
 
 # Banner IMMER anzeigen
-echo "$(date +"%Y-%m-%dT%H:%M:%S") INFO"
-echo "$(date +"%Y-%m-%dT%H:%M:%S") INFO huABus v${VERSION}"
-echo "$(date +"%Y-%m-%dT%H:%M:%S") INFO https://github.com/arboeh/huABus"
-echo "$(date +"%Y-%m-%dT%H:%M:%S") INFO"
-echo "$(date +"%Y-%m-%dT%H:%M:%S") INFO Starting huABus - Huawei Solar Modbus MQTT Add-on..."
+echo "$(date +"%Y-%m-%dT%H:%M:%S") INFO: =========================================================="
+echo "$(date +"%Y-%m-%dT%H:%M:%S") INFO:  🌞 huABus v${VERSION}"
+echo "$(date +"%Y-%m-%dT%H:%M:%S") INFO:  📦 https://github.com/arboeh/huABus"
+echo "$(date +"%Y-%m-%dT%H:%M:%S") INFO: =========================================================="
+echo "$(date +"%Y-%m-%dT%H:%M:%S") INFO: >> Starting huABus - Huawei Solar Modbus MQTT Add-on..."
 
 # Helper function for required config
 get_required_config() {
@@ -65,7 +65,7 @@ else
 
 		MQTT_SOURCE="HA service"
 	else
-		bashio::log.fatal "No MQTT broker configured and HA MQTT service not available!"
+		bashio::log.fatal "❌ No MQTT broker configured and HA MQTT service not available!"
 		exit 1
 	fi
 fi
@@ -107,7 +107,7 @@ export HUAWEI_POLL_INTERVAL
 HUAWEI_LOG_LEVEL=$(get_required_config 'log_level' 'INFO')
 export HUAWEI_LOG_LEVEL
 
-echo "$(date +"%Y-%m-%dT%H:%M:%S") INFO Log level: ${HUAWEI_LOG_LEVEL}"
+echo "$(date +"%Y-%m-%dT%H:%M:%S") INFO: >> Log level: ${HUAWEI_LOG_LEVEL}"
 
 # Set bashio log level to match
 case "${HUAWEI_LOG_LEVEL}" in
@@ -130,40 +130,42 @@ esac
 
 # Validation
 if [ -z "${HUAWEI_MODBUS_HOST}" ]; then
-	bashio::log.fatal "Modbus host is required but not configured!"
+	bashio::log.fatal "❌ Modbus host is required but not configured!"
 	exit 1
 fi
 
 if [ -z "${HUAWEI_MQTT_HOST}" ]; then
-	bashio::log.fatal "MQTT broker is required but not configured!"
+	bashio::log.fatal "❌ MQTT broker is required but not configured!"
 	exit 1
 fi
 
 # Connection Summary
-echo "$(date +"%Y-%m-%dT%H:%M:%S") INFO ----------------------------------------------------------"
+echo "$(date +"%Y-%m-%dT%H:%M:%S") INFO: ----------------------------------------------------------"
 
 # Slave ID Display Logic
 if [ "${HUAWEI_MODBUS_AUTO_DETECT_SLAVE_ID}" = "true" ]; then
-	echo "$(date +"%Y-%m-%dT%H:%M:%S") INFO Inverter: ${HUAWEI_MODBUS_HOST}:${HUAWEI_MODBUS_PORT} (Slave ID: auto-detect)"
+	echo "$(date +"%Y-%m-%dT%H:%M:%S") INFO:  🔌 Inverter: ${HUAWEI_MODBUS_HOST}:${HUAWEI_MODBUS_PORT} (Slave ID: auto-detect)"
 else
-	echo "$(date +"%Y-%m-%dT%H:%M:%S") INFO Inverter: ${HUAWEI_MODBUS_HOST}:${HUAWEI_MODBUS_PORT} (Slave ID: ${HUAWEI_SLAVE_ID})"
+	echo "$(date +"%Y-%m-%dT%H:%M:%S") INFO:  🔌 Inverter: ${HUAWEI_MODBUS_HOST}:${HUAWEI_MODBUS_PORT} (Slave ID: ${HUAWEI_SLAVE_ID})"
 fi
 
-echo "$(date +"%Y-%m-%dT%H:%M:%S") INFO MQTT: ${HUAWEI_MQTT_HOST}:${HUAWEI_MQTT_PORT} (${MQTT_SOURCE})"
+echo "$(date +"%Y-%m-%dT%H:%M:%S") INFO:  📡 MQTT: ${HUAWEI_MQTT_HOST}:${HUAWEI_MQTT_PORT} (${MQTT_SOURCE})"
 
 # Zeige MQTT Auth Status ohne Credentials zu leaken
 if [ -n "${HUAWEI_MQTT_USER}" ]; then
-	echo "$(date +"%Y-%m-%dT%H:%M:%S") INFO Auth: enabled (${MQTT_SOURCE})"
+	echo "$(date +"%Y-%m-%dT%H:%M:%S") INFO:  🔐 Auth: enabled (${MQTT_SOURCE})"
 else
-	echo "$(date +"%Y-%m-%dT%H:%M:%S") INFO Auth: disabled"
+	echo "$(date +"%Y-%m-%dT%H:%M:%S") INFO:  🔐 Auth: disabled"
 fi
 
-echo "$(date +"%Y-%m-%dT%H:%M:%S") INFO Topic: ${HUAWEI_MQTT_TOPIC}"
-echo "$(date +"%Y-%m-%dT%H:%M:%S") INFO Poll: ${HUAWEI_POLL_INTERVAL}s | Timeout: ${HUAWEI_STATUS_TIMEOUT}s"
+echo "$(date +"%Y-%m-%dT%H:%M:%S") INFO:  📍 Topic: ${HUAWEI_MQTT_TOPIC}"
+echo "$(date +"%Y-%m-%dT%H:%M:%S") INFO:  ⏱️ Poll: ${HUAWEI_POLL_INTERVAL}s | Timeout: ${HUAWEI_STATUS_TIMEOUT}s"
+
+echo "[$(date +'%T')] INFO: ----------------------------------------------------------"
 
 # System Info
-bashio::log.info "System Info"
-bashio::log.info " - Python: $(python3 --version | cut -d' ' -f2)" # Get version without "Python" prefix
+bashio::log.info ">> System Info"
+bashio::log.info "    - Python: $(python3 --version | cut -d' ' -f2)" # Get version without "Python" prefix
 
 # Get package versions - using pip show with fallback
 HUAWEI_SOLAR_VERSION=$(pip3 show huawei-solar 2>/dev/null | grep "Version:" | awk '{print $2}')
@@ -175,10 +177,12 @@ HUAWEI_SOLAR_VERSION="${HUAWEI_SOLAR_VERSION:-unknown}"
 PYMODBUS_VERSION="${PYMODBUS_VERSION:-unknown}"
 PAHO_VERSION="${PAHO_VERSION:-unknown}"
 
-bashio::log.info " - huawei-solar: ${HUAWEI_SOLAR_VERSION}"
-bashio::log.info " - pymodbus: ${PYMODBUS_VERSION}"
-bashio::log.info " - paho-mqtt: ${PAHO_VERSION}"
-bashio::log.info " - Architecture: $(uname -m)"
+bashio::log.info "    - huawei-solar: ${HUAWEI_SOLAR_VERSION}"
+bashio::log.info "    - pymodbus: ${PYMODBUS_VERSION}"
+bashio::log.info "    - paho-mqtt: ${PAHO_VERSION}"
+bashio::log.info "    - Architecture: $(uname -m)"
+
+echo "[$(date +'%T')] INFO: ----------------------------------------------------------"
 
 # TEST MODE GUARD - Exit here when running BATS tests
 if [ "${BATS_TEST_MODE:-false}" = "true" ]; then
@@ -189,10 +193,12 @@ fi
 # Dynamische Register-Zählung
 if [ "${BATS_TEST_MODE:-}" != "true" ]; then
 	REGISTER_COUNT=$(python3 -c "from bridge.config.registers import ESSENTIAL_REGISTERS; print(len(ESSENTIAL_REGISTERS))" 2>/dev/null || echo "58")
-	echo "$(date +"%Y-%m-%dT%H:%M:%S") INFO Registers: ${REGISTER_COUNT} essential"
+	echo "$(date +"%Y-%m-%dT%H:%M:%S") INFO:  🔢 Registers: ${REGISTER_COUNT} essential"
 fi
 
-echo "$(date +"%Y-%m-%dT%H:%M:%S") INFO Starting Python application..."
+echo "[$(date +'%T')] INFO: ----------------------------------------------------------"
+
+echo "$(date +"%Y-%m-%dT%H:%M:%S") INFO: >> Starting Python application..."
 
 # Start Python application
 cd /app || exit 1
