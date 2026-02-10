@@ -29,7 +29,7 @@
 > Mehrere Verbindungen führen zu **Timeouts und Datenverlust**!
 
 **67 Essenzielle Registers, 69+ Entitäten, ~3-8s Laufzeit**
-**Changelog:** [CHANGELOG.md](CHANGELOG.md)
+**Changelog:** [CHANGELOG.md](huawei_solar_modbus_mqtt/CHANGELOG.md)
 
 ## 🔌 Kompatible Wechselrichter
 
@@ -213,7 +213,7 @@ _\* Durch Total Increasing Filter vor falschen Counter-Resets geschützt_
 
 ## Aktuelle Updates
 
-Siehe [CHANGELOG.md](CHANGELOG.md) für detaillierte Release-Notes.
+Siehe [CHANGELOG.md](huawei_solar_modbus_mqtt/CHANGELOG.md) für detaillierte Release-Notes.
 
 **v1.8.0 Highlights (Feb 2026):**
 

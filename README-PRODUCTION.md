@@ -29,7 +29,7 @@
 > Multiple connections cause **timeouts and data loss**!
 
 **67 Essential Registers, 69+ entities, ~3-8s cycle time**
-**Changelog:** [CHANGELOG.md](CHANGELOG.md)
+**Changelog:** [CHANGELOG.md](huawei_solar_modbus_mqtt/CHANGELOG.md)
 
 ## 🔌 Compatible Inverters
 
@@ -213,7 +213,7 @@ _\* Protected by Total Increasing filter against false counter resets_
 
 ## Latest Updates
 
-See [CHANGELOG.md](CHANGELOG.md) for detailed release notes.
+See [CHANGELOG.md](huawei_solar_modbus_mqtt/CHANGELOG.md) for detailed release notes.
 
 **v1.8.0 Highlights (Feb 2026):**
 
