@@ -4,15 +4,20 @@ __pycache__/
 *$py.class
 *.so
 .Python
-*.egg-info/
-dist/
-build/
-
-# Virtual Environments
 venv/
 .venv/
 env/
 ENV/
+*.egg-info/
+dist/
+build/
+
+# Testing & Coverage
+.coverage
+htmlcov/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
 
 # IDE
 .vscode/
@@ -21,22 +26,13 @@ ENV/
 *.swo
 *~
 
-# Testing
-.pytest_cache/
-.coverage
-htmlcov/
-.tox/
-
-# Environment
-.env
-.env.local
-
-# Notes
-notes/
-
 # OS
 .DS_Store
 Thumbs.db
 
-# Logs
+# Local development
+.env
 *.log
+
+# Git
+.git/
