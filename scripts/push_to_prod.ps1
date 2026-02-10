@@ -152,7 +152,7 @@ if (-not $Message) {
 }
 
 Write-Host "Message: '$Message'" -ForegroundColor White
-$confirm = Read-Host "`nContinue? (y/N)"
+$confirm = Read-Host "`nContinue? (y/n)"
 if ($confirm -ne 'y' -and $confirm -ne 'Y') {
     Write-Host "❌ Aborted" -ForegroundColor $ColorWarning
     exit 0
