@@ -175,7 +175,9 @@ Write-Host "🧹 Removing dev-only files..." -ForegroundColor $ColorInfo
 $removedCount = 0
 foreach ($file in $DevOnlyFiles) {
     if (Test-Path $file) {
-        git rm -r --cached $file 2>$null
+        # BEIDE Befehle: Index UND Filesystem
+        git rm -r $file 2>$null  # ← OHNE --cached!
+        
         if ($LASTEXITCODE -eq 0) {
             $removedCount++
             Write-Host "   Removed: $file" -ForegroundColor DarkGray
