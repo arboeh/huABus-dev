@@ -159,7 +159,7 @@ async def test_hant_e2e_with_mock_inverter():
 
     mqtt_payloads = []
 
-    for cycle in range(3):
+    for _cycle in range(3):
         # Read all registers (some may timeout → missing keys)
         raw_data = {}
 
@@ -314,7 +314,7 @@ async def test_hant_intermittent_failures_dont_reach_mqtt():
 
     mqtt_values = []
 
-    for cycle in range(6):
+    for _cycle in range(6):
         register = await mock_modbus.get("energy_grid_exported")
         raw_value = register.value
 

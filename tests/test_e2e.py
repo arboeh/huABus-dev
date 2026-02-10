@@ -71,7 +71,7 @@ async def test_e2e_multiple_sensors():
     mock_mqtt.connect("localhost", 1883)
     filter_instance = get_filter()
 
-    for cycle in range(3):
+    for _cycle in range(3):
         grid_export = await mock_modbus.get("energy_grid_exported")
         grid_import = await mock_modbus.get("energy_grid_accumulated")
         solar = await mock_modbus.get("energy_yield_accumulated")
@@ -206,7 +206,7 @@ async def test_e2e_performance_filter_overhead():
     # Simuliere 100 Cycles
     durations = []
 
-    for i in range(100):
+    for _i in range(100):
         start = time.perf_counter()
         duration = time.perf_counter() - start
 
@@ -242,7 +242,7 @@ async def test_e2e_mqtt_broker_disconnect_handling():
     # Publish sollte fehlschlagen
     try:
         mock_mqtt.publish("huawei-solar", json.dumps({"energy_grid_exported": 200}))
-        assert False, "Should have raised RuntimeError"
+        raise AssertionError("Should have raised RuntimeError")
     except RuntimeError as e:
         assert "Not connected" in str(e)
 
@@ -269,7 +269,7 @@ async def test_e2e_complete_workflow_with_transform():
     mock_mqtt.connect("localhost", 1883)
     filter_instance = get_filter()
 
-    for cycle in range(3):
+    for _cycle in range(3):
         # 1. Modbus Read (Mock)
         register_export = await mock_modbus.get("energy_grid_exported")
         register_solar = await mock_modbus.get("energy_yield_accumulated")

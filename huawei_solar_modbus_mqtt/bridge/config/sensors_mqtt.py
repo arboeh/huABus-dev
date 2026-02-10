@@ -107,11 +107,11 @@ Siehe auch:
     - Home Assistant MQTT Discovery Doku
 """
 
-from typing import Any, Dict, List
+from typing import Any
 
 # Numerische Sensoren mit unit_of_measurement
 # Diese erscheinen in HA als sensor.{entity_id} mit numerischem State
-NUMERIC_SENSORS: List[Dict[str, Any]] = [
+NUMERIC_SENSORS: list[dict[str, Any]] = [
     # === Core Power Values ===
     # Diese 4 Sensoren sind die wichtigsten - immer enabled, keine defaults nötig
     # (werden in transform.py via CRITICAL_DEFAULTS auf 0 gesetzt falls fehlend)
@@ -662,7 +662,7 @@ NUMERIC_SENSORS: List[Dict[str, Any]] = [
 
 # Text-Sensoren ohne unit_of_measurement
 # Für Status-Strings, Modellnamen, etc.
-TEXT_SENSORS: List[Dict[str, Any]] = [
+TEXT_SENSORS: list[dict[str, Any]] = [
     {
         "name": "Inverter Status",  # Status-Code als String
         "key": "inverter_status",

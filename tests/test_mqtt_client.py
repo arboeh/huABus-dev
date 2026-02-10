@@ -36,11 +36,11 @@ def mock_mqtt_client():
 @pytest.fixture
 def mqtt_env_vars(monkeypatch):
     """Setze MQTT Environment-Variablen für Tests."""
-    monkeypatch.setenv("HUAWEI_MODBUS_MQTT_BROKER", "localhost")
-    monkeypatch.setenv("HUAWEI_MODBUS_MQTT_PORT", "1883")
-    monkeypatch.setenv("HUAWEI_MODBUS_MQTT_TOPIC", "test/huawei")
-    monkeypatch.setenv("HUAWEI_MODBUS_MQTT_USER", "testuser")
-    monkeypatch.setenv("HUAWEI_MODBUS_MQTT_PASSWORD", "testpass")
+    monkeypatch.setenv("HUAWEI_MQTT_HOST", "localhost")
+    monkeypatch.setenv("HUAWEI_MQTT_PORT", "1883")
+    monkeypatch.setenv("HUAWEI_MQTT_TOPIC", "test/huawei")
+    monkeypatch.setenv("HUAWEI_MQTT_USER", "testuser")
+    monkeypatch.setenv("HUAWEI_MQTT_PASSWORD", "testpass")
 
 
 @pytest.fixture(autouse=True)
@@ -157,7 +157,7 @@ class TestConnect:
 
     def test_connect_mqtt_no_broker(self, mock_mqtt_client, monkeypatch):
         """Test Connect ohne konfigurierten Broker."""
-        monkeypatch.delenv("HUAWEI_MODBUS_MQTT_BROKER", raising=False)
+        monkeypatch.delenv("HUAWEI_MQTT_HOST", raising=False)
 
         with pytest.raises(RuntimeError, match="MQTT broker not configured"):
             connect_mqtt()

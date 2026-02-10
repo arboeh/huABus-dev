@@ -1,23 +1,34 @@
 configuration:
+  # === MODBUS Settings ===
   modbus_host:
     name: Inverter IP Address
-    description: IP address of your Huawei inverter (e.g. 192.168.1.100)
+    description: IP address of the Huawei inverter (e.g. 192.168.1.100)
 
   modbus_port:
     name: Modbus Port
     description: Modbus TCP port (default 502)
 
-  slave_id:
-    name: Slave ID
-    description: Modbus Slave ID of the inverter. Usually 1, sometimes 0 or 16. Try different values if you get connection timeouts!
+  modbus_auto_detect_slave_id:
+    name: Auto-detect Slave ID
+    description: |
+      Automatically detects the correct Slave ID.
+      Tries common values (0, 1, 2, 100) and uses the first working one.
 
+  slave_id:
+    name: Slave ID (manual)
+    description: |
+      Modbus Slave ID (0-247).
+      Common values: 0 (SmartLogger), 1 (most inverters), 2 (alternative configurations), 100 (some SDongles).
+      Only used when auto-detection is disabled.
+
+  # === MQTT Configuration ===
   mqtt_host:
     name: MQTT Broker
-    description: Hostname of MQTT broker (default core-mosquitto for Home Assistant add-on)
+    description: Hostname of the MQTT broker (default core-mosquitto for Home Assistant add-on)
 
   mqtt_port:
     name: MQTT Port
-    description: Port of MQTT broker (default 1883)
+    description: Port of the MQTT broker (default 1883)
 
   mqtt_user:
     name: MQTT Username
@@ -28,17 +39,18 @@ configuration:
     description: Optional - Leave empty to use credentials from Home Assistant MQTT service
 
   mqtt_topic:
-    name: MQTT Topic
+    name: MQTT Topic Prefix
     description: Base topic under which sensor data is published (e.g. huawei-solar)
 
+  # === Advanced Settings ===
   log_level:
     name: Log Level
-    description: "TRACE: Everything incl. Modbus bytes | DEBUG: Detailed performance metrics | INFO: Important events (recommended) | WARNING/ERROR: Problems only"
+    description: 'TRACE: Everything incl. Modbus bytes | DEBUG: Detailed performance metrics | INFO: Important events (recommended) | WARNING/ERROR: Problems only'
 
   status_timeout:
     name: Status Timeout
-    description: Time in seconds after which the inverter is marked as offline if no data is received (default 180s)
+    description: Time in seconds after which the inverter is marked as offline when no data is received (default 180s)
 
   poll_interval:
     name: Poll Interval
-    description: Interval in seconds between Modbus queries to the inverter. Recommended 30-60s for optimal balance between freshness and network load
+    description: Interval in seconds between Modbus queries from the inverter. Recommended 30-60s for optimal balance between freshness and network load

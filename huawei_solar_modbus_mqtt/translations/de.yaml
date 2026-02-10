@@ -1,4 +1,5 @@
 configuration:
+  # === MODBUS Einstellungen ===
   modbus_host:
     name: Inverter IP-Adresse
     description: IP-Adresse des Huawei Wechselrichters (z.B. 192.168.1.100)
@@ -7,10 +8,20 @@ configuration:
     name: Modbus Port
     description: Modbus TCP Port (Standard 502)
 
-  slave_id:
-    name: Slave ID
-    description: Modbus Slave ID des Wechselrichters. Meist 1, manchmal 0 oder 16. Bei Connection Timeout verschiedene Werte testen!
+  modbus_auto_detect_slave_id:
+    name: Slave ID automatisch erkennen
+    description: |
+      Erkennt automatisch die richtige Slave ID.
+      Probiert gängige Werte (0, 1, 2, 100) und nutzt den ersten funktionierenden.
 
+  slave_id:
+    name: Slave ID (manuell)
+    description: |
+      Modbus Slave ID (0-247).
+      Häufige Werte: 0 (SmartLogger), 1 (meiste Wechselrichter), 2 (alternative Konfigurationen), 100 (manche SDongles).
+      Wird nur verwendet wenn Auto-Erkennung deaktiviert ist.
+
+  # === MQTT Konfiguration ===
   mqtt_host:
     name: MQTT Broker
     description: Hostname des MQTT Brokers (Standard core-mosquitto für Home Assistant Add-on)
@@ -28,12 +39,13 @@ configuration:
     description: Optional - Leer lassen, um Zugangsdaten aus Home Assistant MQTT Service zu verwenden
 
   mqtt_topic:
-    name: MQTT Topic
+    name: MQTT Topic Präfix
     description: Basis-Topic unter dem die Sensordaten veröffentlicht werden (z.B. huawei-solar)
 
+  # === Erweiterte Einstellungen ===
   log_level:
     name: Log-Level
-    description: "TRACE: Alles inkl. Modbus-Bytes | DEBUG: Detaillierte Performance-Metriken | INFO: Wichtige Ereignisse (empfohlen) | WARNING/ERROR: Nur Probleme"
+    description: 'TRACE: Alles inkl. Modbus-Bytes | DEBUG: Detaillierte Performance-Metriken | INFO: Wichtige Ereignisse (empfohlen) | WARNING/ERROR: Nur Probleme'
 
   status_timeout:
     name: Status Timeout

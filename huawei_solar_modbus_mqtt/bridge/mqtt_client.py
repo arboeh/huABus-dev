@@ -18,7 +18,7 @@ import json
 import logging
 import os
 import time
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 import paho.mqtt.client as mqtt
 
@@ -28,7 +28,7 @@ logger = logging.getLogger("huawei.mqtt")
 
 # Globale MQTT Client Instanz (Singleton-Pattern)
 # Wird von _get_mqtt_client() erstellt und wiederverwendet
-_mqtt_client: Optional[mqtt.Client] = None
+_mqtt_client: mqtt.Client | None = None
 
 # Connection State Flag - verhindert Publishing wenn nicht verbunden
 # Wird von Callbacks (_on_connect, _on_disconnect) aktualisiert
@@ -63,7 +63,7 @@ def _on_connect(client, userdata, flags, rc, properties=None):
         _is_connected = True
         logger.info("📡 MQTT connected")
     else:
-        logger.error(f"MQTT connection failed: {rc}")
+        logger.error(f"❌ MQTT connection failed: {rc}")
 
 
 def _on_disconnect(client, userdata, flags, rc=0, properties=None):
@@ -89,7 +89,7 @@ def _on_disconnect(client, userdata, flags, rc=0, properties=None):
     _is_connected = False
     if rc != 0:
         # Unerwarteter Disconnect (nicht vom Client initiiert)
-        logger.warning(f"MQTT unexpected disconnect: {rc}")
+        logger.warning(f"⚠️ MQTT unexpected disconnect: {rc}")
 
 
 def _get_mqtt_client() -> mqtt.Client:
@@ -111,9 +111,9 @@ def _get_mqtt_client() -> mqtt.Client:
         Konfigurierter MQTT Client (noch nicht verbunden)
 
     ENV-Konfiguration:
-        HUAWEI_MODBUS_MQTT_USER: MQTT Username (optional)
-        HUAWEI_MODBUS_MQTT_PASSWORD: MQTT Password (optional)
-        HUAWEI_MODBUS_MQTT_TOPIC: Basis-Topic für LWT
+        HUAWEI_MQTT_USER: MQTT Username (optional)
+        HUAWEI_MQTT_PASSWORD: MQTT Password (optional)
+        HUAWEI_MQTT_TOPIC: Basis-Topic für LWT
 
     Hinweis:
         Bei paho-mqtt >= 2.0 muss CallbackAPIVersion.VERSION2 angegeben
@@ -133,8 +133,8 @@ def _get_mqtt_client() -> mqtt.Client:
     client.on_disconnect = _on_disconnect
 
     # Optionale Authentifizierung konfigurieren
-    user = os.environ.get("HUAWEI_MODBUS_MQTT_USER")
-    password = os.environ.get("HUAWEI_MODBUS_MQTT_PASSWORD")
+    user = os.environ.get("HUAWEI_MQTT_USER")
+    password = os.environ.get("HUAWEI_MQTT_PASSWORD")
 
     if user and password:
         client.username_pw_set(user, password)
@@ -142,7 +142,7 @@ def _get_mqtt_client() -> mqtt.Client:
 
     # Last Will Testament (LWT) konfigurieren
     # Wird vom Broker automatisch publiziert bei unerwartetem Disconnect
-    topic = os.environ.get("HUAWEI_MODBUS_MQTT_TOPIC")
+    topic = os.environ.get("HUAWEI_MQTT_TOPIC")
     if topic:
         # QoS=1: Mindestens einmal zugestellt
         # retain=True: Letzter Wert bleibt gespeichert (wichtig für Status)
@@ -173,8 +173,8 @@ def connect_mqtt() -> None:
         ConnectionError: Wenn Verbindung nach 10s Timeout nicht steht
 
     ENV-Konfiguration:
-        HUAWEI_MODBUS_MQTT_BROKER: IP/Hostname des MQTT Brokers (required)
-        HUAWEI_MODBUS_MQTT_PORT: MQTT Port (default: 1883)
+        HUAWEI_MQTT_HOST: IP/Hostname des MQTT Brokers (required)
+        HUAWEI_MQTT_PORT: MQTT Port (default: 1883)
 
     Beispiel:
         >>> connect_mqtt()
@@ -188,11 +188,11 @@ def connect_mqtt() -> None:
     """
     client = _get_mqtt_client()
 
-    broker = os.environ.get("HUAWEI_MODBUS_MQTT_BROKER")
-    port = int(os.environ.get("HUAWEI_MODBUS_MQTT_PORT", "1883"))
+    broker = os.environ.get("HUAWEI_MQTT_HOST")
+    port = int(os.environ.get("HUAWEI_MQTT_PORT", "1883"))
 
     if not broker:
-        logger.error("MQTT broker not configured")
+        logger.error("🚨 MQTT broker not configured")
         raise RuntimeError("MQTT broker not configured")
 
     logger.debug(f"Connecting MQTT to {broker}:{port}")
@@ -246,7 +246,7 @@ def disconnect_mqtt() -> None:
 
     try:
         # Abschiedsgruß: Status auf offline setzen
-        topic = os.environ.get("HUAWEI_MODBUS_MQTT_TOPIC")
+        topic = os.environ.get("HUAWEI_MQTT_TOPIC")
         if topic and _is_connected:
             result = _mqtt_client.publish(f"{topic}/status", "offline", qos=1, retain=True)
             # Warten bis publiziert (max 1s)
@@ -255,17 +255,17 @@ def disconnect_mqtt() -> None:
         _mqtt_client.loop_stop()
         # Verbindung sauber trennen
         _mqtt_client.disconnect()
-        logger.info("MQTT disconnected")
+        logger.info("🔌 MQTT disconnected")
     except Exception as e:
         # Fehler beim Disconnect nicht fatal (wir beenden eh)
-        logger.error(f"MQTT disconnect error: {e}")
+        logger.error(f"❌ MQTT disconnect error: {e}")
     finally:
         # Globals zurücksetzen für sauberen State
         _mqtt_client = None
         _is_connected = False
 
 
-def _build_sensor_config(sensor: Dict[str, Any], base_topic: str, device_config: Dict[str, Any]) -> Dict[str, Any]:
+def _build_sensor_config(sensor: dict[str, Any], base_topic: str, device_config: dict[str, Any]) -> dict[str, Any]:
     """
     Erstellt MQTT Discovery Config für einzelnen Sensor.
 
@@ -346,7 +346,7 @@ def _build_sensor_config(sensor: Dict[str, Any], base_topic: str, device_config:
     return config
 
 
-def _load_numeric_sensors() -> List[Dict[str, Any]]:
+def _load_numeric_sensors() -> list[dict[str, Any]]:
     """
     Lädt numerische Sensor-Definitionen aus sensors_mqtt.py.
 
@@ -362,7 +362,7 @@ def _load_numeric_sensors() -> List[Dict[str, Any]]:
     return NUMERIC_SENSORS
 
 
-def _load_text_sensors() -> List[Dict[str, Any]]:
+def _load_text_sensors() -> list[dict[str, Any]]:
     """
     Lädt Text-Sensor-Definitionen aus sensors_mqtt.py.
 
@@ -381,8 +381,8 @@ def _load_text_sensors() -> List[Dict[str, Any]]:
 def _publish_sensor_configs(
     client: mqtt.Client,
     base_topic: str,
-    sensors: List[Dict[str, Any]],
-    device_config: Dict[str, Any],
+    sensors: list[dict[str, Any]],
+    device_config: dict[str, Any],
 ) -> int:
     """
     Publiziert MQTT Discovery Configs für Liste von Sensoren.
@@ -457,10 +457,10 @@ def publish_discovery_configs(base_topic: str) -> None:
         (kann später manuell mit HA MQTT Reload nachgeholt werden).
     """
     if not _is_connected:
-        logger.warning("MQTT not connected, skipping discovery")
+        logger.warning("⚠️ MQTT not connected, skipping discovery")
         return
 
-    logger.info("🔍 Publishing MQTT Discovery")
+    logger.info("📊 Publishing MQTT Discovery")
     client = _get_mqtt_client()
 
     # Device-Config für HA Gruppierung
@@ -488,7 +488,7 @@ def publish_discovery_configs(base_topic: str) -> None:
     logger.info(f"✅ Discovery complete: {count + text_count + 1} entities")
 
 
-def _publish_status_sensor(client: mqtt.Client, base_topic: str, device_config: Dict[str, Any]) -> None:
+def _publish_status_sensor(client: mqtt.Client, base_topic: str, device_config: dict[str, Any]) -> None:
     """
     Publiziert Binary Sensor für Connectivity-Status (online/offline).
 
@@ -536,7 +536,7 @@ def _publish_status_sensor(client: mqtt.Client, base_topic: str, device_config: 
     result.wait_for_publish(timeout=1.0)
 
 
-def publish_data(data: Dict[str, Any], topic: str) -> None:
+def publish_data(data: dict[str, Any], topic: str) -> None:
     """
     Publiziert Sensor-Daten zu MQTT (wird jeden Cycle aufgerufen).
 
@@ -574,8 +574,8 @@ def publish_data(data: Dict[str, Any], topic: str) -> None:
         # → HA: Alle Sensoren aktualisieren sich
     """
     if not _is_connected:
-        logger.warning("MQTT not connected, cannot publish data")
-        raise ConnectionError("MQTT not connected")
+        logger.warning("⚠️ MQTT not connected, cannot publish data")
+        raise ConnectionError("🚨 MQTT not connected")
 
     client = _get_mqtt_client()
     # Timestamp hinzufügen (Unix-Zeit in Sekunden)
@@ -598,7 +598,7 @@ def publish_data(data: Dict[str, Any], topic: str) -> None:
         logger.debug(f"Data published: {len(data)} keys")
     except Exception as e:
         # Publish-Fehler durchreichen zu main.py (dort Error-Handling)
-        logger.error(f"MQTT publish failed: {e}")
+        logger.error(f"❌ MQTT publish failed: {e}")
         raise
 
 
@@ -656,4 +656,4 @@ def publish_status(status: str, topic: str) -> None:
         logger.debug(f"Status: '{status}' → {status_topic}")
     except Exception as e:
         # Status-Publish-Fehler nicht fatal (wird weiter versucht)
-        logger.error(f"Status publish failed: {e}")
+        logger.error(f"❌ Status publish failed: {e}")

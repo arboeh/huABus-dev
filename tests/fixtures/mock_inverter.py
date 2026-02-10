@@ -3,7 +3,6 @@
 """Mock für AsyncHuaweiSolar mit Test-Szenarien"""
 
 from pathlib import Path
-from typing import Dict, Optional
 
 import yaml
 
@@ -25,7 +24,7 @@ class ModbusException(Exception):  # noqa: N818
 class MockHuaweiSolar:
     """Mock für AsyncHuaweiSolar mit konfigurierbaren Szenarien"""
 
-    def __init__(self, scenario_file: Optional[str] = None):
+    def __init__(self, scenario_file: str | None = None):
         if scenario_file is None:
             scenario_file = str(Path(__file__).parent / "scenarios.yaml")
 
@@ -34,7 +33,7 @@ class MockHuaweiSolar:
         self.scenarios = self._load_scenarios()
         self.current_scenario = None
 
-    def _load_scenarios(self) -> Dict:
+    def _load_scenarios(self) -> dict:
         """Lädt Test-Szenarien aus YAML"""
         with open(self.scenario_file, encoding="utf-8") as f:
             return yaml.safe_load(f)

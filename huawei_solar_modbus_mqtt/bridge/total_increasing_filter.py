@@ -11,7 +11,7 @@ Schützt Energy Counter vor falschen Resets durch:
 """
 
 import logging
-from typing import Any, Dict, Optional
+from typing import Any
 
 logger = logging.getLogger("huawei.filter")
 
@@ -30,10 +30,10 @@ class TotalIncreasingFilter:
 
     def __init__(self):
         """Initialisiert den Filter - simpel!"""
-        self._last_values: Dict[str, float] = {}
-        self._filter_stats: Dict[str, int] = {}
+        self._last_values: dict[str, float] = {}
+        self._filter_stats: dict[str, int] = {}
 
-    def filter(self, data: Dict[str, Any]) -> Dict[str, Any]:
+    def filter(self, data: dict[str, Any]) -> dict[str, Any]:
         """
         Filtert Daten und füllt fehlende Keys.
 
@@ -55,7 +55,7 @@ class TotalIncreasingFilter:
                 if last is not None:
                     result[key] = last
                     missing_count += 1
-                    logger.warning(f"MISSING: {key} filled with {last:.2f}")
+                    logger.warning(f"⚠️ MISSING: {key} filled with {last:.2f}")
                 continue  # Nächster Key
 
             # 2. Key ist da → Prüfen ob filtern
@@ -70,7 +70,7 @@ class TotalIncreasingFilter:
                     result[key] = last
                     filtered_count += 1
                     self._filter_stats[key] = self._filter_stats.get(key, 0) + 1
-                    logger.warning(f"FILTERED: {key} {value:.2f} → {last:.2f}")
+                    logger.warning(f"⚠️ FILTERED: {key} {value:.2f} → {last:.2f}")
                 else:
                     # Kein last_value vorhanden (z.B. erster Wert ist negativ)
                     # → Key komplett aus result entfernen!
@@ -84,7 +84,7 @@ class TotalIncreasingFilter:
 
         # Zusammenfassung
         if filtered_count > 0 or missing_count > 0:
-            logger.info(f"Filter: {filtered_count} filtered, {missing_count} missing")
+            logger.info(f"✨ Filter: {filtered_count} filtered, {missing_count} missing")
 
         return result
 
@@ -129,7 +129,7 @@ class TotalIncreasingFilter:
         # Alles OK
         return False
 
-    def get_stats(self) -> Dict[str, int]:
+    def get_stats(self) -> dict[str, int]:
         """Gibt Filter-Statistik zurück."""
         return self._filter_stats.copy()
 
@@ -141,11 +141,11 @@ class TotalIncreasingFilter:
         """Kompletter Reset - bei Connection-Fehler."""
         self._last_values.clear()
         self._filter_stats.clear()
-        logger.info("Filter reset")
+        logger.info("🔄 Filter reset")
 
 
 # Singleton-Instanz
-_filter_instance: Optional[TotalIncreasingFilter] = None
+_filter_instance: TotalIncreasingFilter | None = None
 
 
 def get_filter() -> TotalIncreasingFilter:

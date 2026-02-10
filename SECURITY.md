@@ -4,6 +4,7 @@
 
 | Version | Supported          |
 | ------- | ------------------ |
+| 1.8.x   | :white_check_mark: |
 | 1.7.x   | :white_check_mark: |
 | < 1.7   | :x:                |
 
@@ -22,7 +23,7 @@ Use GitHub's [Private Vulnerability Reporting](https://github.com/arboeh/huABus/
 For non-critical issues:
 
 - Open a [GitHub Issue](https://github.com/arboeh/huABus/issues)
-- Email: [your-email]
+- Use the Security Issue template if available
 
 ### Response Time
 
@@ -69,15 +70,25 @@ For non-critical issues:
 ✅ **TLS/SSL supported** (configure via Home Assistant MQTT)  
 ⚠️ **Credentials in plain text** (stored in Home Assistant Supervisor)
 
+### Auto-Detection Security
+
+ℹ️ **Slave ID Auto-Detection**:
+
+- Tries multiple Slave IDs (0, 1, 2, 100) on startup
+- No security risk - only connects to configured inverter IP
+- Can be disabled via `modbus_auto_detect_slave_id: false`
+
 ---
 
 ## Security Audit Log
 
-| Date       | Change                              | Impact                     |
-| ---------- | ----------------------------------- | -------------------------- |
-| 2026-02-06 | Added `permissions: contents: read` | Reduced GITHUB_TOKEN scope |
-| 2026-02-03 | Added AppArmor profile              | Container isolation        |
-| 2026-02-03 | Disabled host network access        | Network isolation          |
+| Date       | Change                              | Impact                       |
+| ---------- | ----------------------------------- | ---------------------------- |
+| 2026-02-10 | v1.8.0: Auto Slave ID detection     | No security impact           |
+| 2026-02-10 | Enhanced MQTT auto-config           | Improved credential handling |
+| 2026-02-06 | Added `permissions: contents: read` | Reduced GITHUB_TOKEN scope   |
+| 2026-02-03 | Added AppArmor profile              | Container isolation          |
+| 2026-02-03 | Disabled host network access        | Network isolation            |
 
 ---
 
@@ -89,4 +100,34 @@ Monitored via Dependabot:
 - `pymodbus` (3.11.4)
 - `paho-mqtt` (2.1.0)
 
-See [requirements.txt](huawei_solar_modbus_mqtt/requirements.txt) for full list.
+See [requirements.txt](requirements.txt) for full list.
+
+---
+
+## Best Practices
+
+### Network Security
+
+1. **VLAN Isolation**: Place inverter on separate VLAN
+2. **Firewall Rules**: Restrict Modbus port 502 access
+3. **MQTT TLS**: Enable TLS in Home Assistant MQTT broker
+
+### Configuration Security
+
+1. **Credentials**: Use Home Assistant MQTT Service (auto-config)
+2. **Logging**: Avoid `TRACE` level in production (exposes raw data)
+3. **Updates**: Enable Dependabot alerts
+
+### Monitoring
+
+1. **Check Logs**: Review for unusual connection attempts
+2. **Status Sensor**: Monitor `binary_sensor.huawei_solar_status`
+3. **Error Tracking**: Watch for repeated authentication failures
+
+---
+
+## Disclosure Policy
+
+- Security vulnerabilities are disclosed after fix is available
+- Credit given to researchers who report responsibly
+- CVEs assigned for critical vulnerabilities
