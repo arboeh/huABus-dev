@@ -1,5 +1,5 @@
 # scripts/push_to_prod.ps1
-# Filtered push from Dev to Prod repository
+# Filtered push from Dev to Prod repository with README renaming
 
 param(
     [Parameter(Mandatory = $false)]
@@ -28,6 +28,9 @@ $DevOnlyFiles = @(
     "notes",
     "en",
     
+    # Dev README (wird durch PRODUCTION ersetzt)
+    "README.md",
+    
     # Internal Documentation
     "RELEASE_CHECKLIST.md",
     
@@ -44,6 +47,12 @@ $DevOnlyFiles = @(
     ".mypy_cache",
     "__pycache__"
 )
+
+# ===== FILES TO RENAME FOR PROD =====
+$FilesToRename = @{
+    "README-PRODUCTION.md"    = "README.md"
+    "README.de-PRODUCTION.md" = "README.de.md"
+}
 
 # ===== VALIDATION =====
 Write-Host "`n🔍 Validating..." -ForegroundColor $ColorInfo
@@ -88,6 +97,18 @@ if ($excludedCount -eq 0) {
     Write-Host "   (none found)" -ForegroundColor DarkGray
 }
 
+# ===== SHOW WHAT WILL BE RENAMED =====
+Write-Host "`n🔄 Files to rename:" -ForegroundColor $ColorInfo
+foreach ($source in $FilesToRename.Keys) {
+    $target = $FilesToRename[$source]
+    if (Test-Path $source) {
+        Write-Host "   $source → $target" -ForegroundColor Cyan
+    }
+    else {
+        Write-Host "   ⚠️  $source not found (skipping)" -ForegroundColor Yellow
+    }
+}
+
 Write-Host "`n✅ Files included in push:" -ForegroundColor $ColorInfo
 Write-Host "   - tests/ (needed for CI)" -ForegroundColor DarkGray
 Write-Host "   - scripts/run_local.ps1 (for prod testing)" -ForegroundColor DarkGray
@@ -115,6 +136,7 @@ if ($DryRun) {
     Write-Host "`nStatistics:" -ForegroundColor $ColorInfo
     Write-Host "   Total files: $($allFiles.Count)" -ForegroundColor White
     Write-Host "   Excluded: $excludedCount" -ForegroundColor White
+    Write-Host "   Renamed: $($FilesToRename.Count)" -ForegroundColor White
     Write-Host "   Included: $($includedFiles.Count)" -ForegroundColor White
     
     exit 0
@@ -165,8 +187,37 @@ if ($removedCount -eq 0) {
     Write-Host "   No files to remove" -ForegroundColor DarkGray
 }
 
+# ===== RENAME FILES FOR PROD =====
+Write-Host "`n🔄 Renaming files for production..." -ForegroundColor $ColorInfo
+
+$renamedCount = 0
+foreach ($source in $FilesToRename.Keys) {
+    $target = $FilesToRename[$source]
+    
+    if (Test-Path $source) {
+        # Git mv zum Umbenennen
+        git mv $source $target 2>$null
+        
+        if ($LASTEXITCODE -eq 0) {
+            $renamedCount++
+            Write-Host "   Renamed: $source → $target" -ForegroundColor Cyan
+        }
+        else {
+            Write-Host "   ⚠️  Failed to rename: $source" -ForegroundColor Yellow
+        }
+    }
+    else {
+        Write-Host "   ⚠️  Not found: $source" -ForegroundColor Yellow
+    }
+}
+
+if ($renamedCount -eq 0) {
+    Write-Host "   No files renamed" -ForegroundColor DarkGray
+}
+
 # ===== COMMIT CHANGES =====
-Write-Host "💾 Committing changes..." -ForegroundColor $ColorInfo
+Write-Host "`n💾 Committing changes..." -ForegroundColor $ColorInfo
+git add -A 2>$null
 git commit -m "chore: $Message" --allow-empty 2>$null
 
 if ($LASTEXITCODE -ne 0) {
@@ -204,11 +255,13 @@ Write-Host "╚═════════════════════�
 Write-Host "`nWhat was pushed to Prod:" -ForegroundColor $ColorInfo
 Write-Host "   ✓ Production code (huawei_solar_modbus_mqtt/)" -ForegroundColor Green
 Write-Host "   ✓ Tests (for CI/CD)" -ForegroundColor Green
+Write-Host "   ✓ README.md (from README-PRODUCTION.md)" -ForegroundColor Green
+Write-Host "   ✓ README.de.md (from README.de-PRODUCTION.md)" -ForegroundColor Green
 Write-Host "   ✓ Scripts (run_local.ps1, check_version_sync.py)" -ForegroundColor Green
 Write-Host "   ✓ GitHub Workflows (CI/CD pipeline)" -ForegroundColor Green
-Write-Host "   ✓ Config files (pyproject.toml, requirements.txt)" -ForegroundColor Green
 
 Write-Host "`nWhat stayed in Dev-only:" -ForegroundColor $ColorWarning
+Write-Host "   - README.md (Dev version)" -ForegroundColor DarkGray
 foreach ($file in $DevOnlyFiles) {
     if (Test-Path $file) {
         Write-Host "   - $file" -ForegroundColor DarkGray

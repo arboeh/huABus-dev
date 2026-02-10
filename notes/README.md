@@ -13,25 +13,32 @@ I:\Development\
 │   └── Remote: prod     # → GitHub arboeh/huABus
 │
 └── huABus/              # 🌞 Production Repo (main + dev branches)
-    ├── Remote: origin   # → GitHub arboeh/huABus
-    └── Remote: dev      # → GitHub arboeh/huABus-dev
+    └── Remote: origin   # → GitHub arboeh/huABus
 ```
 
 **Workflow:**
 
 1. Development in `huABus-dev` (main branch)
-2. Push zu `huABus` (dev branch) für Testing
+2. Push zu `huABus` (dev branch) für Testing - **automatisch gefiltert**
 3. Merge dev → main für Release
+
+**Dev-Only Files (werden automatisch ausgefiltert):**
+- `notes/` - Persönliche Notizen
+- `en/` - Work-in-Progress Übersetzungen
+- `RELEASE_CHECKLIST.md` - Diese Datei
+- `scripts/test_addon_update.ps1` - Update-Testing Script
+- `scripts/push_to_prod.ps1` - Push-Script selbst
+- `README.md` - Dev-README (wird durch README-PRODUCTION.md ersetzt)
+- IDE Config (`.vscode/`, `.idea/`, `.pre-commit-config.yaml`, etc.)
 
 ---
 
 ## Voraussetzungen
 
 - [ ] Virtual Environment vorhanden (`venv` oder `.venv`)
-- [ ] Pre-commit Hooks installiert (`pre-commit install`)
+- [ ] Pre-commit Hooks installiert (`pre-commit install`) - **nur im Dev-Repo**
 - [ ] Python 3.11+
 - [ ] Remote `prod` konfiguriert im dev-repo
-- [ ] Remote `dev` konfiguriert im prod-repo
 - [ ] Alle Änderungen committed
 
 ### Remote Setup (einmalig)
@@ -41,12 +48,11 @@ I:\Development\
 cd I:\Development\huABus-dev
 git remote add prod https://github.com/arboeh/huABus.git
 
-# Im Production Repo
-cd I:\Development\huABus
-git remote add dev https://github.com/arboeh/huABus-dev.git
-
 # Verify
 git remote -v
+# Sollte zeigen:
+# origin  https://github.com/arboeh/huABus-dev.git
+# prod    https://github.com/arboeh/huABus.git
 ```
 
 ---
@@ -85,7 +91,7 @@ pre-commit run --all-files
 - ✅ Merge Conflicts - Prüft auf vergessene Conflict-Marker
 - ✅ TOML Syntax - pyproject.toml Validierung
 - ✅ Line Endings - Konsistente Zeilenenden (LF/CRLF)
-- ✅ Version Sync - Prüft config.yaml ↔ **version**.py
+- ✅ Version Sync - Prüft config.yaml ↔ __version__.py
 
 **Bei Fehlern:**
 
@@ -162,7 +168,23 @@ python scripts/update_version.py
 
 ---
 
-### 6. Commit im dev-Repo
+### 6. Production READMEs aktualisieren
+
+**User-facing Dokumentation bearbeiten:**
+
+```powershell
+# Englische Version (für GitHub arboeh/huABus)
+code README-PRODUCTION.md
+
+# Deutsche Version
+code README.de-PRODUCTION.md
+```
+
+**Hinweis:** Diese werden beim Push automatisch zu `README.md` und `README.de.md` im Prod-Repo umbenannt.
+
+---
+
+### 7. Commit im dev-Repo
 
 ```bash
 cd I:\Development\huABus-dev
@@ -178,25 +200,48 @@ git log --oneline -3
 
 ---
 
-### 7. Push zu Production/dev (Testing Stage)
+### 8. Push zu Production/dev (Automatisch gefiltert)
 
-```bash
+```powershell
 cd I:\Development\huABus-dev
 
-# Push dev-repo main → prod-repo dev
-git push prod main:dev
+# Optional: Dry-Run zum Testen
+.\scripts\push_to_prod.ps1 -DryRun
+
+# Gefilterter Push zu Prod/dev
+.\scripts\push_to_prod.ps1
 ```
+
+**Das Script macht automatisch:**
+
+1. ✅ Entfernt dev-only Files (`notes/`, `RELEASE_CHECKLIST.md`, etc.)
+2. ✅ Benennt `README-PRODUCTION.md` → `README.md` um
+3. ✅ Benennt `README.de-PRODUCTION.md` → `README.de.md` um
+4. ✅ Behält Tests & Production Code
+5. ✅ Pusht zu `prod/dev` Branch
 
 **Erwartete Ausgabe:**
 
 ```
-To https://github.com/arboeh/huABus.git
-   abc1234..def5678  main -> dev
+✅ Successfully pushed to prod/dev!
+
+What was pushed to Prod:
+   ✓ Production code (huawei_solar_modbus_mqtt/)
+   ✓ Tests (for CI/CD)
+   ✓ README.md (from README-PRODUCTION.md)
+   ✓ README.de.md (from README.de-PRODUCTION.md)
+   ...
+
+What stayed in Dev-only:
+   - notes/
+   - RELEASE_CHECKLIST.md
+   - scripts/test_addon_update.ps1
+   - scripts/push_to_prod.ps1
 ```
 
 ---
 
-### 8. Update-Testing (Realitätsnah)
+### 9. Update-Testing (Realitätsnah)
 
 #### Automatisiertes Testing mit Script
 
@@ -215,63 +260,22 @@ cd I:\Development\huABus-dev\scripts
 6. ✅ Stellt Dev-Repo automatisch wieder her
 7. ✅ Löscht Backup-Branch
 
-#### Manueller Testing-Flow
+**In Home Assistant prüfen:**
 
-Falls du das Script nicht nutzt:
-
-```powershell
-# Backup erstellen
-cd I:\Development\huABus-dev
-git branch backup-updatetest-$(Get-Date -Format "yyyyMMdd-HHmm")
-
-# Alte Version pushen
-cd I:\Development\huABus
-git checkout main
-git push dev main:main --force
-```
-
-**In Home Assistant:**
-
-- Supervisor → Add-on Store → ⋮ → Repositories
-- Add: `https://github.com/arboeh/huABus-dev`
-- Install Addon (alte Version)
-- Konfigurieren & Testen
-
-```powershell
-# Neue Version pushen
-cd I:\Development\huABus
-git checkout dev
-git push dev dev:main --force
-```
-
-**In Home Assistant:**
-
-- Add-on Store → ↻ Reload
-- Update-Button klicken
-- Prüfen:
-  - [ ] Config-Werte erhalten?
-  - [ ] Neue Features sichtbar?
-  - [ ] Addon startet?
-
-```powershell
-# Wiederherstellen
-cd I:\Development\huABus-dev
-git checkout backup-updatetest-XXXXXX
-git branch -D main
-git checkout -b main
-git push origin main --force
-git branch -D backup-updatetest-XXXXXX
-```
+- [ ] Config-Werte erhalten?
+- [ ] Neue Features sichtbar?
+- [ ] Addon startet erfolgreich?
 
 ---
 
-### 9. CI Testing & Final Checks
+### 10. CI Testing & Final Checks
 
 ```bash
 cd I:\Development\huABus
 
 # Dev branch zu GitHub pushen (CI läuft)
 git checkout dev
+git pull
 git push origin dev
 ```
 
@@ -288,12 +292,12 @@ cd I:\Development\huABus
 git checkout dev
 
 # Test-Run
-.\scripts\run_local.ps1
+.\scripts\run_local.ps1 -Test
 ```
 
 ---
 
-### 10. Release erstellen (Production)
+### 11. Release erstellen (Production)
 
 ```bash
 cd I:\Development\huABus
@@ -329,7 +333,7 @@ git push origin dev
 
 ---
 
-### 11. GitHub Release (Automatisch)
+### 12. GitHub Release (Automatisch)
 
 Nach dem Push mit Tag:
 
@@ -347,7 +351,7 @@ Nach dem Push mit Tag:
 
 ---
 
-### 12. Weiterentwicklung (zurück zu dev-repo)
+### 13. Weiterentwicklung (zurück zu dev-repo)
 
 ```bash
 cd I:\Development\huABus-dev
@@ -368,17 +372,16 @@ git commit -m "feat: new awesome feature"
 
 ### Push zu prod-repo schlägt fehl
 
-**Symptom:** `branch is currently checked out`
+**Symptom:** `Remote 'prod' not found`
 
-```bash
-cd I:\Development\huABus
+```powershell
+cd I:\Development\huABus-dev
 
-# Zu main wechseln (dev nicht ausgecheckt)
-git checkout main
+# Remote hinzufügen
+git remote add prod https://github.com/arboeh/huABus.git
 
-# Zurück zu dev-repo und nochmal pushen
-cd ../huABus-dev
-git push prod main:dev
+# Erneut versuchen
+.\scripts\push_to_prod.ps1
 ```
 
 ### CI läuft nicht an
@@ -444,6 +447,20 @@ Remove-Item .git\index.lock -Force
 git checkout backup-updatetest-XXXXXX
 ```
 
+### Push-Script: Uncommitted changes
+
+```powershell
+# Änderungen committen
+git add .
+git commit -m "wip: current work"
+
+# Oder stashen
+git stash
+
+# Dann erneut pushen
+.\scripts\push_to_prod.ps1
+```
+
 ---
 
 ## Post-Release
@@ -488,9 +505,11 @@ Kopiere diese Liste in GitHub Issue oder PR:
 - [ ] Alle Tests bestehen (✅)
 - [ ] Coverage ≥ 85%
 - [ ] CHANGELOG.md aktualisiert
+- [ ] README-PRODUCTION.md aktualisiert
+- [ ] README.de-PRODUCTION.md aktualisiert
 - [ ] Commit erstellt: `chore: bump version to 1.8.0`
 - [ ] Push zu GitHub: `git push origin main`
-- [ ] Push zu prod: `git push prod main:dev`
+- [ ] Push zu prod: `.\scripts\push_to_prod.ps1`
 
 ### Update Testing
 
@@ -551,15 +570,22 @@ cd I:\Development\huABus-dev
 git push origin main
 ```
 
-### Pre-Release Testing
+### Push zu Production (gefiltert)
 
 ```powershell
 cd I:\Development\huABus-dev
-git push prod main:dev
 
-cd ..\huABus
-git checkout dev
-git push origin dev  # CI läuft
+# Dry-Run (zeigt was passiert)
+.\scripts\push_to_prod.ps1 -DryRun
+
+# Echter Push
+.\scripts\push_to_prod.ps1
+
+# Mit custom Message
+.\scripts\push_to_prod.ps1 -Message "Add feature X"
+
+# Direct zu main (Hotfix)
+.\scripts\push_to_prod.ps1 -TargetBranch main
 ```
 
 ### Update Testing (Automatisch)
@@ -590,6 +616,60 @@ cd I:\Development\huABus-dev
 ---
 
 ## Scripts
+
+### push_to_prod.ps1
+
+Automatisierter, gefilterter Push vom Dev-Repo zum Prod-Repo.
+
+**Location:** `I:\Development\huABus-dev\scripts\push_to_prod.ps1`
+
+**Features:**
+
+- ✅ Automatisches Filtern von dev-only Files
+- ✅ README-Umbenennung (README-PRODUCTION.md → README.md)
+- ✅ Validierung (uncommitted changes, remotes)
+- ✅ Dry-Run Modus
+- ✅ Interaktive Bestätigung
+- ✅ Farbiges Output
+
+**Usage:**
+
+```powershell
+# Standard (pusht zu prod/dev)
+.\scripts\push_to_prod.ps1
+
+# Dry-Run
+.\scripts\push_to_prod.ps1 -DryRun
+
+# Mit Message
+.\scripts\push_to_prod.ps1 -Message "Add auto-detect feature"
+
+# Zu anderem Branch
+.\scripts\push_to_prod.ps1 -TargetBranch main
+```
+
+**Was wird gefiltert:**
+
+- `notes/`, `en/` - Persönliche Notizen
+- `RELEASE_CHECKLIST.md` - Interne Doku
+- `scripts/test_addon_update.ps1` - Dev-Script
+- `scripts/push_to_prod.ps1` - Das Script selbst
+- `README.md` - Dev-README
+- IDE Config (`.vscode/`, `.pre-commit-config.yaml`, etc.)
+
+**Was wird umbenannt:**
+
+- `README-PRODUCTION.md` → `README.md`
+- `README.de-PRODUCTION.md` → `README.de.md`
+
+**Was bleibt:**
+
+- `tests/` - Für CI/CD
+- `scripts/run_local.ps1` - Testing
+- Production Code
+- GitHub Workflows
+
+---
 
 ### test_addon_update.ps1
 
@@ -629,9 +709,11 @@ Automatisiertes Update-Testing für realitätsnahe Simulation des User-Update-Fl
 ## 🎯 Key Takeaways
 
 1. **Two-Repo-Setup** - Dev für Entwicklung, Prod für Testing & Release
-2. **Remotes korrekt** - `prod` in dev-repo, `dev` in prod-repo
-3. **Update-Testing** - Immer vor Release mit realem HA-Flow testen
-4. **Automatisierung** - Script für Update-Testing nutzen
-5. **Version Sync** - Immer via `update_version.py` synchronisieren
-6. **CI-Trigger** - Nur bei Push zu GitHub, nicht lokal
-7. **Backup wichtig** - Vor Update-Tests immer Backup erstellen
+2. **Automatisches Filtern** - `push_to_prod.ps1` entfernt dev-only Files
+3. **README-Management** - Production-READMEs im Dev-Repo bearbeiten
+4. **Update-Testing** - Immer vor Release mit realem HA-Flow testen
+5. **Automatisierung** - Scripts für wiederkehrende Tasks nutzen
+6. **Version Sync** - Immer via `update_version.py` synchronisieren
+7. **CI-Trigger** - Nur bei Push zu GitHub, nicht lokal
+8. **Backup wichtig** - Vor Update-Tests immer Backup erstellen
+9. **Pre-commit nur in Dev** - Prod-Repo braucht keine Hooks
