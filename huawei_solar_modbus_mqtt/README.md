@@ -14,9 +14,10 @@ This app monitors your Huawei solar inverter using Modbus TCP protocol and publi
 
 ### Features
 
-- **58 Essential Registers** for complete monitoring
-- **total_increasing Filter** prevents false counter resets in energy statistics
-- **2-5s cycle time** for real-time data
+- **67 Essential Registers** for complete monitoring
+- **Automatic Slave ID Detection** to simplify setup process
+- **Total Increasing Filter** prevents false counter resets in energy statistics
+- **3-8s cycle time** for real-time data
 - **Comprehensive error tracking** with intelligent aggregation
 - **MQTT Auto-Discovery** for seamless Home Assistant integration
 - **Multi-architecture support** (aarch64, amd64, armhf, armv7, i386)

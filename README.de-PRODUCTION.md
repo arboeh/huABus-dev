@@ -28,8 +28,8 @@
 >
 > Mehrere Verbindungen führen zu **Timeouts und Datenverlust**!
 
-**58 Essenzielle Registers, 69+ Entitäten, ~2–5s Laufzeit**
-**Changelog:** [CHANGELOG.md](huawei_solar_modbus_mqtt/CHANGELOG.md)
+**67 Essenzielle Registers, 69+ Entitäten, ~3-8s Laufzeit**
+**Changelog:** [CHANGELOG.md](CHANGELOG.md)
 
 ## 🔌 Kompatible Wechselrichter
 
@@ -64,12 +64,14 @@ _Fehlende Register (Batterie/Zähler) werden automatisch behandelt - dein Wechse
 
 ## Features
 
+- **Automatische Slave ID-Erkennung:** Kein Raten mehr! Probiert automatisch gängige Werte (0, 1, 2, 100)
 - **Modbus TCP → MQTT:** 69+ Entitäten mit Auto-Discovery
 - **Vollständiges Monitoring:** Batterie, PV (1-4), Netz (3-Phasen), Energie-Counter
-- **total_increasing Filter:** Verhindert falsche Counter-Resets in Energie-Statistiken
+- **Total Increasing Filter:** Verhindert falsche Counter-Resets in Energie-Statistiken
   - Keine Warmup-Phase - sofortiger Schutz
   - Automatischer Reset bei Verbindungsfehlern
   - Sichtbar in Logs mit 20-Cycle-Zusammenfassungen
+- **Auto MQTT-Konfiguration:** Nutzt automatisch Home Assistant MQTT-Zugangsdaten
 - **TRACE Log Level:** Ultra-detailliertes Debugging mit Modbus-Byte-Arrays
 - **Umfassende Test-Suite:** 86% Code-Coverage mit Unit-, Integration- und E2E-Tests
 - **Performance:** ~2-5s Cycle, konfigurierbares Poll-Intervall (30-60s empfohlen)
@@ -79,36 +81,60 @@ _Fehlende Register (Batterie/Zähler) werden automatisch behandelt - dein Wechse
 
 ## 🚀 Schnellstart
 
-**Neu bei huABus?** Schau dir unseren [5-Minuten-Schnellstart-Guide](huawei_solar_modbus_mqtt/DOCS.de.md#-schnellstart) an:
+**Neu bei huABus?** Installation ist jetzt einfacher denn je:
 
-- ✅ Schritt-für-Schritt Installation mit erwarteten Ausgaben
-- ✅ Verbindungsprobleme lösen (Slave ID, Timeouts)
-- ✅ Klare Erfolgsindikatoren
-- ✅ Häufige Erstinstallations-Probleme gelöst
+1. [![Repository hinzufügen](https://my.home-assistant.io/badges/supervisor_add_addon_repository.svg)](https://my.home-assistant.io/redirect/supervisor_add_addon_repository/?repository_url=https%3A%2F%2Fgithub.com%2Farboeh%2FhuABus)
+2. "huABus | Huawei Solar Modbus to MQTT" installieren
+3. **Minimale Konfiguration:**
+   ```yaml
+   modbus_host: 192.168.1.100 # Deine Wechselrichter-IP
+   modbus_auto_detect_slave_id: true # Automatische Erkennung
+   log_level: INFO
+   ```
+4. Addon starten - Slave ID wird automatisch erkannt!
+5. **Einstellungen → Geräte & Dienste → MQTT → "Huawei Solar Inverter"**
 
-Perfekt für Einsteiger! Erfahrene Nutzer: springe zu [Konfiguration](#konfiguration).
+**Erwartete Startup-Logs:**
 
-## Vergleich: wlcrs/huawei_solar vs. diese App
+```
+INFO - Inverter: 192.168.1.100:502 (Slave ID: auto-detect)
+INFO - Trying Slave ID 0... ⏸️
+INFO - Trying Slave ID 1... ✅
+INFO - Connected (Slave ID: 1)
+INFO - Registers: 58 essential
+INFO - Published - PV 4500W ...
+```
 
-Die `wlcrs/huawei_solar` ist eine **native Home Assistant Integration**, während dies eine **Home Assistant App** ist. Beide nutzen die gleiche `huawei-solar` Library, haben aber unterschiedliche Anwendungsfälle:
+**Häufige Erstinstallations-Probleme:**
 
-| Feature                 | wlcrs/huawei_solar<br>(Integration) | Diese App<br>(MQTT-Bridge)   |
-| ----------------------- | ----------------------------------- | ---------------------------- |
-| Installation            | Via HACS oder manuell               | Via App Store                |
-| Batterie-Steuerung      | ✅                                  | ❌ (read-only)               |
-| MQTT-nativ              | ❌                                  | ✅                           |
-| total_increasing Filter | ❌                                  | ✅                           |
-| Externe Integrationen   | Begrenzt                            | ✅ (EVCC, Node-RED, Grafana) |
-| Zykluszeit              | Variabel                            | 2-5s                         |
-| Error Tracking          | Basis                               | Advanced                     |
-| Konfiguration           | UI oder YAML                        | App UI                       |
+| Symptom                      | Schnelle Lösung                                 |
+| ---------------------------- | ----------------------------------------------- |
+| Alle Slave IDs schlagen fehl | Wechselrichter-IP prüfen, Modbus TCP aktivieren |
+| Keine Sensoren erscheinen    | 30s warten, MQTT-Integration aktualisieren      |
+| Verbindung abgelehnt         | Modbus TCP im Wechselrichter aktiviert?         |
+
+## Vergleich: wlcrs/huawei_solar vs. dieses Addon
+
+Die `wlcrs/huawei_solar` ist eine **native Home Assistant Integration**, während dies ein **Home Assistant Addon** ist. Beide nutzen die gleiche `huawei-solar` Library, haben aber unterschiedliche Anwendungsfälle:
+
+| Feature                 | wlcrs/huawei_solar<br>(Integration) | Dieses Addon<br>(MQTT-Bridge) |
+| ----------------------- | ----------------------------------- | ----------------------------- |
+| Installation            | Via HACS oder manuell               | Via Addon Store               |
+| Batterie-Steuerung      | ✅                                  | ❌ (read-only)                |
+| MQTT-nativ              | ❌                                  | ✅                            |
+| Auto Slave ID-Erkennung | ❌                                  | ✅                            |
+| Total Increasing Filter | ❌                                  | ✅                            |
+| Externe Integrationen   | Begrenzt                            | ✅ (EVCC, Node-RED, Grafana)  |
+| Zykluszeit              | Variabel                            | 2-5s                          |
+| Error Tracking          | Basis                               | Advanced                      |
+| Konfiguration           | UI oder YAML                        | Addon UI                      |
 
 **Wichtig:** Beide teilen die gleiche Limitierung - nur **EINE Modbus-Verbindung**. Für gleichzeitige Nutzung wird ein Modbus Proxy benötigt.
 
 **Wann welches nutzen?**
 
 - **wlcrs (Integration):** Batterie-Steuerung + native HA-Integration + direkter Entitäts-Zugriff
-- **Diese App (MQTT-Bridge):** MQTT-Monitoring + externe System-Integration + besseres Error-Tracking
+- **Dieses Addon (MQTT-Bridge):** MQTT-Monitoring + externe System-Integration + automatische Slave ID-Erkennung + besseres Error-Tracking
 
 ## Screenshots
 
@@ -123,28 +149,31 @@ _Vollständige Sensorübersicht mit Echtzeit-Leistung, Energie und Netzdaten_
 ![MQTT Device Info](images/mqtt_info.png)  
 _MQTT-Geräteintegrations-Details_
 
-## Installation
-
-1. [![Repository hinzufügen](https://my.home-assistant.io/badges/supervisor_add_addon_repository.svg)](https://my.home-assistant.io/redirect/supervisor_add_addon_repository/?repository_url=https%3A%2F%2Fgithub.com%2Farboeh%2FhuABus)
-2. "huABus | Huawei Solar Modbus to MQTT" installieren → Starten
-3. **Einstellungen → Geräte & Dienste → MQTT → "Huawei Solar Inverter"**
-
 ## Konfiguration
 
 Konfiguration über Home Assistant UI mit deutschen Feldnamen:
 
+### Modbus-Einstellungen
+
 - **Modbus Host:** Inverter IP-Adresse (z.B. `192.168.1.100`)
 - **Modbus Port:** Standard: `502`
-- **Slave ID:** Meist `1`, manchmal `16` oder `0` (verschiedene Werte bei Timeout testen)
-- **MQTT Broker:** Standard: `core-mosquitto`
+- **Auto-Erkennung Slave ID:** Standard: `true` (probiert automatisch 0, 1, 2, 100)
+- **Slave ID (manuell):** Nur genutzt wenn Auto-Erkennung deaktiviert (meist `1`, manchmal `0` oder `100`)
+
+### MQTT-Einstellungen
+
+- **MQTT Broker:** Standard: `core-mosquitto` (leer lassen für Auto-Config)
 - **MQTT Port:** Standard: `1883`
-- **MQTT Benutzername/Passwort:** Optional (leer lassen für Auto-Config)
+- **MQTT Benutzername/Passwort:** Optional (leer lassen um HA MQTT Service-Zugangsdaten zu nutzen)
 - **MQTT Topic:** Standard: `huawei-solar`
+
+### Erweiterte Einstellungen
+
 - **Log-Level:** `TRACE` | `DEBUG` | `INFO` (empfohlen) | `WARNING` | `ERROR`
 - **Status Timeout:** Standard: `180s` (Range: 30-600)
 - **Abfrageintervall:** Standard: `30s` (Range: 10-300, empfohlen: 30-60s)
 
-**Auto-MQTT:** Broker-Zugangsdaten leer lassen → nutzt automatisch HA MQTT Service
+**💡 Pro-Tipp:** Lass MQTT-Zugangsdaten leer - das Addon nutzt automatisch die Home Assistant MQTT Service-Einstellungen!
 
 ### MQTT Topics
 
@@ -168,8 +197,6 @@ Konfiguration über Home Assistant UI mit deutschen Feldnamen:
 }
 ```
 
-_Komplettbeispiel: [examples/mqtt_payload.json](examples/mqtt_payload.json)_
-
 ## Wichtige Entitäten
 
 | Kategorie   | Sensoren                                                                                   |
@@ -182,19 +209,25 @@ _Komplettbeispiel: [examples/mqtt_payload.json](examples/mqtt_payload.json)_
 | **Device**  | `model_name`, `serial_number`, `efficiency`, `temperature`, `rated_power`                  |
 | **Status**  | `inverter_status`, `battery_status`, `meter_status`                                        |
 
-_\* Durch total_increasing Filter vor falschen Counter-Resets geschützt_
+_\* Durch Total Increasing Filter vor falschen Counter-Resets geschützt_
 
 ## Aktuelle Updates
 
-Siehe [CHANGELOG.md](huawei_solar_modbus_mqtt/CHANGELOG.md) für detaillierte Release-Notes.
+Siehe [CHANGELOG.md](CHANGELOG.md) für detaillierte Release-Notes.
 
-**Letzte Highlights:**
+**v1.8.0 Highlights (Feb 2026):**
 
-- ✅ **v1.7.4:** Backup-Unterstützung gefixt, neue Register, Projekt-Restrukturierung
-- ✅ **v1.7.3:** AppArmor-Sicherheitsprofil + requirements.txt
-- ✅ **v1.7.2:** 86% Test-Coverage, umfassende Test-Suite
+- ✅ **Automatische Slave ID-Erkennung:** Kein Raten mehr - probiert automatisch 0, 1, 2, 100
+- ✅ **Verbesserte MQTT Auto-Config:** Nahtlose Nutzung der HA MQTT Service-Zugangsdaten
+- ✅ **Dynamische Register-Anzahl:** Startup-Logs zeigen exakte Anzahl der Register
+- ✅ **Bessere Fehlermeldungen:** Klarere Anleitung bei Verbindungsproblemen
+
+**Frühere Releases:**
+
+- ✅ **v1.7.4:** Backup-Unterstützung gefixt, neue Modbus-Register
+- ✅ **v1.7.3:** AppArmor-Sicherheitsprofil für Container-Isolation
+- ✅ **v1.7.2:** Erhöhte Test-Coverage (86%)
 - ✅ **v1.7.1:** Filter Restart-Schutz (keine Zero-Drops)
-- ✅ **v1.7.0:** Vereinfachter Filter (keine Warmup/Toleranz)
 
 ## Fehlerbehebung
 
@@ -211,16 +244,18 @@ Siehe [CHANGELOG.md](huawei_solar_modbus_mqtt/CHANGELOG.md) für detaillierte Re
 
 ### Weitere häufige Probleme
 
-| Problem                   | Lösung                                                                               |
-| ------------------------- | ------------------------------------------------------------------------------------ |
-| **Keine Verbindung**      | Modbus TCP aktivieren, IP/Slave-ID prüfen (0/1/16 testen), `log_level: DEBUG` setzen |
-| **Connection Timeouts**   | Verschiedene Slave IDs testen; poll_interval auf 60s erhöhen                         |
-| **MQTT Fehler**           | Broker auf `core-mosquitto` setzen, Credentials leer lassen                          |
-| **Performance-Warnungen** | Poll-Interval erhöhen wenn Cycle-Zeit > 80% des Intervalls                           |
-| **Filter-Aktivität**      | Gelegentliches Filtern (1-2/Stunde) ist normal; häufig = Verbindungsprobleme         |
-| **Fehlende Sensoren**     | Normal bei Non-Hybrid oder Wechselrichtern ohne Batterie/Zähler                      |
+| Problem                          | Lösung                                                                       |
+| -------------------------------- | ---------------------------------------------------------------------------- |
+| **Alle Slave IDs schlagen fehl** | Modbus TCP im Wechselrichter aktivieren, IP prüfen, Firewall checken         |
+| **Connection Timeouts**          | Netzwerk-Latenz prüfen, poll_interval auf 60s erhöhen                        |
+| **MQTT Fehler**                  | Broker auf `core-mosquitto` setzen, Credentials leer lassen                  |
+| **Performance-Warnungen**        | Poll-Interval erhöhen wenn Cycle-Zeit > 80% des Intervalls                   |
+| **Filter-Aktivität**             | Gelegentliches Filtern (1-2/Stunde) ist normal; häufig = Verbindungsprobleme |
+| **Fehlende Sensoren**            | Normal bei Non-Hybrid oder Wechselrichtern ohne Batterie/Zähler              |
 
-**Logs:** Apps → Huawei Solar Modbus to MQTT → Log-Tab
+**Logs:** Addon → Huawei Solar Modbus to MQTT → Log-Tab
+
+**Debug-Modus:** Setze `log_level: DEBUG` für detaillierte Slave ID-Erkennung und Verbindungsversuche
 
 ## 💬 Community & Support
 
@@ -236,11 +271,6 @@ Nutzer diskutieren huABus auch in diesen Communities:
 - [Home Assistant Community Forum](https://community.home-assistant.io/)
 
 _Dies sind unabhängige Communities - für offiziellen Support bitte GitHub nutzen._
-
-## Dokumentation
-
-- 🇩🇪 **[DOCS.de.md](huawei_solar_modbus_mqtt/DOCS.de.md)** - Vollständige Dokumentation
-- 🇬🇧 **[DOCS.md](huawei_solar_modbus_mqtt/DOCS.md)** - Complete Documentation
 
 ## Credits
 

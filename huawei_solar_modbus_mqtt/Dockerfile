@@ -16,8 +16,8 @@ COPY run.sh /
 RUN chmod a+x /run.sh
 
 LABEL \
-    io.hass.name="huABus | Huawei Solar Modbus to MQTT" \
-    io.hass.description="Huawei Solar Modbus → MQTT + Auto-Discovery" \
+    io.hass.name="huABus - Huawei Solar Modbus to MQTT" \
+    io.hass.description="Huawei Solar Modbus via MQTT + Auto-Discovery" \
     io.hass.type="addon" \
     io.hass.arch="aarch64|amd64|armhf|armv7|i386"
 
