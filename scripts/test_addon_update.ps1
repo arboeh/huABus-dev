@@ -22,7 +22,7 @@ function Write-Step {
 function Confirm-Step {
     param([string]$Message)
     Write-Host "`n$Message" -ForegroundColor $ColorWarning
-    $response = Read-Host "Fortfahren? (y/N)"
+    $response = Read-Host "Fortfahren? (y/n)"
     if ($response -ne 'y' -and $response -ne 'Y') {
         Write-Host "❌ Abgebrochen durch Benutzer" -ForegroundColor $ColorError
         exit 1
@@ -35,6 +35,26 @@ function Test-GitRepo {
         Write-Host "❌ Kein Git-Repository gefunden: $Path" -ForegroundColor $ColorError
         exit 1
     }
+}
+
+function Get-AddonVersion {
+    param([string]$RepoPath, [string]$Branch)
+    
+    Push-Location $RepoPath
+    git checkout $Branch -q 2>$null
+    
+    $configPath = Join-Path $RepoPath "huawei_solar_modbus_mqtt\config.yaml"
+    
+    if (-not (Test-Path $configPath)) {
+        Pop-Location
+        return "unknown"
+    }
+    
+    $version = Select-String -Path $configPath -Pattern '^version:\s*"?([^"]+)"?' | 
+    ForEach-Object { $_.Matches.Groups[1].Value }
+    
+    Pop-Location
+    return $version
 }
 
 # ===== SCRIPT START =====
@@ -59,6 +79,24 @@ Test-GitRepo -Path $DevRepo
 
 Write-Host "✅ Prod-Repo gefunden" -ForegroundColor $ColorSuccess
 Write-Host "✅ Dev-Repo gefunden" -ForegroundColor $ColorSuccess
+
+# Versionen auslesen
+Write-Host "`n📋 Versionen auslesen..." -ForegroundColor $ColorInfo
+Push-Location $ProdRepo
+
+$oldVersion = Get-AddonVersion -RepoPath $ProdRepo -Branch "main"
+$newVersion = Get-AddonVersion -RepoPath $ProdRepo -Branch "dev"
+
+Write-Host "   Main Branch (alt): v$oldVersion" -ForegroundColor White
+Write-Host "   Dev Branch (neu):  v$newVersion" -ForegroundColor White
+
+if ($oldVersion -eq "unknown" -or $newVersion -eq "unknown") {
+    Write-Host "❌ Konnte Version nicht aus config.yaml lesen!" -ForegroundColor $ColorError
+    Pop-Location
+    exit 1
+}
+
+Pop-Location
 
 # Prüfe uncommitted changes
 Push-Location $DevRepo
@@ -92,10 +130,10 @@ else {
 }
 Pop-Location
 
-Confirm-Step "Backup erfolgreich. Weiter zu Phase 1 (Install v1.7.4)?"
+Confirm-Step "Backup erfolgreich. Weiter zu Phase 1 (Install v$oldVersion)?"
 
-# ===== STEP 2: PUSH v1.7.4 =====
-Write-Step "STEP 2: Push v1.7.4 zu Dev-Repo"
+# ===== STEP 2: PUSH OLD VERSION =====
+Write-Step "STEP 2: Push v$oldVersion zu Dev-Repo"
 
 Push-Location $ProdRepo
 
@@ -110,11 +148,11 @@ if ($remotes -notcontains "dev") {
 Write-Host "Wechsel zu main Branch..." -ForegroundColor White
 git checkout main
 
-Write-Host "Push Prod/main (v1.7.4) → Dev/main..." -ForegroundColor White
+Write-Host "Push Prod/main (v$oldVersion) → Dev/main..." -ForegroundColor White
 git push dev main:main --force
 
 if ($LASTEXITCODE -eq 0) {
-    Write-Host "✅ v1.7.4 erfolgreich gepusht" -ForegroundColor $ColorSuccess
+    Write-Host "✅ v$oldVersion erfolgreich gepusht" -ForegroundColor $ColorSuccess
 }
 else {
     Write-Host "❌ Push fehlgeschlagen!" -ForegroundColor $ColorError
@@ -129,26 +167,26 @@ Write-Host "  📋 AUFGABE: Home Assistant Installation" -ForegroundColor $Color
 Write-Host "═══════════════════════════════════════════════════════════" -ForegroundColor $ColorWarning
 Write-Host "1. Supervisor → Add-on Store → ⋮ → Repositories" -ForegroundColor White
 Write-Host "2. Repository hinzufügen: https://github.com/arboeh/huABus-dev" -ForegroundColor White
-Write-Host "3. Addon 'huABus' installieren (sollte v1.7.4 sein)" -ForegroundColor White
+Write-Host "3. Addon 'huABus' installieren (sollte v$oldVersion sein)" -ForegroundColor White
 Write-Host "4. Konfigurieren & Starten" -ForegroundColor White
 Write-Host "5. Testen ob alles funktioniert" -ForegroundColor White
 Write-Host "═══════════════════════════════════════════════════════════`n" -ForegroundColor $ColorWarning
 
-Confirm-Step "Installation & Test abgeschlossen? Weiter zu Phase 2 (Update v1.8.0)?"
+Confirm-Step "Installation & Test abgeschlossen? Weiter zu Phase 2 (Update v$newVersion)?"
 
-# ===== STEP 3: PUSH v1.8.0 =====
-Write-Step "STEP 3: Push v1.8.0 zu Dev-Repo"
+# ===== STEP 3: PUSH NEW VERSION =====
+Write-Step "STEP 3: Push v$newVersion zu Dev-Repo"
 
 Push-Location $ProdRepo
 
 Write-Host "Wechsel zu dev Branch..." -ForegroundColor White
 git checkout dev
 
-Write-Host "Push Prod/dev (v1.8.0) → Dev/main..." -ForegroundColor White
+Write-Host "Push Prod/dev (v$newVersion) → Dev/main..." -ForegroundColor White
 git push dev dev:main --force
 
 if ($LASTEXITCODE -eq 0) {
-    Write-Host "✅ v1.8.0 erfolgreich gepusht" -ForegroundColor $ColorSuccess
+    Write-Host "✅ v$newVersion erfolgreich gepusht" -ForegroundColor $ColorSuccess
 }
 else {
     Write-Host "❌ Push fehlgeschlagen!" -ForegroundColor $ColorError
@@ -163,12 +201,11 @@ Write-Host "  📋 AUFGABE: Home Assistant Update" -ForegroundColor $ColorWarnin
 Write-Host "═══════════════════════════════════════════════════════════" -ForegroundColor $ColorWarning
 Write-Host "1. Supervisor → Add-on Store → ↻ Reload" -ForegroundColor White
 Write-Host "2. Zu 'huABus' Addon navigieren" -ForegroundColor White
-Write-Host "3. 'Update' Button klicken (1.7.4 → 1.8.0)" -ForegroundColor White
+Write-Host "3. 'Update' Button klicken (v$oldVersion → v$newVersion)" -ForegroundColor White
 Write-Host "4. Log beobachten während Update" -ForegroundColor White
 Write-Host "5. Prüfen:" -ForegroundColor White
 Write-Host "   - Config-Werte erhalten?" -ForegroundColor White
-Write-Host "   - Neue Option 'Auto-detect Slave ID' sichtbar?" -ForegroundColor White
-Write-Host "   - Register-Count dynamisch?" -ForegroundColor White
+Write-Host "   - Neue Features sichtbar?" -ForegroundColor White
 Write-Host "   - Addon startet erfolgreich?" -ForegroundColor White
 Write-Host "═══════════════════════════════════════════════════════════`n" -ForegroundColor $ColorWarning
 
@@ -234,9 +271,10 @@ Pop-Location
 Write-Host "`n" -NoNewline
 Write-Host "╔══════════════════════════════════════════════════════════╗" -ForegroundColor $ColorSuccess
 Write-Host "║                                                          ║" -ForegroundColor $ColorSuccess
-Write-Host "║              ✅ UPDATE-TEST ABGESCHLOSSEN! ✅           ║" -ForegroundColor $ColorSuccess
+Write-Host "║              ✅ UPDATE-TEST ABGESCHLOSSEN! ✅            ║" -ForegroundColor $ColorSuccess
 Write-Host "║                                                          ║" -ForegroundColor $ColorSuccess
 Write-Host "╚══════════════════════════════════════════════════════════╝" -ForegroundColor $ColorSuccess
 
-Write-Host "`nDev-Repo ist wieder im Original-Zustand." -ForegroundColor White
+Write-Host "`nGetestet: v$oldVersion → v$newVersion" -ForegroundColor White
+Write-Host "Dev-Repo ist wieder im Original-Zustand." -ForegroundColor White
 Write-Host "Du kannst jetzt normal weiterentwickeln.`n" -ForegroundColor White
