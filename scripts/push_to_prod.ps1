@@ -23,6 +23,7 @@ $DevOnlyFiles = @(
     # Development Scripts
     "scripts/test_addon_update.ps1",
     "scripts/push_to_prod.ps1",
+    "scripts/run_local.ps1",
     
     # Personal Development Content
     "notes",
