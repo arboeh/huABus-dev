@@ -247,8 +247,8 @@ class ConfigManager:
         if self.mqtt_user:
             logger.debug(f"  User: {self.mqtt_user}")
             if self.mqtt_password:
-                password_display = "***" if hide_passwords else self.mqtt_password
-                logger.debug(f"  Password: {password_display}")
+                # Always mask password in logs to prevent clear-text logging of sensitive data
+                logger.debug("  Password: ***")
         else:
             logger.debug("  Auth: None")
 
