@@ -4,10 +4,10 @@
 param(
     [Parameter(Mandatory = $false)]
     [string]$TargetBranch = "dev",
-    
+
     [Parameter(Mandatory = $false)]
     [switch]$DryRun,
-    
+
     [Parameter(Mandatory = $false)]
     [string]$Message
 )
@@ -24,22 +24,22 @@ $DevOnlyFiles = @(
     "scripts/test_addon_update.ps1",
     "scripts/push_to_prod.ps1",
     "scripts/run_local.ps1",
-    
+
     # Personal Development Content
     "notes",
-    
+
     # Dev README
     "README.md",
-    
+
     # IDE/Editor Config
     ".pre-commit-config.yaml",
     "pyrightconfig.json",
     ".vscode",
-    
+
     # Development Config Files
     ".env.example",
     ".shellcheckrc",
-    
+
     # Local artifacts
     ".coverage",
     "htmlcov",
@@ -118,7 +118,7 @@ Write-Host "   - All production code" -ForegroundColor DarkGray
 # ===== DRY RUN =====
 if ($DryRun) {
     Write-Host "`n[DRY RUN] Would push to $ProdRemote/$TargetBranch" -ForegroundColor $ColorWarning
-    
+
     $allFiles = git ls-files
     $includedFiles = $allFiles | Where-Object {
         $file = $_
@@ -132,13 +132,13 @@ if ($DryRun) {
         }
         -not $exclude
     }
-    
+
     Write-Host "`nStatistics:" -ForegroundColor $ColorInfo
     Write-Host "   Total files: $($allFiles.Count)" -ForegroundColor White
     Write-Host "   Excluded: $excludedCount" -ForegroundColor White
     Write-Host "   Renamed: $($FilesToRename.Count)" -ForegroundColor White
     Write-Host "   Included: $($includedFiles.Count)" -ForegroundColor White
-    
+
     exit 0
 }
 
@@ -177,7 +177,7 @@ foreach ($file in $DevOnlyFiles) {
     if (Test-Path $file) {
         # BEIDE Befehle: Index UND Filesystem
         git rm -r $file 2>$null  # ← OHNE --cached!
-        
+
         if ($LASTEXITCODE -eq 0) {
             $removedCount++
             Write-Host "   Removed: $file" -ForegroundColor DarkGray
@@ -195,11 +195,11 @@ Write-Host "`n🔄 Renaming files for production..." -ForegroundColor $ColorInfo
 $renamedCount = 0
 foreach ($source in $FilesToRename.Keys) {
     $target = $FilesToRename[$source]
-    
+
     if (Test-Path $source) {
         # Git mv zum Umbenennen
         git mv $source $target 2>$null
-        
+
         if ($LASTEXITCODE -eq 0) {
             $renamedCount++
             Write-Host "   Renamed: $source → $target" -ForegroundColor Cyan

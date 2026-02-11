@@ -39,20 +39,20 @@ function Test-GitRepo {
 
 function Get-AddonVersion {
     param([string]$RepoPath, [string]$Branch)
-    
+
     Push-Location $RepoPath
     git checkout $Branch -q 2>$null
-    
+
     $configPath = Join-Path $RepoPath "huawei_solar_modbus_mqtt\config.yaml"
-    
+
     if (-not (Test-Path $configPath)) {
         Pop-Location
         return "unknown"
     }
-    
-    $version = Select-String -Path $configPath -Pattern '^version:\s*"?([^"]+)"?' | 
+
+    $version = Select-String -Path $configPath -Pattern '^version:\s*"?([^"]+)"?' |
     ForEach-Object { $_.Matches.Groups[1].Value }
-    
+
     Pop-Location
     return $version
 }
