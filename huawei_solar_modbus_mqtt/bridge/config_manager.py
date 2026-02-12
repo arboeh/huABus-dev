@@ -224,12 +224,8 @@ class ConfigManager:
             f"poll={self.poll_interval}s)"
         )
 
-    def log_config(self, hide_passwords: bool = True) -> None:
-        """Log current configuration (for debugging).
-
-        Args:
-            hide_passwords: Mask password in logs (default: True)
-        """
+    def log_config(self) -> None:
+        """Log current configuration (for debugging)."""
 
         # Modbus
         logger.debug("Modbus:")
@@ -247,8 +243,8 @@ class ConfigManager:
         if self.mqtt_user:
             logger.debug(f"  User: {self.mqtt_user}")
             if self.mqtt_password:
-                password_display = "***" if hide_passwords else self.mqtt_password
-                logger.debug(f"  Password: {password_display}")
+                # Always mask password in logs to prevent clear-text logging of sensitive data
+                logger.debug("  Password: ***")
         else:
             logger.debug("  Auth: None")
 

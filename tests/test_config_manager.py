@@ -367,66 +367,6 @@ class TestConfigManagerEdgeCases:
 class TestConfigManagerLogConfig:
     """Test configuration logging."""
 
-    def test_log_config_hides_password_by_default(self, tmp_path, caplog):
-        """Should mask password in logs by default."""
-        import logging
-
-        caplog.set_level(logging.DEBUG)
-
-        config_file = tmp_path / "options.json"
-        config_data = {
-            "modbus_host": "192.168.1.100",
-            "modbus_port": 502,
-            "modbus_auto_detect_slave_id": True,
-            "slave_id": 1,
-            "mqtt_host": "localhost",
-            "mqtt_port": 1883,
-            "mqtt_user": "testuser",
-            "mqtt_password": "secret123",
-            "mqtt_topic": "test",
-            "log_level": "INFO",
-            "status_timeout": 180,
-            "poll_interval": 30,
-        }
-        config_file.write_text(json.dumps(config_data))
-        config = ConfigManager(config_path=config_file)
-
-        config.log_config(hide_passwords=True)
-
-        assert "secret123" not in caplog.text
-        assert "***" in caplog.text
-        assert "testuser" in caplog.text
-
-    def test_log_config_shows_password_when_disabled(self, tmp_path, caplog):
-        """Should show password when hide_passwords=False."""
-        import logging
-
-        caplog.set_level(logging.DEBUG)
-
-        config_file = tmp_path / "options.json"
-        config_data = {
-            "modbus_host": "192.168.1.100",
-            "modbus_port": 502,
-            "modbus_auto_detect_slave_id": True,
-            "slave_id": 1,
-            "mqtt_host": "localhost",
-            "mqtt_port": 1883,
-            "mqtt_user": "testuser",
-            "mqtt_password": "secret123",
-            "mqtt_topic": "test",
-            "log_level": "INFO",
-            "status_timeout": 180,
-            "poll_interval": 30,
-        }
-        config_file.write_text(json.dumps(config_data))
-        config = ConfigManager(config_path=config_file)
-
-        config.log_config(hide_passwords=False)
-
-        # Password sollte sichtbar sein wenn hide_passwords=False
-        assert "secret123" in caplog.text
-        assert "testuser" in caplog.text
-
     def test_log_config_shows_all_sections(self, tmp_path, caplog):
         """Should log all configuration sections."""
         import logging
