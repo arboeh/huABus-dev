@@ -224,12 +224,8 @@ class ConfigManager:
             f"poll={self.poll_interval}s)"
         )
 
-    def log_config(self, hide_passwords: bool = True) -> None:
-        """Log current configuration (for debugging).
-
-        Args:
-            hide_passwords: Mask password in logs (default: True)
-        """
+    def log_config(self) -> None:
+        """Log current configuration (for debugging)."""
 
         # Modbus
         logger.debug("Modbus:")
