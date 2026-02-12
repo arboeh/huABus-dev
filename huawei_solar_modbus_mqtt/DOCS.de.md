@@ -1,4 +1,4 @@
-# huABus - Huawei Solar Modbus via MQTT + Auto-Discovery
+# huABus | Huawei Solar Modbus to MQTT
 
 Liest Daten deines Huawei Wechselrichters per Modbus TCP aus und veröffentlicht sie über MQTT mit automatischer Home Assistant Discovery.
 
