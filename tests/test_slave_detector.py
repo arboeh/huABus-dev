@@ -203,4 +203,4 @@ class TestEdgeCases:
             assert result is None
             # Check logs
             assert "Auto-detection failed" in caplog.text  # ← Warnung am Ende
-            assert "[1, 0, 2, 100]" in caplog.text  # ← Liste wird geloggt
+            assert "[1, 2, 100]" in caplog.text  # ← Liste wird geloggt

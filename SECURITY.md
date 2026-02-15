@@ -96,9 +96,9 @@ For non-critical issues:
 
 Monitored via Dependabot:
 
-- `huawei-solar` (2.5.0)
-- `pymodbus` (3.11.4)
-- `paho-mqtt` (2.1.0)
+- `huawei-solar`
+- `pymodbus`
+- `paho-mqtt`
 
 See [requirements.txt](requirements.txt) for full list.
 

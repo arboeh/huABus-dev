@@ -64,7 +64,7 @@ _Fehlende Register (Batterie/Zähler) werden automatisch behandelt - dein Wechse
 
 ## Features
 
-- **Automatische Slave ID-Erkennung:** Kein Raten mehr! Probiert automatisch gängige Werte (0, 1, 2, 100)
+- **Automatische Slave ID-Erkennung:** Kein Raten mehr! Probiert automatisch gängige Werte (1, 2, 100)
 - **Modbus TCP → MQTT:** 69+ Entitäten mit Auto-Discovery
 - **Vollständiges Monitoring:** Batterie, PV (1-4), Netz (3-Phasen), Energie-Counter
 - **Total Increasing Filter:** Verhindert falsche Counter-Resets in Energie-Statistiken
@@ -98,7 +98,6 @@ _Fehlende Register (Batterie/Zähler) werden automatisch behandelt - dein Wechse
 
 ```
 INFO - Inverter: 192.168.1.100:502 (Slave ID: auto-detect)
-INFO - Trying Slave ID 0... ⏸️
 INFO - Trying Slave ID 1... ✅
 INFO - Connected (Slave ID: 1)
 INFO - Registers: 58 essential
@@ -157,7 +156,7 @@ Konfiguration über Home Assistant UI mit deutschen Feldnamen:
 
 - **Modbus Host:** Inverter IP-Adresse (z.B. `192.168.1.100`)
 - **Modbus Port:** Standard: `502`
-- **Auto-Erkennung Slave ID:** Standard: `true` (probiert automatisch 0, 1, 2, 100)
+- **Auto-Erkennung Slave ID:** Standard: `true` (probiert automatisch 1, 2, 100)
 - **Slave ID (manuell):** Nur genutzt wenn Auto-Erkennung deaktiviert (meist `1`, manchmal `0` oder `100`)
 
 ### MQTT-Einstellungen

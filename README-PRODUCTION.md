@@ -64,7 +64,7 @@ _Missing registers (battery/meter) are handled gracefully - your inverter will w
 
 ## Features
 
-- **Automatic Slave ID Detection:** No more guessing! Tries common values (0, 1, 2, 100) automatically
+- **Automatic Slave ID Detection:** No more guessing! Tries common values (1, 2, 100) automatically
 - **Modbus TCP → MQTT:** 69+ entities with Auto-Discovery
 - **Complete Monitoring:** Battery, PV (1-4), Grid (3-phase), Energy counters
 - **Total Increasing Filter:** Prevents false counter resets in energy statistics
@@ -98,7 +98,6 @@ _Missing registers (battery/meter) are handled gracefully - your inverter will w
 
 ```
 INFO - Inverter: 192.168.1.100:502 (Slave ID: auto-detect)
-INFO - Trying Slave ID 0... ⏸️
 INFO - Trying Slave ID 1... ✅
 INFO - Connected (Slave ID: 1)
 INFO - Registers: 67 essential
@@ -157,7 +156,7 @@ Configure via Home Assistant UI with translated field names:
 
 - **Modbus Host:** Inverter IP address (e.g. `192.168.1.100`)
 - **Modbus Port:** Default: `502`
-- **Auto-detect Slave ID:** Default: `true` (tries 0, 1, 2, 100 automatically)
+- **Auto-detect Slave ID:** Default: `true` (tries 1, 2, 100 automatically)
 - **Slave ID (manual):** Only used when auto-detection disabled (usually `1`, sometimes `0` or `100`)
 
 ### MQTT Settings

@@ -62,7 +62,7 @@ git remote -v
 ### 1. Development abschließen (in huABus-dev)
 
 ```powershell
-cd I:\Development\huABus-dev
+cd I:\Development\huABus-dev\scripts
 
 # Virtual Environment aktivieren
 .\venv\Scripts\Activate.ps1

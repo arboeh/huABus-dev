@@ -12,13 +12,13 @@ configuration:
     name: Slave ID automatisch erkennen
     description: |
       Erkennt automatisch die richtige Slave ID.
-      Probiert gängige Werte (0, 1, 2, 100) und nutzt den ersten funktionierenden.
+      Probiert gängige Werte (1, 2, 100) und nutzt den ersten funktionierenden.
 
   slave_id:
     name: Slave ID (manuell)
     description: |
-      Modbus Slave ID (0-247).
-      Häufige Werte: 0 (SmartLogger), 1 (meiste Wechselrichter), 2 (alternative Konfigurationen), 100 (manche SDongles).
+      Modbus Slave ID (1-247).
+      Häufige Werte: 1 (meiste Wechselrichter), 2 (alternative Konfigurationen), 100 (manche SDongles).
       Wird nur verwendet wenn Auto-Erkennung deaktiviert ist.
 
   # === MQTT Konfiguration ===

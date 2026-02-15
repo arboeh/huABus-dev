@@ -11,7 +11,7 @@ from .logging_utils import get_logger
 logger = get_logger("huawei.slave_detector")
 
 
-KNOWN_SLAVE_IDS = [1, 0, 2, 100]
+KNOWN_SLAVE_IDS = [1, 2, 100]
 """Common Slave IDs in order of probability."""
 
 TEST_REGISTER = "model_name"
@@ -25,7 +25,7 @@ async def detect_slave_id(host: str, port: int = 502, timeout: int = DETECTION_T
     """
     Auto-detect Modbus Slave ID for Huawei inverter.
 
-    Tries common Slave IDs (1, 0, 2, 100) and returns the first working one.
+    Tries common Slave IDs (1, 2, 100) and returns the first working one.
 
     Args:
         host: Inverter IP address
