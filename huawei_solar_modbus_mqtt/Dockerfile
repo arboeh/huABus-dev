@@ -11,7 +11,7 @@ RUN apk add --no-cache \
 WORKDIR /app
 
 # Projekt-Metadaten kopieren
-COPY pyproject.toml hatch.toml ./
+COPY pyproject.toml ./
 
 # Hatch installieren
 RUN pip3 install --break-system-packages --no-cache-dir hatch
