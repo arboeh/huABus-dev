@@ -224,6 +224,9 @@ git commit -m "chore: $Message" --allow-empty 2>$null
 
 if ($LASTEXITCODE -ne 0) {
     Write-Host "❌ Commit failed!" -ForegroundColor $ColorError
+    # FIX: Dateien wiederherstellen bevor Branch gewechselt wird
+    git restore --staged . 2>$null
+    git restore . 2>$null
     git checkout $currentBranch
     git branch -D $tempBranch 2>$null
     exit 1
@@ -238,6 +241,9 @@ if ($LASTEXITCODE -eq 0) {
 }
 else {
     Write-Host "`n❌ Push failed!" -ForegroundColor $ColorError
+    # FIX: Dateien wiederherstellen
+    git restore --staged . 2>$null
+    git restore . 2>$null
     git checkout $currentBranch
     git branch -D $tempBranch
     exit 1
