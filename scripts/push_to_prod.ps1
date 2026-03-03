@@ -220,7 +220,7 @@ if ($renamedCount -eq 0) {
 # ===== COMMIT CHANGES =====
 Write-Host "`n💾 Committing changes..." -ForegroundColor $ColorInfo
 git add -A 2>$null
-git commit -m "chore: $Message" --allow-empty 2>$null
+git commit -m "chore: $Message" --allow-empty --no-verify 2>$null
 
 if ($LASTEXITCODE -ne 0) {
     Write-Host "❌ Commit failed!" -ForegroundColor $ColorError

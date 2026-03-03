@@ -7,7 +7,7 @@ name = "huabus"
 dynamic = ["version"]
 description = "Huawei Solar Modbus via MQTT and Auto-Discovery"
 authors = [{ name = "arboeh", email = "arend.boehmer@web.de" }]
-readme = "README-PRODUCTION.md"
+readme = "README.md"
 license = { file = "LICENSE" }
 requires-python = ">=3.11"
 classifiers = [
