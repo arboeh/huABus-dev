@@ -3,6 +3,7 @@
 # tests/test_run.bats - Tests für run.sh
 
 setup() {
+
     # ===== TEST MODE MUSS GANZ OBEN STEHEN =====
     export BATS_TEST_MODE=true
     # ===========================================
@@ -29,13 +30,15 @@ setup() {
         "log_level") echo "INFO" ;;
         "status_timeout") echo "180" ;;
         "poll_interval") echo "30" ;;
+        "enable_caching") echo "true" ;;
+        "cache_max_age") echo "30" ;;
         *) echo "${2:-}" ;;
         esac
     }
 
     bashio::config.has_value() {
         case "$1" in
-        "modbus_host" | "modbus_port" | "modbus_auto_detect_slave_id" | "slave_id" | "mqtt_topic" | "log_level" | "status_timeout" | "poll_interval")
+        "modbus_host" | "modbus_port" | "modbus_auto_detect_slave_id" | "slave_id" | "mqtt_topic" | "log_level" | "status_timeout" | "poll_interval" | "enable_caching" | "cache_max_age")
             return 0
             ;;
         *)
@@ -100,6 +103,8 @@ teardown() {
     unset HUAWEI_STATUS_TIMEOUT
     unset HUAWEI_POLL_INTERVAL
     unset HUAWEI_LOG_LEVEL
+    unset HUAWEI_ENABLE_CACHING
+    unset HUAWEI_CACHE_MAX_AGE
 }
 
 @test "get_required_config returns value when config exists" {
@@ -263,13 +268,20 @@ teardown() {
 @test "Caching enabled from config" {
     bashio::config() {
         case "$1" in
-        enable_caching) echo 'true' ;;
-        cache_max_age) echo '40' ;;
+        mqtt_host) echo 'mqtt.custom.local' ;;
         modbus_host) echo '192.168.1.100' ;;
+        modbus_port) echo '502' ;;
+        modbus_auto_detect_slave_id) echo 'true' ;;
+        slave_id) echo '1' ;;
+        mqtt_port) echo '1883' ;;
+        mqtt_user) echo '' ;;
+        mqtt_password) echo '' ;;
         mqtt_topic) echo 'huawei-solar' ;;
         log_level) echo 'INFO' ;;
         status_timeout) echo '180' ;;
         poll_interval) echo '30' ;;
+        enable_caching) echo 'true' ;;
+        cache_max_age) echo '40' ;;
         *) echo '' ;;
         esac
     }
