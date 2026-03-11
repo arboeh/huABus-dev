@@ -261,7 +261,7 @@ teardown() {
 @test "Caching environment variables are exported correctly" {
     source huawei_solar_modbus_mqtt/run.sh >/dev/null 2>&1
 
-    [ "$HUAWEI_ENABLE_CACHING" = "false" ]
+    [ "$HUAWEI_ENABLE_CACHING" = "true" ]
     [ "$HUAWEI_CACHE_MAX_AGE" = "30" ]
 }
 

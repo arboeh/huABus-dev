@@ -137,6 +137,9 @@ python scripts/update_version.py
 
 # oder (mit Coverage)
 uv run pytest --cov
+
+# BATS Tests ausführen !!! IM MOMENT FEHLERHAFT !!!
+.\scripts\run_local.ps1 -Shell
 ```
 
 **Erwartung:**

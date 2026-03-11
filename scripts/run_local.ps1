@@ -13,6 +13,12 @@ $rootDir = Split-Path -Parent $scriptDir  # Ein Level höher (Root)
 # ===== CHECK VIRTUAL ENVIRONMENT =====
 uv sync --quiet
 if ($LASTEXITCODE -ne 0) {
+    Write-Host "⚠️  uv sync failed - retrying..." -ForegroundColor Yellow
+    Start-Sleep -Seconds 2
+    uv sync --quiet
+}
+
+if ($LASTEXITCODE -ne 0) {
     Write-Host "❌ uv sync failed!" -ForegroundColor Red
     exit 1
 }
@@ -32,13 +38,48 @@ if ($Test -or $Shell) {
     Push-Location $rootDir
 
     if ($Shell) {
-        if (Get-Command bats -ErrorAction SilentlyContinue) {
-            Write-Host "🐚 Running BATS locally..." -ForegroundColor Cyan
-            bats tests/test_run.bats
-        } else {
-            Write-Host "⚠️  BATS not installed (scoop install bats)" -ForegroundColor Yellow
-            Write-Host "   Skipping shell tests." -ForegroundColor Yellow
+        # ===== BATS TESTS =====
+
+        $batsDir = Join-Path $rootDir ".tools\bats-core"
+        $batsBin = Join-Path $batsDir "bin\bats"
+
+        # Install bats-core locally if missing
+        if (!(Test-Path $batsBin)) {
+            Write-Host "📦 Installing bats-core locally..." -ForegroundColor Yellow
+
+            if (!(Test-Path $batsDir)) {
+                git clone https://github.com/bats-core/bats-core.git $batsDir
+                if ($LASTEXITCODE -ne 0) {
+                    Write-Host "❌ Failed to clone bats-core!" -ForegroundColor Red
+                    exit 1
+                }
+            }
+
+            # Fix CRLF → LF (Windows git issue)
+            Write-Host "🔧 Fixing line endings..." -ForegroundColor Yellow
+
+            Get-ChildItem $batsDir -Recurse -File | ForEach-Object {
+                (Get-Content $_.FullName -Raw) -replace "`r`n","`n" | Set-Content $_.FullName -NoNewline
+            }
         }
+
+        # Ensure bash exists
+        if (!(Get-Command bash -ErrorAction SilentlyContinue)) {
+            Write-Host "❌ bash not found. Install Git for Windows." -ForegroundColor Red
+            exit 1
+        }
+
+        Write-Host "🐚 Running BATS tests..." -ForegroundColor Cyan
+
+        $batsExe = (Get-Command bash.exe).Source
+        & $batsExe "$batsBin" tests/test_run.bats
+
+        if ($LASTEXITCODE -ne 0) {
+            Write-Host "❌ BATS tests failed!" -ForegroundColor Red
+            exit $LASTEXITCODE
+        }
+
+        Write-Host "✅ BATS tests passed!" -ForegroundColor Green
     }
     elseif ($Coverage) {
         uv run pytest -v --cov=huawei_solar_modbus_mqtt/bridge --cov-report=html
