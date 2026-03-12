@@ -59,7 +59,7 @@ configuration:
 
   enable_caching:
     name: Caching aktivieren
-    description: Wiederholt Daten sekündlich zwischen Polls (nützlich für native MQTT-Andindung, z.B. EVCC via MQTT) - vermeidet Datenlücken
+    description: Wiederholt Daten sekündlich zwischen Polls (nützlich für native MQTT-Anbindung, z.B. EVCC via MQTT) - vermeidet Datenlücken
 
   cache_max_age:
     name: Cache Lebensdauer
