@@ -63,4 +63,4 @@ configuration:
 
   cache_max_age:
     name: Cache Max Age
-    description: "Recommend interval:  poll_interval+10s, otherwise data gaps"
+    description: "Recommend interval: Poll Interval + 10 seconds, otherwise data gaps"

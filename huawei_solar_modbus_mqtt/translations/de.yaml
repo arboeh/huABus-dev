@@ -63,4 +63,4 @@ configuration:
 
   cache_max_age:
     name: Cache Lebensdauer
-    description: "Empfohlenes Intervall: poll_interval+10s, sonst entstehen Datenlücken"
+    description: "Empfohlenes Intervall: Abfrageintervall + 10 Sekunden, sonst entstehen Datenlücken"
