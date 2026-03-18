@@ -74,10 +74,61 @@ _Missing registers (battery/meter) are handled gracefully - your inverter will w
 - **Auto MQTT Configuration:** Automatically uses Home Assistant MQTT credentials
 - **TRACE Log Level:** Ultra-detailed debugging with Modbus byte arrays
 - **Comprehensive Test Suite:** 86% code coverage with unit, integration, and E2E tests
-- **Performance:** ~2–5s read cycle, configurable poll interval (30–60s recommended)
+- **Performance:** ~2-5s read cycle, configurable poll interval (30-60s recommended)
 - **Error Tracking:** Intelligent aggregation with downtime tracking
 - **MQTT Stability:** Connection wait loop and retry logic
 - **Cross-Platform:** All major architectures (aarch64, amd64, armhf, armv7, i386)
+
+### EVCC Integration (No Modbus Proxy!)
+
+huABus publishes all data to a single MQTT topic (`huawei-solar`), enabling **direct EVCC integration** without Modbus proxy or conflicts.
+
+**Requirement:** Activated MQTT in [evcc HA Addon](https://github.com/evcc-io/hassio-addon) (evcc UI → Settings → MQTT)
+
+**User-defined EVCC devices** (validated config):
+
+**Grid Meter:**
+
+```yaml
+power:
+  source: mqtt
+  topic: huawei-solar
+  jq: "(.meter_power_active * -1)"
+```
+
+**Solar Meter:**
+
+```yaml
+power:
+  source: mqtt
+  topic: huawei-solar
+  jq: ".power_input"
+```
+
+**Battery (optional):**
+
+```yaml
+power:
+  source: mqtt
+  topic: huawei-solar
+  jq: "(.battery_power * -1)"
+soc:
+  source: mqtt
+  topic: huawei-solar
+  jq: ".battery_soc"
+capacity: 10
+```
+
+### EVCC Configuration (Screenshots)
+
+**Grid Meter:**  
+<img src="images/evcc_grid.png" alt="EVCC Grid Meter Config" width="400">
+
+**Solar Meter:**  
+<img src="images/evcc_solar.png" alt="EVCC Solar Meter Config" width="400">
+
+**Battery (Optional):**  
+<img src="images/evcc_battery.png" alt="EVCC Battery Config" width="400">
 
 ## 🚀 Quick Start
 
