@@ -9,9 +9,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-- **Poll Interval not respected**: Inverter data was published as fast as the
+- **Poll interval not respected**: Inverter data was published as fast as the
   Modbus read completed (~5-8s) instead of respecting the configured poll interval
-  - Root cause: `poll_interval` was read from config but never used in the main loop
+  - Root cause: `poll_interval` was read from config but never applied in the main loop —
+    the previous ~20-30s cycle time was an accidental side effect of broken TCP teardown
+    in v1.8.3 (now fixed), which unintentionally throttled the loop
   - Added `cycle_start` timestamp and `asyncio.sleep(remaining)` after each
     successful cycle to wait out the configured interval
   - Duplicate `error_tracker` instantiation removed (dead code)
