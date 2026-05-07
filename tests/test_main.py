@@ -659,6 +659,7 @@ async def test_read_registers_batch_mode_success(caplog):
 
     with (
         patch("bridge.main.ESSENTIAL_REGISTERS", test_registers),
+        patch("bridge.main.BATCH_MODE_AVAILABLE", None),  # Reset state
         caplog.at_level(logging.INFO),
     ):
         result = await read_registers(mock_client, use_batch=True)
@@ -671,6 +672,8 @@ async def test_read_registers_batch_mode_success(caplog):
 
         # Verify batch read summary was logged
         assert any("Essential read (batch):" in record.message and "3/4" in record.message for record in caplog.records)
+        # Verify success message logged once
+        assert any("Batch read mode active" in record.message for record in caplog.records)
 
 
 @pytest.mark.asyncio
@@ -681,7 +684,7 @@ async def test_read_registers_batch_mode_fallback(caplog):
     mock_client = AsyncMock()
 
     # Mock get_multiple to fail
-    mock_client.get_multiple.side_effect = Exception("Batch not supported by SDongle")
+    mock_client.get_multiple.side_effect = Exception("Did not recognize register names: storage_unit_1_soc")
 
     # Mock sequential get to succeed
     async def mock_get(register_name):
@@ -694,16 +697,17 @@ async def test_read_registers_batch_mode_fallback(caplog):
 
     with (
         patch("bridge.main.ESSENTIAL_REGISTERS", test_registers),
-        caplog.at_level(logging.WARNING),
+        patch("bridge.main.BATCH_MODE_AVAILABLE", None),  # Reset state
+        caplog.at_level(logging.INFO),
     ):
         result = await read_registers(mock_client, use_batch=True)
 
         # Verify batch was attempted
         mock_client.get_multiple.assert_called_once()
 
-        # Verify fallback warning was logged
+        # Verify fallback info was logged (only once)
         assert any(
-            "Batch read failed" in record.message and "falling back to sequential" in record.message
+            "Batch read not supported" in record.message and "using sequential mode" in record.message
             for record in caplog.records
         )
 
@@ -712,3 +716,48 @@ async def test_read_registers_batch_mode_fallback(caplog):
         assert result["reg1"] == 100
         assert result["reg2"] == 200
         assert result["reg3"] == 300
+
+
+@pytest.mark.asyncio
+async def test_read_registers_batch_mode_skip_after_failure(caplog):
+    """Test that batch mode is skipped after first failure without repeated logs."""
+    import logging
+
+    mock_client = AsyncMock()
+
+    # Mock get_multiple to fail
+    mock_client.get_multiple.side_effect = Exception("Did not recognize register names")
+
+    # Mock sequential get to succeed
+    async def mock_get(register_name):
+        return {"reg1": 100, "reg2": 200}[register_name]
+
+    mock_client.get = mock_get
+
+    test_registers = ["reg1", "reg2"]
+
+    with (
+        patch("bridge.main.ESSENTIAL_REGISTERS", test_registers),
+        patch("bridge.main.BATCH_MODE_AVAILABLE", None),  # Start fresh
+        caplog.at_level(logging.INFO),
+    ):
+        # First call - should try batch and fail
+        await read_registers(mock_client, use_batch=True)
+
+        # Should have logged fallback message
+        assert any("Batch read not supported" in record.message for record in caplog.records)
+
+        caplog.clear()
+
+        # Second call - should skip batch entirely (BATCH_MODE_AVAILABLE is now False)
+        result = await read_registers(mock_client, use_batch=True)
+
+        # Should NOT have tried batch again (still only one get_multiple call from first attempt)
+        assert mock_client.get_multiple.call_count == 1
+
+        # Should NOT have logged fallback message again
+        assert not any("Batch read not supported" in record.message for record in caplog.records)
+
+        # But should still work via sequential
+        assert result["reg1"] == 100
+        assert result["reg2"] == 200

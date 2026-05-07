@@ -55,6 +55,10 @@ except ImportError:  # pragma: no cover
 # 0 = noch kein erfolgreicher Read (Startup-Phase)
 LAST_SUCCESS: float = 0
 
+# Batch-Mode State: None = nicht getestet, True = funktioniert, False = nicht verfügbar
+# Wird beim ersten Batch-Versuch gesetzt um wiederholte Fehlermeldungen zu vermeiden
+BATCH_MODE_AVAILABLE: bool | None = None
+
 TRACE = 5  # DEBUG ist 10, INFO ist 20, WARNING ist 30
 logging.addLevelName(TRACE, "TRACE")
 
@@ -242,13 +246,15 @@ async def read_registers(client: AsyncHuaweiSolar, use_batch: bool = False) -> d
     Bei DEBUG-Level werden detaillierte Timing-Informationen pro Register ausgegeben,
     um Performance-Probleme zu diagnostizieren.
     """
+    global BATCH_MODE_AVAILABLE
+
     logger.debug(f"Reading {len(ESSENTIAL_REGISTERS)} essential registers (batch={use_batch})")
 
     start = time.time()
     data = {}
 
     # === BATCH MODE (v1.10.0) ===
-    if use_batch:
+    if use_batch and BATCH_MODE_AVAILABLE is not False:
         try:
             batch_start = time.time()
             values = await client.get_multiple(ESSENTIAL_REGISTERS)
@@ -256,6 +262,11 @@ async def read_registers(client: AsyncHuaweiSolar, use_batch: bool = False) -> d
 
             data = dict(zip(ESSENTIAL_REGISTERS, values, strict=True))
             successful = len([v for v in values if v is not None])
+
+            # Batch funktioniert - merken für zukünftige Cycles
+            if BATCH_MODE_AVAILABLE is None:
+                BATCH_MODE_AVAILABLE = True
+                logger.info("✅ Batch read mode active - all registers supported")
 
             logger.info(
                 "📖 Essential read (batch): %.1fs (%d/%d)",
@@ -266,7 +277,13 @@ async def read_registers(client: AsyncHuaweiSolar, use_batch: bool = False) -> d
             return data
 
         except Exception as e:
-            logger.warning(f"⚠️ Batch read failed ({e}), falling back to sequential")
+            # Nur beim ersten Mal loggen, dann automatisch auf Sequential umschalten
+            if BATCH_MODE_AVAILABLE is None:
+                logger.info(
+                    f"ℹ️  Batch read not supported on this inverter ({e}), "
+                    "using sequential mode (this is normal for inverters with optional registers)"
+                )
+                BATCH_MODE_AVAILABLE = False
             # Fall through to sequential mode
 
     # === SEQUENTIAL MODE (v1.9.0 behavior) ===
