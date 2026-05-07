@@ -5,6 +5,23 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.10.0] - 2026-05-07
+
+### Added
+
+- **Experimental Batch Reading Mode**: New `batch_read_mode` configuration option (default: `false`)
+  - Reads all 67 registers in a single Modbus request instead of individual sequential reads
+  - Can reduce cycle times by up to 75% on high-latency networks (e.g., 5s → 1.2s)
+  - Automatic fallback to sequential mode if batch reading fails (e.g., older SDongle firmware)
+  - Opt-in beta feature for users experiencing performance issues
+  - Compatible with existing v1.9.0 timing diagnostics (logs batch/fallback events at DEBUG level)
+
+### Tests
+
+- Added `test_read_registers_batch_mode_success` to verify successful batch reading
+- Added `test_read_registers_batch_mode_fallback` to verify sequential fallback on errors
+- Extended `test_advanced_properties` to verify `batch_read_mode` configuration loading
+
 ## [1.9.0] - 2026-05-03
 
 ### Added

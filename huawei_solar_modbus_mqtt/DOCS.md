@@ -286,6 +286,7 @@ INFO - Connection restored after 47s (3 failed attempts, 2 error types)
    ```
 
 3. Test network latency:
+
    ```bash
    ping <inverter_ip> -n 100
    ```
@@ -295,6 +296,10 @@ INFO - Connection restored after 47s (3 failed attempts, 2 error types)
 
 **Solutions:**
 
+- **Experimental Batch Mode (v1.10.0+):** Enable `batch_read_mode: true` to read all registers in one request
+  - Can reduce cycle times by up to 75% (e.g., 5s → 1.2s)
+  - Falls back to sequential mode if not supported by your SDongle firmware
+  - Opt-in beta feature - test carefully and report results
 - **Short-term:** Increase `poll_interval` to 120-180s
 - **Network:** Use LAN instead of WiFi if possible (reduces latency 30-50%)
 - **Hardware:** Check CPU load on HA host during cycles

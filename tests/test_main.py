@@ -643,3 +643,72 @@ async def test_read_registers_no_slow_register_warning_when_fast(caplog):
         # Verify NO "Slowest registers" section (because none are slow enough)
         # The threshold for showing slowest is >0.1s, our registers are 0.05s
         assert not any("Slowest registers" in record.message for record in caplog.records)
+
+
+@pytest.mark.asyncio
+async def test_read_registers_batch_mode_success(caplog):
+    """Test that batch mode reads all registers in one call."""
+    import logging
+
+    mock_client = AsyncMock()
+
+    # Mock get_multiple to return values for all registers
+    mock_client.get_multiple.return_value = [100, 200, 300, None]  # Last one unavailable
+
+    test_registers = ["reg1", "reg2", "reg3", "reg4"]
+
+    with (
+        patch("bridge.main.ESSENTIAL_REGISTERS", test_registers),
+        caplog.at_level(logging.INFO),
+    ):
+        result = await read_registers(mock_client, use_batch=True)
+
+        # Verify batch read was called once with all registers
+        mock_client.get_multiple.assert_called_once_with(test_registers)
+
+        # Verify data returned correctly
+        assert result == {"reg1": 100, "reg2": 200, "reg3": 300, "reg4": None}
+
+        # Verify batch read summary was logged
+        assert any("Essential read (batch):" in record.message and "3/4" in record.message for record in caplog.records)
+
+
+@pytest.mark.asyncio
+async def test_read_registers_batch_mode_fallback(caplog):
+    """Test that batch mode falls back to sequential on error."""
+    import logging
+
+    mock_client = AsyncMock()
+
+    # Mock get_multiple to fail
+    mock_client.get_multiple.side_effect = Exception("Batch not supported by SDongle")
+
+    # Mock sequential get to succeed
+    async def mock_get(register_name):
+        await asyncio.sleep(0.01)  # Small delay
+        return {"reg1": 100, "reg2": 200, "reg3": 300}[register_name]
+
+    mock_client.get = mock_get
+
+    test_registers = ["reg1", "reg2", "reg3"]
+
+    with (
+        patch("bridge.main.ESSENTIAL_REGISTERS", test_registers),
+        caplog.at_level(logging.WARNING),
+    ):
+        result = await read_registers(mock_client, use_batch=True)
+
+        # Verify batch was attempted
+        mock_client.get_multiple.assert_called_once()
+
+        # Verify fallback warning was logged
+        assert any(
+            "Batch read failed" in record.message and "falling back to sequential" in record.message
+            for record in caplog.records
+        )
+
+        # Verify all registers read successfully via sequential fallback
+        assert len(result) == 3
+        assert result["reg1"] == 100
+        assert result["reg2"] == 200
+        assert result["reg3"] == 300

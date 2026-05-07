@@ -232,16 +232,44 @@ def log_cycle_summary(cycle_num: float, timings: dict[str, float], data: dict[st
         logger.debug(f"🔍 Filter details: {dict(filter_stats)}")
 
 
-async def read_registers(client: AsyncHuaweiSolar) -> dict[str, Any]:
-    """Liest Essential Registers sequentiell vom Inverter.
+async def read_registers(client: AsyncHuaweiSolar, use_batch: bool = False) -> dict[str, Any]:
+    """Liest Essential Registers vom Inverter.
+
+    Args:
+        client: AsyncHuaweiSolar Client
+        use_batch: True = versuche Batch-Read (v1.10.0), False = Sequential (default)
 
     Bei DEBUG-Level werden detaillierte Timing-Informationen pro Register ausgegeben,
     um Performance-Probleme zu diagnostizieren.
     """
-    logger.debug(f"Reading {len(ESSENTIAL_REGISTERS)} essential registers")
+    logger.debug(f"Reading {len(ESSENTIAL_REGISTERS)} essential registers (batch={use_batch})")
 
     start = time.time()
     data = {}
+
+    # === BATCH MODE (v1.10.0) ===
+    if use_batch:
+        try:
+            batch_start = time.time()
+            values = await client.get_multiple(ESSENTIAL_REGISTERS)
+            batch_duration = time.time() - batch_start
+
+            data = dict(zip(ESSENTIAL_REGISTERS, values, strict=True))
+            successful = len([v for v in values if v is not None])
+
+            logger.info(
+                "📖 Essential read (batch): %.1fs (%d/%d)",
+                batch_duration,
+                successful,
+                len(ESSENTIAL_REGISTERS),
+            )
+            return data
+
+        except Exception as e:
+            logger.warning(f"⚠️ Batch read failed ({e}), falling back to sequential")
+            # Fall through to sequential mode
+
+    # === SEQUENTIAL MODE (v1.9.0 behavior) ===
     successful = 0
 
     # Performance-Tracking für Diagnose
@@ -322,7 +350,7 @@ async def main_once(client: AsyncHuaweiSolar, config: ConfigManager, cycle_num: 
     # === PHASE 1: Modbus Read ===
     modbus_start: float = time.time()
     try:
-        data = await read_registers(client)
+        data = await read_registers(client, use_batch=config.batch_read_mode)
         modbus_duration: float = time.time() - modbus_start
     except Exception as e:
         if is_modbus_exception(e):

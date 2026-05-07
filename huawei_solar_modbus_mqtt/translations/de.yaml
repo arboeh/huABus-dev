@@ -56,3 +56,7 @@ configuration:
   poll_interval:
     name: Abfrageintervall
     description: Intervall in Sekunden zwischen Modbus-Abfragen vom Wechselrichter. Empfohlen 30-60s für optimale Balance zwischen Aktualität und Netzwerklast
+
+  batch_read_mode:
+    name: Batch-Lese-Modus (Experimentell)
+    description: "Liest alle Register in einer einzigen Modbus-Anfrage statt 67 einzelnen Anfragen. Kann Zykluszeiten um bis zu 75% reduzieren, funktioniert aber möglicherweise nicht mit allen SDongle-Firmware-Versionen. Fällt bei Fehler automatisch auf sequentiellen Modus zurück. (Standard: deaktiviert)"

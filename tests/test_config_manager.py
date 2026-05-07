@@ -30,6 +30,7 @@ class TestConfigManagerLoading:
             "log_level": "DEBUG",
             "status_timeout": 120,
             "poll_interval": 20,
+            "batch_read_mode": True,
         }
         config_file.write_text(json.dumps(config_data))
 
@@ -52,6 +53,7 @@ class TestConfigManagerLoading:
         assert config.log_level == "DEBUG"
         assert config.status_timeout == 120
         assert config.poll_interval == 20
+        assert config.batch_read_mode is True
 
     def test_load_from_env_when_no_file(self, monkeypatch, tmp_path):
         """Should load from ENV when options.json doesn't exist."""
@@ -74,6 +76,7 @@ class TestConfigManagerLoading:
         monkeypatch.setenv("HUAWEI_LOG_LEVEL", "ERROR")
         monkeypatch.setenv("HUAWEI_STATUS_TIMEOUT", "90")
         monkeypatch.setenv("HUAWEI_POLL_INTERVAL", "60")
+        monkeypatch.setenv("HUAWEI_BATCH_READ_MODE", "true")
 
         config = ConfigManager(config_path=config_file)
 
@@ -89,6 +92,7 @@ class TestConfigManagerLoading:
         assert config.log_level == "ERROR"
         assert config.status_timeout == 90
         assert config.poll_interval == 60
+        assert config.batch_read_mode is True
 
 
 class TestConfigManagerProperties:
@@ -111,6 +115,7 @@ class TestConfigManagerProperties:
             "log_level": "WARNING",
             "status_timeout": 200,
             "poll_interval": 45,
+            "batch_read_mode": False,
         }
         config_file.write_text(json.dumps(config_data))
         return ConfigManager(config_path=config_file)
@@ -135,6 +140,7 @@ class TestConfigManagerProperties:
         assert config.log_level == "WARNING"
         assert config.status_timeout == 200
         assert config.poll_interval == 45
+        assert config.batch_read_mode is False
 
     def test_mqtt_user_returns_none_for_empty_string(self, tmp_path):
         """Should return None for empty username."""

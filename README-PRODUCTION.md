@@ -34,6 +34,7 @@
 - **Complete Monitoring:** Battery, PV (1-4), Grid (3-phase), Energy counters
 - **Total Increasing Filter:** Prevents false counter resets in energy statistics
 - **Auto MQTT Configuration:** Automatically uses Home Assistant MQTT credentials
+- **Experimental Batch Reading (v1.10.0+):** Optional mode for 75% faster Modbus cycles with automatic fallback
 - **Performance Diagnostics:** Per-register timing analysis at DEBUG level to identify bottlenecks
 - **TRACE Log Level:** Ultra-detailed debugging with Modbus byte arrays
 - **Comprehensive Test Suite:** 89% code coverage
@@ -143,6 +144,7 @@ Both share the same limitation - only **ONE Modbus connection**. To use both sim
 
 See [CHANGELOG.md](huawei_solar_modbus_mqtt/CHANGELOG.md) for detailed release notes.
 
+- ✅ **v1.10.0:** Experimental batch reading mode for up to 75% faster Modbus cycles (opt-in beta)
 - ✅ **v1.9.0:** Performance diagnostics with per-register timing analysis at DEBUG level
 - ✅ **v1.8.5:** Added multi-architecture build configuration and simplified the Dockerfile
 - ✅ **v1.8.4:** Fix poll interval not being respected in main loop

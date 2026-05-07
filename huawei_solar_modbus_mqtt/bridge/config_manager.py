@@ -70,6 +70,7 @@ class ConfigManager:
             "log_level": os.getenv("HUAWEI_LOG_LEVEL", "INFO"),
             "status_timeout": self._parse_int_env("HUAWEI_STATUS_TIMEOUT", default=180),
             "poll_interval": self._parse_int_env("HUAWEI_POLL_INTERVAL", default=30),
+            "batch_read_mode": self._parse_bool_env("HUAWEI_BATCH_READ_MODE", default=False),
         }
 
     @staticmethod
@@ -177,6 +178,11 @@ class ConfigManager:
     def poll_interval(self) -> int:
         """Get poll interval in seconds."""
         return cast(int, self._config.get("poll_interval", 30))
+
+    @property
+    def batch_read_mode(self) -> bool:
+        """Get batch read mode setting (experimental, v1.10.0+)."""
+        return cast(bool, self._config.get("batch_read_mode", False))
 
     # === Validation ===
 
